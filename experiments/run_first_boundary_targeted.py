@@ -114,6 +114,7 @@ def build_first_boundary_reductions(
     candidate_boundary: Sequence[int],
     residual_boundary: Sequence[int],
     soft_state_cost: np.ndarray,
+    value_scale_task: float,
     slip: float,
     gamma: float,
     local_horizon: float,
@@ -122,6 +123,7 @@ def build_first_boundary_reductions(
     residual_threshold: float,
     residual_reward_weight: float,
     residual_hit_weight: float,
+    residual_threshold_mode: str,
 ) -> Tuple[
     Dict[str, BellmanKronReduction],
     Dict[str, np.ndarray],
@@ -193,6 +195,25 @@ def build_first_boundary_reductions(
             residual_argmax = None
             residual_argmax_prob = 0.0
             residual_model = 0.0
+            residual_backup_raw = 0.0
+            residual_backup_value = 0.0
+            residual_backup_value_norm = 0.0
+            residual_reward_per_discounted_step = 0.0
+            residual_gamma_relative = 0.0
+            residual_tau_relative = 0.0
+            global_hit_row = global_reduction.hit_probability[src_pos]
+            global_tau_row = global_reduction.expected_tau[src_pos]
+            global_tau_mask = np.isfinite(global_tau_row) & (global_hit_row > 1e-12)
+            expected_tau_global = (
+                float(np.sum(global_hit_row[global_tau_mask] * global_tau_row[global_tau_mask]))
+                / max(1e-12, float(np.sum(global_hit_row[global_tau_mask])))
+                if np.any(global_tau_mask)
+                else 0.0
+            )
+            beta_row = float(np.sum(global_reduction.gamma_terminal[src_pos]))
+            beta_gap = max(1e-12, 1.0 - min(beta_row, 1.0 - 1e-12))
+            l_gamma_row = (1.0 - beta_row) / max(1e-12, 1.0 - gamma)
+            expected_tau_residual = 0.0
             residual_terminals = [state for state in residual_boundary if state != src_state]
             if residual_terminals:
                 P_residual, r_residual = transition_matrix_for_policy(
@@ -240,6 +261,31 @@ def build_first_boundary_reductions(
                     residual_gamma_l1
                     + residual_reward_weight * residual_reward_abs
                     + residual_hit_weight * residual_hit_l1
+                )
+                residual_tau_mask = np.isfinite(residual_first_hit.expected_tau) & (
+                    residual_first_hit.hit_probability > 1e-12
+                )
+                expected_tau_residual = (
+                    float(
+                        np.sum(
+                            residual_first_hit.hit_probability[residual_tau_mask]
+                            * residual_first_hit.expected_tau[residual_tau_mask]
+                        )
+                    )
+                    / max(1e-12, float(np.sum(residual_first_hit.hit_probability[residual_tau_mask])))
+                    if np.any(residual_tau_mask)
+                    else 0.0
+                )
+                residual_backup_raw = residual_reward_abs + residual_gamma_l1
+                residual_backup_value = residual_reward_abs + value_scale_task * residual_gamma_l1
+                residual_backup_value_norm = residual_backup_value / (beta_gap * value_scale_task)
+                residual_reward_per_discounted_step = residual_reward_abs / max(
+                    1e-12,
+                    abs(float(grid.step_reward)) * max(l_gamma_row, 1e-12),
+                )
+                residual_gamma_relative = residual_gamma_l1 / max(beta_row, 1e-12)
+                residual_tau_relative = abs(expected_tau_residual - expected_tau_global) / (
+                    1.0 + expected_tau_global
                 )
 
             soft_cost = 0.0
@@ -315,9 +361,23 @@ def build_first_boundary_reductions(
                     "soft_argmax_coord": idx_to_coord[soft_argmax] if soft_argmax is not None else None,
                     "soft_argmax_score": soft_argmax_score,
                     "model_residual": residual_model,
+                    "residual_threshold_metric": (
+                        residual_backup_value_norm if residual_threshold_mode == "value_norm" else residual_model
+                    ),
                     "residual_reward_abs": residual_reward_abs,
                     "residual_gamma_l1": residual_gamma_l1,
                     "residual_hit_l1": residual_hit_l1,
+                    "residual_backup_raw": residual_backup_raw,
+                    "residual_backup_value": residual_backup_value,
+                    "residual_backup_value_norm": residual_backup_value_norm,
+                    "residual_reward_per_discounted_step": residual_reward_per_discounted_step,
+                    "residual_gamma_relative": residual_gamma_relative,
+                    "residual_tau_relative": residual_tau_relative,
+                    "value_scale_task": value_scale_task,
+                    "beta_row": beta_row,
+                    "l_gamma_row": l_gamma_row,
+                    "expected_tau_global": expected_tau_global,
+                    "expected_tau_residual": expected_tau_residual,
                     "residual_hidden_mass": residual_hidden_mass,
                     "residual_hidden_gamma_mass": residual_hidden_gamma_mass,
                     "residual_argmax_state": residual_argmax,
@@ -350,11 +410,27 @@ def build_first_boundary_reductions(
             sum(float(row["model_residual"]) for row in edge_rows if bool(row["edge_valid"]))
         ),
         "model_residual_max": float(max((float(row["model_residual"]) for row in edge_rows), default=0.0)),
+        "residual_threshold_metric_valid_total": float(
+            sum(float(row["residual_threshold_metric"]) for row in edge_rows if bool(row["edge_valid"]))
+        ),
+        "residual_threshold_metric_max": float(
+            max((float(row["residual_threshold_metric"]) for row in edge_rows), default=0.0)
+        ),
+        "residual_backup_value_norm_valid_total": float(
+            sum(float(row["residual_backup_value_norm"]) for row in edge_rows if bool(row["edge_valid"]))
+        ),
+        "residual_backup_value_norm_max": float(
+            max((float(row["residual_backup_value_norm"]) for row in edge_rows), default=0.0)
+        ),
+        "beta_global": float(max((float(row["beta_row"]) for row in edge_rows), default=0.0)),
+        "l_gamma_row_max": float(max((float(row["l_gamma_row"]) for row in edge_rows), default=0.0)),
         "residual_hidden_mass_max": float(
             max((float(row["residual_hidden_mass"]) for row in edge_rows), default=0.0)
         ),
         "residual_over_threshold_count": sum(
-            1 for row in edge_rows if bool(row["edge_valid"]) and float(row["model_residual"]) > residual_threshold
+            1
+            for row in edge_rows
+            if bool(row["edge_valid"]) and float(row["residual_threshold_metric"]) > residual_threshold
         ),
     }
     policies: Dict[str, object] = {
@@ -398,11 +474,11 @@ def choose_residual_split(edge_rows: Sequence[Mapping[str, object]], residual_th
     score_by_state: Dict[int, float] = defaultdict(float)
     for row in edge_rows:
         residual_state = row["residual_argmax_state"]
-        model_residual = float(row["model_residual"])
+        residual_metric = float(row["residual_threshold_metric"])
         residual_prob = float(row["residual_argmax_prob"])
-        if residual_state is None or not bool(row["edge_valid"]) or model_residual <= residual_threshold:
+        if residual_state is None or not bool(row["edge_valid"]) or residual_metric <= residual_threshold:
             continue
-        score_by_state[int(residual_state)] += model_residual * residual_prob
+        score_by_state[int(residual_state)] += residual_metric * residual_prob
     if not score_by_state:
         return None, 0.0
     state, score = max(score_by_state.items(), key=lambda item: item[1])
@@ -424,6 +500,7 @@ def evaluate_boundary(
     residual_threshold: float,
     residual_reward_weight: float,
     residual_hit_weight: float,
+    residual_threshold_mode: str,
     residual_kind: str,
     residual_top_fraction: float,
     soft_kind: str,
@@ -436,12 +513,20 @@ def evaluate_boundary(
     goal = grid.symbol_states("G")[0]
     boundary = sorted(set(boundary))
     boundary_to_pos = {state: pos for pos, state in enumerate(boundary)}
+    V_full = primitive_value_iteration(grid, goal_state=goal, gamma=gamma, slip=slip)
+    boundary_values = V_full[np.array(boundary, dtype=int)]
+    value_scale_task = max(
+        1.0,
+        abs(float(V_full[start])),
+        float(np.percentile(np.abs(boundary_values), 95)) if len(boundary_values) > 0 else 1.0,
+    )
     reductions, valid_actions, policies, metadata, edge_rows = build_first_boundary_reductions(
         grid=grid,
         boundary=boundary,
         candidate_boundary=candidate_boundary,
         residual_boundary=residual_boundary,
         soft_state_cost=soft_state_cost,
+        value_scale_task=value_scale_task,
         slip=slip,
         gamma=gamma,
         local_horizon=local_horizon,
@@ -450,8 +535,8 @@ def evaluate_boundary(
         residual_threshold=residual_threshold,
         residual_reward_weight=residual_reward_weight,
         residual_hit_weight=residual_hit_weight,
+        residual_threshold_mode=residual_threshold_mode,
     )
-    V_full = primitive_value_iteration(grid, goal_state=goal, gamma=gamma, slip=slip)
     feasible = True
     start_gap = float("inf")
     value_gap_max = float("inf")
@@ -500,8 +585,10 @@ def evaluate_boundary(
         "hidden_threshold": hidden_threshold,
         "soft_threshold": soft_threshold,
         "residual_threshold": residual_threshold,
+        "residual_threshold_mode": residual_threshold_mode,
         "residual_reward_weight": residual_reward_weight,
         "residual_hit_weight": residual_hit_weight,
+        "value_scale_task": value_scale_task,
         "soft_cost_weight": soft_cost_weight,
         "n_states": grid.n_states,
         "n_boundary": len(boundary),
@@ -517,6 +604,12 @@ def evaluate_boundary(
         "soft_over_threshold_count": int(metadata["soft_over_threshold_count"]),
         "model_residual_valid_total": float(metadata["model_residual_valid_total"]),
         "model_residual_max": float(metadata["model_residual_max"]),
+        "residual_threshold_metric_valid_total": float(metadata["residual_threshold_metric_valid_total"]),
+        "residual_threshold_metric_max": float(metadata["residual_threshold_metric_max"]),
+        "residual_backup_value_norm_valid_total": float(metadata["residual_backup_value_norm_valid_total"]),
+        "residual_backup_value_norm_max": float(metadata["residual_backup_value_norm_max"]),
+        "beta_global": float(metadata["beta_global"]),
+        "l_gamma_row_max": float(metadata["l_gamma_row_max"]),
         "residual_hidden_mass_max": float(metadata["residual_hidden_mass_max"]),
         "residual_over_threshold_count": int(metadata["residual_over_threshold_count"]),
         "feasible": feasible,
@@ -573,6 +666,7 @@ def run_one(
     residual_threshold: float,
     residual_reward_weight: float,
     residual_hit_weight: float,
+    residual_threshold_mode: str,
     soft_cost_weight: float,
     residual_split_policy: str,
     soft_split_policy: str,
@@ -631,6 +725,7 @@ def run_one(
             residual_threshold=residual_threshold,
             residual_reward_weight=residual_reward_weight,
             residual_hit_weight=residual_hit_weight,
+            residual_threshold_mode=residual_threshold_mode,
             residual_kind=residual_kind,
             residual_top_fraction=residual_top_fraction,
             soft_kind=soft_kind,
@@ -708,6 +803,7 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
         f"gamma = {args.gamma}, slips = {args.slips}, hidden_threshold = {args.hidden_threshold}, local_horizon = {args.local_horizon}",
         (
             f"soft_threshold = {args.soft_threshold}, residual_threshold = {args.residual_threshold}, "
+            f"residual_threshold_mode = {args.residual_threshold_mode}, "
             f"residual_reward_weight = {args.residual_reward_weight}, residual_hit_weight = {args.residual_hit_weight}, "
             f"soft_cost_weight = {args.soft_cost_weight}"
         ),
@@ -729,6 +825,9 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
                 "soft_cost_max",
                 "model_residual_valid_total",
                 "model_residual_max",
+                "residual_threshold_metric_valid_total",
+                "residual_threshold_metric_max",
+                "residual_backup_value_norm_max",
                 "residual_split_candidate_coord",
                 "soft_split_candidate_coord",
                 "feasible",
@@ -756,6 +855,9 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
                 "soft_cost_max",
                 "model_residual_valid_total",
                 "model_residual_max",
+                "residual_threshold_metric_valid_total",
+                "residual_threshold_metric_max",
+                "residual_backup_value_norm_max",
                 "feasible",
                 "start_gap",
                 "split_candidate_coord",
@@ -819,6 +921,7 @@ def main() -> None:
     )
     parser.add_argument("--residual-top-fraction", type=float, default=0.15)
     parser.add_argument("--residual-threshold", type=float, default=0.5)
+    parser.add_argument("--residual-threshold-mode", choices=["raw", "value_norm"], default="raw")
     parser.add_argument("--residual-reward-weight", type=float, default=0.05)
     parser.add_argument("--residual-hit-weight", type=float, default=0.0)
     parser.add_argument("--residual-split-policy", choices=["never", "threshold"], default="never")
@@ -861,6 +964,7 @@ def main() -> None:
                 residual_threshold=args.residual_threshold,
                 residual_reward_weight=args.residual_reward_weight,
                 residual_hit_weight=args.residual_hit_weight,
+                residual_threshold_mode=args.residual_threshold_mode,
                 soft_cost_weight=args.soft_cost_weight,
                 residual_split_policy=args.residual_split_policy,
                 soft_split_policy=args.soft_split_policy,
@@ -872,7 +976,9 @@ def main() -> None:
             print(
                 f"{map_name:10s} slip={slip:.2f} steps={final['step']:2d} B={final['n_boundary']:3d} "
                 f"valid={final['n_edges_valid']:3d} hidden_max={final['hidden_mass_max']:.3e} "
-                f"res={final['model_residual_valid_total']:.3e} soft={final['soft_cost_valid_total']:.3e} "
+                f"res={final['model_residual_valid_total']:.3e} "
+                f"metric={final['residual_threshold_metric_valid_total']:.3e} "
+                f"soft={final['soft_cost_valid_total']:.3e} "
                 f"feasible={final['feasible']} gap={final['start_gap']:.3e}"
             )
 

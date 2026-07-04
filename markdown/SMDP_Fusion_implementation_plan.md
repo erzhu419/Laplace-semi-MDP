@@ -1184,3 +1184,229 @@ bottleneck，而是真的在逼近“global option 隐藏的 first-boundary mode
 1. first-boundary diagnostic boundary B_res 是否本身带入了 heuristic bias？
 2. residual threshold 是否应该按 task/discount/option duration 归一化？
 ```
+
+## 16. GPT_answer_3 后续：value-impact normalization 与 sensitivity
+
+`GPT_answer_3.md` 的主要反驳是：
+
+```text
+1. B_res 不是真实边界，而是一族 diagnostic lens。
+2. raw residual threshold 不能跨 task / gamma / option duration 共用。
+3. 应该报告 value-impact normalized residual、hidden-cross、planning gap、option complexity。
+```
+
+我先把新增参考处理完：
+
+```text
+reference/papers/why_trust_bellman_2022__why-should-i-trust-you-bellman-the-bellman-error-is-a-poor-replacement-for-value-error.pdf
+reference/pages/why_trust_bellman_2022.html
+reference/repos/sfujim__TD3/
+reference/gpt_answer_3_download_report.md
+```
+
+然后在 `experiments/run_first_boundary_targeted.py` 里加了这些字段：
+
+```text
+residual_backup_raw
+residual_backup_value
+residual_backup_value_norm
+residual_reward_per_discounted_step
+residual_gamma_relative
+residual_tau_relative
+value_scale_task
+beta_row
+beta_global
+l_gamma_row
+expected_tau_global
+expected_tau_residual
+```
+
+主 normalized residual 按 GPT 建议实现成：
+
+```text
+delta_value = |Delta R| + V_scale * ||Delta Gamma||_1
+delta_value_norm = delta_value / ((1 - beta_row) * V_scale)
+
+beta_row = sum_b' Gamma_global(b, b')
+L_gamma = (1 - beta_row) / (1 - gamma)
+```
+
+CLI 新增：
+
+```text
+--residual-threshold-mode {raw,value_norm}
+```
+
+这使得同一份代码可以同时测试：
+
+```text
+raw structural residual split
+value-impact normalized residual split
+```
+
+### 16.1 重要反例：value_norm 不能单独做 structural split
+
+先跑 diagnostic：
+
+```text
+experiments/output/value_norm_residual_turn_diagnostic/
+```
+
+在 `B={start, goal}` 或 articulation-only hard 后，turn-articulation lens 下的
+per-edge max 是：
+
+```text
+open_room:
+  raw_max ~= 0.98 / 0.91
+  value_norm_max ~= 4.95 / 4.45
+
+four_rooms:
+  raw_max ~= 1.01 / 0.98
+  value_norm_max ~= 6.85 / 6.39
+
+maze:
+  raw_max ~= 1.35 / 1.33
+  value_norm_max ~= 1.87 / 1.83
+```
+
+也就是说，value-impact normalization 把 maze 的长 option residual 压低了。
+这在 value/planning error 语义上是合理的，因为长 option 的 SMDP contraction
+更强；但在“不能把 boundary 结构藏进 global option”这个目标上，它会拆反。
+
+我用 `--residual-threshold-mode value_norm --residual-threshold 4.0` 验证了这个
+失败模式：
+
+```text
+experiments/output/value_norm_residual_threshold4/
+
+open_room:
+  B=4
+
+four_rooms:
+  B=6
+
+maze:
+  B=2
+```
+
+这正好和我们要的行为相反。它说明：
+
+```text
+value-impact residual 应该作为 planning/value diagnostic；
+raw structural residual / hidden-cross 才应该负责 graph structure split。
+```
+
+这也和 GPT 自己的第 8 点一致：hidden-cross / bypass 不应该完全按 duration 归一化，
+否则长 global option 会被稀释。
+
+### 16.2 保留 raw residual 1.2，但补充 value fields
+
+我用新字段重跑了 raw residual threshold 1.2：
+
+```text
+experiments/output/edge_model_residual_learned_threshold12_value_fields/
+```
+
+最终结果：
+
+```text
+open_room:
+  B=2
+  raw_max ~= 0.98 / 0.91
+  value_norm_max ~= 4.95 / 4.45
+
+four_rooms:
+  B=4
+  raw_max ~= 1.01 / 0.98
+  value_norm_max ~= 6.85 / 6.39
+
+maze:
+  B=14
+  raw_max ~= 1.17 / 1.19
+  value_norm_max ~= 2.32 / 2.48
+```
+
+这个再次说明 raw residual 1.2 在当前 toy suite 上更像 structural graph splitter：
+它保留 open_room / four_rooms 的 compact graph，同时强迫 maze 暴露中间结构。
+
+### 16.3 B_res sensitivity script
+
+按 GPT 建议，我加了：
+
+```text
+experiments/run_residual_sensitivity.py
+```
+
+它把同一个 learned graph 放到多个 residual probe lens 下评估：
+
+```text
+junction
+decision
+turn_articulation
+bottleneck
+combined
+```
+
+本轮输出：
+
+```text
+experiments/output/residual_probe_sensitivity/
+```
+
+比较的 recipe：
+
+```text
+soft3
+raw_residual12
+value_norm4
+```
+
+最关键的构造结果：
+
+```text
+soft3:
+  open_room slip=0.00  B=2
+  open_room slip=0.05  B=3
+  four_rooms           B=4
+  maze slip=0.00       B=4
+  maze slip=0.05       B=7
+
+raw_residual12:
+  open_room            B=2
+  four_rooms           B=4
+  maze                 B=14
+
+value_norm4:
+  open_room            B=4
+  four_rooms           B=6
+  maze                 B=2
+```
+
+所以现在的结论更清楚：
+
+```text
+raw structural residual: good candidate for split pressure
+value-impact normalized residual: good diagnostic / acceptance report
+hidden-cross mass: separate structural validity channel
+planning gap: necessary but insufficient
+```
+
+下一步应该把最终 acceptance rule 写成多通道，而不是单通道：
+
+```text
+valid if:
+  hard hidden-cross <= epsilon_hidden
+  raw structural residual <= epsilon_struct
+  value-impact residual <= epsilon_value
+  tau/duration residual <= epsilon_tau
+
+select graph by:
+  minimal graph / option description length among valid candidates
+```
+
+现在可以拿给 GPT 继续反驳的问题变成：
+
+```text
+如果 value-impact residual 单独会拆反，那么 structural residual 的 raw threshold
+应该如何归一化，才能既不被 duration 稀释，又不变成 task-specific magic number？
+```
