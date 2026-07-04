@@ -311,3 +311,338 @@ option 在 held-out rollout 上的 reward / hitting kernel residual
 1. 加一个 `local_targeted` option set：只允许去附近/相邻 boundary 的反馈 option，而不是 all-to-all target option。
 2. 做 sample-based held-out residual：用 rollout 估计每条 reduced edge 的 reward、hitting kernel、duration，
    gap 高或 residual 高的边触发 split。
+
+## 9. GPT_answer_1 后的推进
+
+GPT 的反驳基本成立：只看 planning gap 和 Bellman preservation 会偏向把复杂性藏进 option。
+所以目标应该从“最小 graph”改成“最小 graph-option 总描述长度，在 held-out planning/model/SMDP consistency 误差受控下”。
+
+我先把最直接的三个建议落进实验：
+
+```text
+experiments/run_ablation.py
+experiments/output/ablation_complexity/results.csv
+experiments/output/ablation_complexity/results.json
+experiments/output/ablation_complexity/summary.md
+```
+
+新增内容：
+
+```text
+option set:
+  local_targeted
+
+metrics:
+  policy_tv_total
+  policy_regions_total
+  bypass_cost_mean / bypass_cost_total
+  nonlocal_cost
+  description_length_proxy
+```
+
+当前 proxy 是工作假设，不是最终理论：
+
+```text
+description_length_proxy =
+  |B|
+  + n_edges_valid / |B|
+  + |O|
+  + 0.05 * option_pair_count
+  + 0.20 * policy_tv_total
+  + 0.50 * policy_regions_total
+  + bypass_cost_total
+  + 0.10 * nonlocal_cost
+```
+
+第一轮结果：
+
+```text
+max Bellman preservation error ~= 1.42e-14
+```
+
+所以代数部分仍然是对的。新指标主要揭示 option 是否“过强”：
+
+```text
+maze, slip=0.05:
+  endpoints + targeted:
+    start_gap ~= 2.76e-11
+    description_length_proxy ~= 85.26
+    bypass_cost_total ~= 16.25
+    policy_tv_total ~= 125.47
+
+  all + directional:
+    start_gap ~= 1.78e-14
+    description_length_proxy ~= 115.30
+    bypass_cost_total = 0
+    policy_tv_total = 0
+
+  decision + directional:
+    start_gap ~= 1.20
+    description_length_proxy ~= 56.27
+    bypass_cost_total = 0
+    policy_tv_total = 0
+
+  decision + local_targeted:
+    start_gap ~= 0.011
+    description_length_proxy ~= 1018.51
+    bypass_cost_total = 0
+    policy_tv_total ~= 2011.40
+```
+
+解释：
+
+1. `endpoints + targeted` 的确能在 maze 上保持低 gap，但它的 policy table 非常复杂，已经被 `policy_tv/regions`
+   抓出来；它不是免费的 2-node graph。
+2. `decision + directional` 很便宜，但 stochastic maze 下表达力不足，gap 仍有约 `1.20`。
+3. `local_targeted` 能修掉一部分 directional 的表达力问题，但如果给每个 boundary 都配一个 shortest-path policy，
+   policy complexity 会爆炸；这说明下一步不能简单加 all local goal-conditioned options。
+4. open room 暴露了另一个问题：用 `decision_boundary_states` 当 hidden critical set 会把很多 2D 自由空间状态也当成
+   “必须暴露的决策点”，这会高估 bypass cost。critical saliency 需要换成 bottleneck/value/model-uncertainty，
+   而不能只靠 degree。
+
+因此下一步不应该继续堆 option，而应该做两个更针对性的实验：
+
+```text
+Experiment F:
+  用 bottleneck / value-gradient / transition-entropy 定义 c_crit(s)，
+  替代现在粗糙的 degree-based decision critical set。
+
+Experiment G:
+  greedy split on bypass:
+    从 endpoints 开始；
+    找出当前 best option 轨迹里贡献最高的 hidden critical state；
+    加入 B；
+    直到 bypass 或 planning gap 降到阈值。
+```
+
+这会把 GPT 说的原则落成可检验机制：
+
+```text
+option 可以长，
+但不应该免费跨过本该给高层 planner 决策的状态。
+```
+
+## 10. critical saliency 与 greedy split 结果
+
+我把 `c_crit(s)` 做成了可选 saliency：
+
+```text
+critical_kind:
+  decision
+  bottleneck
+  betweenness
+  value_gradient
+  transition_entropy
+  combined
+```
+
+其中当前最有用的是 `bottleneck`。它不是简单用 degree 判断，而是：
+
+```text
+articulation / high-betweenness narrow states
+```
+
+并且会避免把整片 open room 都当成 hidden critical set。对比 `endpoints + targeted, slip=0.05`：
+
+```text
+critical = bottleneck:
+  open_room bypass ~= 0.29
+  four_rooms bypass ~= 5.05
+  maze bypass ~= 1.88
+
+critical = value_gradient:
+  open_room bypass ~= 3.35
+  four_rooms bypass ~= 3.91
+  maze bypass ~= 6.29
+
+critical = transition_entropy:
+  open_room bypass ~= 4.15
+  four_rooms bypass ~= 3.04
+  maze bypass ~= 4.86
+```
+
+解释：
+
+1. `bottleneck` 更像结构性抽象图的 saliency：open room 低、four rooms 和 maze 非零。
+2. `value_gradient` 更 task-specific，会把 open room 中沿 goal 方向的路径也算进去。
+3. `transition_entropy` 在 deterministic 时几乎没用，在 slip 下会惩罚受噪声/墙影响的位置，但不一定等于抽象图节点。
+
+新增输出：
+
+```text
+experiments/output/ablation_bottleneck/
+experiments/output/ablation_value_gradient/
+experiments/output/ablation_transition_entropy/
+```
+
+我还实现了 greedy split：
+
+```text
+experiments/run_greedy_split.py
+experiments/output/greedy_split_bottleneck/trace.csv
+experiments/output/greedy_split_bottleneck/trace.json
+experiments/output/greedy_split_bottleneck/summary.md
+```
+
+算法：
+
+```text
+初始化:
+  B = {S, G}
+
+循环:
+  1. 构建 targeted option Bellman-Kron SMDP
+  2. 对所有有效 (boundary, option) 聚合 discounted interior occupancy
+  3. 找 occupancy * c_crit 最大的 hidden state
+  4. 把它加入 B
+  5. 直到 bypass_cost_total ~= 0 或达到 max_splits
+```
+
+`bottleneck` 下的 greedy split 结果：
+
+```text
+corridor:
+  B = 2, 不拆，bypass = 0
+
+open_room:
+  B = 7, bypass -> 0
+  但这说明当前 bottleneck 仍会选一些边界/中心通路点；open room 是否应该拆，取决于我们是否允许 global targeted policy。
+
+four_rooms:
+  B = 6 deterministic, B = 10 with slip
+  split 主要集中在门/门附近，比如 (3,5), (3,7), (2,5), (4,7)
+
+maze:
+  B = 13
+  split 主要集中在窄通道和高 betweenness 转折点，比如 (5,19), (5,17), (5,3), (5,1), (5,7), (5,5), (7,5), ...
+```
+
+一个重要观察：
+
+```text
+bypass_cost_total 不一定单调下降
+```
+
+因为每次加 boundary 后，targeted option 数量和有效 option pairs 都变多了，新的 source-target pair 会产生新的 bypass。
+最终能清零，是因为所有被当前 saliency 标记的重要 hidden states 都被加入了 `B`。
+
+这一步的结论不是“greedy split 已经找到最终算法”，而是：
+
+```text
+critical saliency + discounted occupancy attribution 可以作为 split 机制；
+但还必须同时约束 option policy complexity，否则 targeted options 仍然可以让 policy_tv 爆炸。
+```
+
+下一步应该把 split 目标从单一 bypass 改成：
+
+```text
+choose split state that most improves:
+  planning_gap
+  + lambda_bypass * bypass_cost
+  + lambda_policy * policy_complexity
+  + lambda_graph * graph_size
+```
+
+并新增一个更公平的 option set：
+
+```text
+first_boundary_targeted:
+  朝 target 走，
+  但一旦 hit 任意 current boundary 就终止；
+  如果跨过第三个 boundary，说明 B 不够细或 option 不合法。
+```
+
+这会比现在的 global `targeted` 更接近“local controller”，也更符合 SMDP graph fusion 的目标。
+
+## 11. multi-objective split 结果
+
+我把 `experiments/run_greedy_split.py` 扩展成两种 split 策略：
+
+```text
+split_strategy:
+  bypass_attribution
+  weighted_objective
+```
+
+`bypass_attribution` 是上一轮的 pure bypass greedy：每次直接加入
+`discounted occupancy * c_crit` 最大的 hidden state。
+
+`weighted_objective` 会先把候选 split state 逐个加入 `B`，重新构建 Bellman-Kron SMDP，
+然后只接受能降低目标函数的 split：
+
+```text
+J =
+  100 * start_gap
+  + 10 * value_gap
+  + 100 * bypass_cost
+  + 0.2 * policy_cost_total
+  + graph_cost
+  + option_cost
+  + 0.1 * nonlocal_cost
+```
+
+其中：
+
+```text
+graph_cost = |B| + n_edges_valid / |B|
+option_cost = |O| + 0.05 * option_pair_count
+policy_cost_total = 0.20 * policy_tv_total + 0.50 * policy_regions_total
+```
+
+新增输出：
+
+```text
+experiments/output/greedy_split_bypass_bottleneck_v2/
+experiments/output/greedy_split_weighted_bottleneck/
+experiments/output/greedy_split_weighted_mean_bottleneck/
+```
+
+和 pure bypass 相比，weighted objective 已经出现了有信息量的分歧：
+
+```text
+pure bypass:
+  open_room slip=0.00: B=7,  bypass=0,      DL=56.80
+  open_room slip=0.05: B=7,  bypass=0,      DL=73.49
+  four_rooms slip=0.05: B=10, bypass=0,     DL=161.13
+  maze slip=0.00: B=13, bypass=0,           DL=442.40
+  maze slip=0.05: B=13, bypass=0,           DL=449.66
+
+weighted objective:
+  open_room slip=0.00: B=2, bypass=0.287,   DL=14.29
+  open_room slip=0.05: B=2, bypass=0.288,   DL=14.95
+  four_rooms slip=0.05: B=6, bypass=0.017,  DL=89.06
+  maze slip=0.00: B=4, bypass=1.449,        DL=141.65
+  maze slip=0.05: B=4, bypass=1.423,        DL=142.13
+```
+
+这说明 multi-objective split 已经能避免 pure bypass 的一个坏倾向：
+
+```text
+不要为了把 saliency 清零而在 open room 或 noisy four_rooms 里继续拆无意义节点。
+```
+
+但它也暴露了下一个核心问题：
+
+```text
+在 maze 里，weighted objective 停在 B=4，不愿继续拆到 B=13。
+```
+
+这不一定是错的。它可能说明：
+
+1. 当前 `global targeted` option set 仍然把规划能力藏进 option policy；
+2. `policy_cost_total` 和 `option_cost` 随 `|B|` 增长太快，压过了继续降低 bypass 的收益；
+3. `bypass_cost` 可能不应该只是 soft regularizer，而应该对 local controller 设置 hard constraint。
+
+现在已经到了值得让 GPT 反驳的一步。建议拿下面三个问题问它：
+
+```text
+1. residual bypass 应该是 hard constraint，还是 weighted penalty？
+2. policy complexity 应该按 total option library、mean per option，
+   还是按 optimal abstract policy occupancy 加权？
+3. first-candidate-boundary targeted option 应该怎么定义：
+   是把跨过 B0 \ B 的 edge 判 invalid，还是先吸收到 hidden terminal 再触发 split？
+```
+
+我自己的判断是：下一步不能只调 lambda。应该实现一个 `candidate_boundary_targeted`
+或 `bypass_gated_targeted` option set，让 option 不能穿过 `B0` 中的第三个 candidate boundary。
+否则 multi-objective 会一直在“强 global option 很省 graph node”和“local graph 应该暴露结构”之间摇摆。

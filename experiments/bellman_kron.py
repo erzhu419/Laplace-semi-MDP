@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 
+import networkx as nx
 import numpy as np
 from scipy.linalg import eigh
 
@@ -189,6 +190,15 @@ def graph_adjacency(grid: GridWorld) -> np.ndarray:
     return A
 
 
+def graph_nx(grid: GridWorld) -> nx.Graph:
+    G = nx.Graph()
+    G.add_nodes_from(range(grid.n_states))
+    for s in range(grid.n_states):
+        for action in grid.legal_actions(s):
+            G.add_edge(s, grid.next_state(s, action))
+    return G
+
+
 def spectral_boundary_states(
     grid: GridWorld,
     keep_symbols: str = "SG",
@@ -261,6 +271,13 @@ def transition_matrix_for_direction(
 PolicyFn = Callable[[State], Mapping[Action, float]]
 
 
+def constant_policy(action: Action, slip: float = 0.0) -> PolicyFn:
+    def policy(state: State) -> Mapping[Action, float]:
+        return action_distribution(action, slip=slip)
+
+    return policy
+
+
 def transition_matrix_for_policy(
     grid: GridWorld,
     policy: PolicyFn,
@@ -285,11 +302,7 @@ def transition_matrix_for_policy(
     return P, r
 
 
-def shortest_path_policy_to_target(
-    grid: GridWorld,
-    target: State,
-    slip: float = 0.0,
-) -> PolicyFn:
+def shortest_path_distances_to_target(grid: GridWorld, target: State) -> np.ndarray:
     coord_to_idx, idx_to_coord = grid.index_maps()
     target_coord = idx_to_coord[target]
     distances: Dict[Tuple[int, int], int] = {target_coord: 0}
@@ -301,6 +314,19 @@ def shortest_path_policy_to_target(
             if prev in coord_to_idx and prev not in distances:
                 distances[prev] = distances[coord] + 1
                 frontier.append(prev)
+    out = np.full(grid.n_states, np.inf, dtype=float)
+    for coord, distance in distances.items():
+        out[coord_to_idx[coord]] = float(distance)
+    return out
+
+
+def shortest_path_policy_to_target(
+    grid: GridWorld,
+    target: State,
+    slip: float = 0.0,
+) -> PolicyFn:
+    coord_to_idx, idx_to_coord = grid.index_maps()
+    distances = shortest_path_distances_to_target(grid, target)
 
     def policy(state: State) -> Mapping[Action, float]:
         if state == target:
@@ -310,12 +336,163 @@ def shortest_path_policy_to_target(
         best_distance = float("inf")
         for action, (dr, dc) in DELTAS.items():
             nxt = (r + dr, c + dc)
-            if nxt in coord_to_idx and distances.get(nxt, float("inf")) < best_distance:
-                best_distance = distances[nxt]
+            if nxt in coord_to_idx and distances[coord_to_idx[nxt]] < best_distance:
+                best_distance = distances[coord_to_idx[nxt]]
                 best_action = action
         return mix_slip(best_action, slip=slip)
 
     return policy
+
+
+def shortest_path_distance_matrix(grid: GridWorld) -> np.ndarray:
+    return np.stack([shortest_path_distances_to_target(grid, target) for target in range(grid.n_states)], axis=1)
+
+
+def _sparsify_saliency(score: np.ndarray, top_fraction: float) -> np.ndarray:
+    score = np.nan_to_num(score.astype(float), nan=0.0, posinf=0.0, neginf=0.0)
+    score[score < 0.0] = 0.0
+    if score.max() <= 0.0:
+        return score
+    if 0.0 < top_fraction < 1.0:
+        positive = np.flatnonzero(score > 0.0)
+        if len(positive) > 0:
+            k = max(1, int(round(top_fraction * len(score))))
+            keep = positive[np.argsort(score[positive])[-min(k, len(positive)) :]]
+            sparse = np.zeros_like(score)
+            sparse[keep] = score[keep]
+            score = sparse
+    max_score = score.max()
+    if max_score > 0.0:
+        score = score / max_score
+    return score
+
+
+def critical_saliency(
+    grid: GridWorld,
+    kind: str,
+    goal_state: State | None = None,
+    gamma: float = 0.97,
+    slip: float = 0.0,
+    top_fraction: float = 0.15,
+) -> np.ndarray:
+    """State saliency used to charge options for bypassing hidden structure."""
+
+    if kind == "none":
+        return np.zeros(grid.n_states, dtype=float)
+
+    if kind == "decision":
+        score = np.zeros(grid.n_states, dtype=float)
+        score[decision_boundary_states(grid)] = 1.0
+        return score
+
+    if kind == "bottleneck":
+        G = graph_nx(grid)
+        articulation = set(nx.articulation_points(G))
+        centrality = nx.betweenness_centrality(G, normalized=True)
+        score = np.zeros(grid.n_states, dtype=float)
+        for s in range(grid.n_states):
+            actions = grid.legal_actions(s)
+            is_straight_corridor = len(actions) == 2 and actions[0] == OPPOSITE.get(actions[1])
+            if s in articulation and not is_straight_corridor:
+                score[s] = 1.0 + centrality.get(s, 0.0)
+            elif len(actions) <= 3 and not is_straight_corridor:
+                score[s] = centrality.get(s, 0.0)
+        if score.max() <= 0.0:
+            return score
+        if 0.0 < top_fraction < 1.0:
+            positive = np.flatnonzero(score > 0.0)
+            k = max(1, int(round(top_fraction * len(score))))
+            keep = positive[np.argsort(score[positive])[-min(k, len(positive)) :]]
+            sparse = np.zeros_like(score)
+            sparse[keep] = score[keep]
+            score = sparse
+        return score
+
+    if kind == "betweenness":
+        G = graph_nx(grid)
+        score = np.array([v for _, v in sorted(nx.betweenness_centrality(G, normalized=True).items())])
+        return _sparsify_saliency(score, top_fraction=top_fraction)
+
+    if kind == "value_gradient":
+        if goal_state is None:
+            raise ValueError("goal_state is required for value_gradient saliency.")
+        V = primitive_value_iteration(grid, goal_state=goal_state, gamma=gamma, slip=slip)
+        score = np.zeros(grid.n_states, dtype=float)
+        for s in range(grid.n_states):
+            diffs = [abs(float(V[s] - V[grid.next_state(s, action)])) for action in grid.legal_actions(s)]
+            score[s] = max(diffs) if diffs else 0.0
+        return _sparsify_saliency(score, top_fraction=top_fraction)
+
+    if kind == "transition_entropy":
+        score = np.zeros(grid.n_states, dtype=float)
+        for s in range(grid.n_states):
+            best_entropy = 0.0
+            for action in ACTIONS:
+                probs: Dict[int, float] = {}
+                for a, p in action_distribution(action, slip=slip).items():
+                    ns = grid.next_state(s, a)
+                    probs[ns] = probs.get(ns, 0.0) + p
+                p_vec = np.array(list(probs.values()), dtype=float)
+                p_vec = p_vec[p_vec > 0.0]
+                entropy = float(-np.sum(p_vec * np.log(p_vec)))
+                best_entropy = max(best_entropy, entropy)
+            score[s] = best_entropy
+        return _sparsify_saliency(score, top_fraction=top_fraction)
+
+    if kind == "combined":
+        parts = [
+            critical_saliency(grid, "bottleneck", goal_state, gamma, slip, top_fraction),
+            critical_saliency(grid, "value_gradient", goal_state, gamma, slip, top_fraction),
+            critical_saliency(grid, "transition_entropy", goal_state, gamma, slip, top_fraction),
+        ]
+        return _sparsify_saliency(np.maximum.reduce(parts), top_fraction=top_fraction)
+
+    raise ValueError(f"Unknown critical saliency kind: {kind}")
+
+
+def _policy_vector(policy: PolicyFn, state: State) -> np.ndarray:
+    dist = dict(policy(state))
+    total = sum(dist.values())
+    if total <= 0:
+        raise ValueError(f"Policy has no mass at state {state}.")
+    return np.array([dist.get(action, 0.0) / total for action in ACTIONS], dtype=float)
+
+
+def policy_complexity(grid: GridWorld, policy: PolicyFn) -> Dict[str, float]:
+    """Cheap tabular option-policy complexity probes."""
+
+    vectors = np.stack([_policy_vector(policy, s) for s in range(grid.n_states)], axis=0)
+    greedy = vectors.argmax(axis=1)
+    tv = 0.0
+    undirected_edges: List[Tuple[int, int]] = []
+    for s in range(grid.n_states):
+        for action in grid.legal_actions(s):
+            ns = grid.next_state(s, action)
+            if s < ns:
+                undirected_edges.append((s, ns))
+                tv += float(np.sum(np.abs(vectors[s] - vectors[ns])))
+
+    seen = np.zeros(grid.n_states, dtype=bool)
+    regions = 0
+    for start in range(grid.n_states):
+        if seen[start]:
+            continue
+        regions += 1
+        seen[start] = True
+        stack = [start]
+        while stack:
+            s = stack.pop()
+            for action in grid.legal_actions(s):
+                ns = grid.next_state(s, action)
+                if not seen[ns] and greedy[ns] == greedy[s]:
+                    seen[ns] = True
+                    stack.append(ns)
+
+    return {
+        "policy_tv": tv,
+        "policy_regions": float(regions),
+        "policy_tv_per_edge": tv / max(1, len(undirected_edges)),
+    }
 
 
 def _solve_or_pinv(A: np.ndarray, B: np.ndarray) -> np.ndarray:
@@ -385,6 +562,48 @@ def bellman_kron_reduce(
         hit_probability=hit_probability,
         expected_tau=expected_tau,
     )
+
+
+def discounted_interior_occupancy(
+    P: np.ndarray,
+    boundary: Sequence[State],
+    gamma: float,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return B, I, and gamma P_BI (I - gamma P_II)^-1."""
+
+    n = P.shape[0]
+    B = np.array(sorted(boundary), dtype=int)
+    B_set = set(B.tolist())
+    I = np.array([s for s in range(n) if s not in B_set], dtype=int)
+    if len(I) == 0:
+        return B, I, np.zeros((len(B), 0), dtype=float)
+    P_BI = P[np.ix_(B, I)]
+    P_II = P[np.ix_(I, I)]
+    occupancy = gamma * P_BI @ _solve_or_pinv(np.eye(len(I)) - gamma * P_II, np.eye(len(I)))
+    return B, I, occupancy
+
+
+def expected_discounted_interior_cost(
+    P: np.ndarray,
+    boundary: Sequence[State],
+    gamma: float,
+    state_cost: np.ndarray,
+) -> np.ndarray:
+    """Expected discounted cost accumulated before hitting the next boundary.
+
+    This is the same Schur-complement solve as the reduced reward, but without a
+    boundary immediate cost term. It is useful for charging options that bypass
+    hidden critical states not retained in the compact graph.
+    """
+
+    n = P.shape[0]
+    B = np.array(sorted(boundary), dtype=int)
+    B_set = set(B.tolist())
+    I = np.array([s for s in range(n) if s not in B_set], dtype=int)
+    if len(I) == 0:
+        return np.zeros(len(B), dtype=float)
+    _, _, occupancy = discounted_interior_occupancy(P, boundary, gamma)
+    return occupancy @ state_cost[I]
 
 
 def bellman_preservation_error(
