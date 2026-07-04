@@ -1410,3 +1410,870 @@ select graph by:
 如果 value-impact residual 单独会拆反，那么 structural residual 的 raw threshold
 应该如何归一化，才能既不被 duration 稀释，又不变成 task-specific magic number？
 ```
+
+## 17. GPT_answer_4 后续：undiscounted structural residual
+
+`GPT_answer_4.md` 的核心建议是：
+
+```text
+structural residual 不应该用 gamma^tau，也不应该除以 duration。
+它应该是 undiscounted first-hidden-boundary probability：
+
+rho_struct(b,o) =
+  Pr[first hit of (B_res union B) is in B_res \\ B]
+```
+
+我先补了新增 reference：
+
+```text
+reference/papers/bellman_residual_bad_proxy_2017__is-the-bellman-residual-a-bad-proxy.pdf
+reference/pages/bellman_residual_bad_proxy_2017.html
+reference/gpt_answer_4_download_report.md
+```
+
+这篇没有找到可靠的官方代码仓库。
+
+### 17.1 实现
+
+其实我们前面算的 `residual_hidden_mass` 已经接近这个定义：`first_hit_reduce`
+里的 `hit_probability` 是 undiscounted first-hit distribution，不是
+`gamma_terminal`。这轮我把它显式命名并加到 CSV：
+
+```text
+struct_hidden_prob
+struct_hit_prob
+struct_nohit_prob
+struct_reference_prob
+struct_hidden_norm
+struct_hidden_bits
+struct_hidden_distinct
+struct_hidden_distinct_bits
+```
+
+新增 residual threshold mode：
+
+```text
+--residual-threshold-mode struct_prob
+--residual-threshold-mode struct_bits
+--residual-threshold-mode struct_distinct
+```
+
+其中：
+
+```text
+struct_hidden_norm =
+  max(0, (struct_hidden_prob - struct_reference_prob) / (1 - struct_reference_prob))
+
+struct_hidden_bits =
+  -log2(1 - struct_hidden_norm + eps)
+```
+
+`struct_hidden_distinct` 默认不算，因为它要对每个 hidden candidate 单独做一次
+first-hit solve；需要时用：
+
+```text
+--compute-struct-distinct
+```
+
+### 17.2 第一发现：struct_prob 不会被 duration 洗掉，但会饱和
+
+输出：
+
+```text
+experiments/output/struct_first_hit_turn_diagnostic_v2/
+```
+
+turn-articulation lens 下：
+
+```text
+open_room:
+  struct_hidden_prob_max ~= 1.00 / 0.936
+
+four_rooms:
+  struct_hidden_prob_max ~= 1.00 / 0.966
+
+maze:
+  struct_hidden_prob_max ~= 1.00 / 1.00
+```
+
+这验证了 GPT 的主要点：它不会像 value-normalized residual 那样把长 maze option
+洗掉。但是它也暴露了一个新问题：
+
+```text
+first-hit probability 是 cumulative incidence，会饱和。
+跨过一个 turn 和穿过整条 maze，在 deterministic case 都是 1。
+```
+
+所以 `struct_prob` 单独不能区分 open_room 里“擦到一个诊断点”和 maze 里“穿过一串
+诊断点”。
+
+### 17.3 第二发现：distinct hidden exposure 才能区分 open_room 和 maze
+
+输出：
+
+```text
+experiments/output/struct_first_hit_turn_distinct_diagnostic/
+```
+
+结果：
+
+```text
+open_room:
+  struct_hidden_distinct_valid_total ~= 2.0 / 1.9
+
+four_rooms:
+  struct_hidden_distinct_valid_total ~= 2.0 / 1.9
+
+maze:
+  struct_hidden_distinct_valid_total ~= 24.0 / 24.0
+```
+
+这非常关键。`struct_prob` 解决了 duration dilution，但 `struct_distinct` 解决了
+first-hit saturation。它也更贴合 GPT 说的：
+
+```text
+跨过一个 hidden point 和跨过很多 hidden points 需要分开。
+```
+
+### 17.4 struct_bits threshold=1 的失败模式
+
+输出：
+
+```text
+experiments/output/struct_first_hit_bits_threshold1_det/
+```
+
+deterministic 子集：
+
+```text
+open_room:
+  B=4
+
+four_rooms:
+  B=6
+
+maze:
+  B=14 at max_splits=12
+```
+
+这说明直接把 `struct_hidden_bits > 1` 当 split rule 仍然太硬。它会把 open_room
+和 four_rooms 也拆到 turn-articulation。也就是说：
+
+```text
+struct_prob / struct_bits 是合法性警报；
+但如果 B_res lens 本身太宽，它仍然会把 diagnostic lens 误当成 ontology。
+```
+
+### 17.5 struct_distinct threshold=4 的更好行为
+
+输出：
+
+```text
+experiments/output/struct_distinct_threshold4/
+```
+
+结果：
+
+```text
+open_room:
+  B=2
+
+four_rooms:
+  B=4
+
+maze:
+  B=14
+```
+
+这和我们想要的行为一致：不动 open_room，不把 four_rooms 过拆，但会拆 maze。
+它和 raw residual 1.2 的结果相近，不过解释更清楚：
+
+```text
+raw residual 1.2:
+  empirically useful, but threshold 仍像 magic number
+
+struct_distinct:
+  直接量化 global option 暴露了多少个不同 hidden diagnostic boundaries
+```
+
+不过还要注意：`struct_distinct threshold=4` 现在仍然是一个阈值。它比 raw residual
+好解释，但还不是最终形式。下一步更好的做法是把它变成 MDL criterion：
+
+```text
+split if:
+  hidden structural bits / distinct exposure saved by adding h
+  >
+  cost(add boundary node h + incident option edges)
+```
+
+### 17.6 当前结论
+
+现在我们有了四个通道，分工比之前清楚：
+
+```text
+value_norm residual:
+  value/planning diagnostic，不能单独做 structural split
+
+struct_prob:
+  是否碰到任何 hidden diagnostic boundary；不被 duration 稀释，但会饱和
+
+struct_distinct:
+  穿过多少个不同 hidden diagnostic boundaries；能区分 open_room 和 maze
+
+raw model residual:
+  当前仍是强 baseline，但需要被 structural_distinct/MDL 解释或替代
+```
+
+下一步应该做的不是继续调单个 threshold，而是：
+
+```text
+实现 split-benefit MDL:
+  benefit(h) = reduction in struct_distinct_bits or hidden-exposure cost
+  cost(h) = log2 |S| + added edge/model complexity
+
+选择 benefit(h) > cost(h) 的 split。
+```
+
+这个问题值得再拿给 GPT 反驳：
+
+```text
+struct_distinct 已经能区分 open_room/four_rooms 和 maze。
+如何把它变成不靠 threshold 的 MDL split criterion？
+```
+
+## 18. MDL structural split：从 threshold 到 cost-benefit
+
+我实现了第一版 `struct_distinct` MDL split。新增策略：
+
+```text
+--residual-split-policy mdl
+```
+
+核心思想：
+
+```text
+candidate benefit(h)
+  ~= sum_edges struct_hidden_distinct(edge) * Pr(edge hits h before B)
+
+candidate cost(h)
+  = node_cost_weight * log2(|S|)
+    + edge_cost_weight * 2|B|
+
+split if:
+  benefit(h) - cost(h) > min_gain
+```
+
+这里的关键修正是：一开始我只把 `Pr(hit h)` 当 benefit，结果 maze 里每个 candidate
+的收益都不够大，完全不 split。后来改成：
+
+```text
+Pr(hit h) * total hidden distinct exposure of that edge
+```
+
+这更接近“加 h 会截断这条 edge，从而省掉 downstream hidden exposure”的含义。
+
+新增参数：
+
+```text
+--struct-mdl-node-cost-weight
+--struct-mdl-edge-cost-weight
+--struct-mdl-exposure-bit-weight
+--struct-mdl-min-gain
+```
+
+并且当 `--residual-split-policy mdl` 时，代码会自动启用：
+
+```text
+--compute-struct-distinct
+```
+
+### 18.1 默认 edge cost 太低，会过拆
+
+默认 `edge_cost_weight=0.1` 时，maze 会继续拆到大约：
+
+```text
+maze:
+  B ~= 22
+```
+
+这说明仅有 `log2(|S|)` 和很低的 added-edge cost 还不足以形成合适的 MDL knee。
+pair-specific option set 里新增一个 boundary 会引入 `2|B|` 条新的 pair edges，
+这个复杂度必须认真计入。
+
+### 18.2 edge_cost_weight=1.0：更 conservative
+
+输出：
+
+```text
+experiments/output/struct_distinct_mdl_edge1/
+```
+
+结果：
+
+```text
+open_room:
+  B=2
+
+four_rooms:
+  B=4
+
+maze:
+  slip=0.00 -> B=8
+  slip=0.05 -> B=13
+```
+
+这版不会拆 open_room，也不会过拆 four_rooms；maze 会被拆，但 deterministic maze
+可能偏 compact。
+
+### 18.3 edge_cost_weight=0.5：当前更像 knee
+
+输出：
+
+```text
+experiments/output/struct_distinct_mdl_edge05/
+```
+
+结果：
+
+```text
+open_room:
+  B=2
+
+four_rooms:
+  B=4
+
+maze:
+  slip=0.00 -> B=11
+  slip=0.05 -> B=14
+```
+
+和上一轮的 `struct_distinct threshold=4` 对比：
+
+```text
+threshold=4:
+  maze -> B=14 / B=14
+
+MDL edge_cost=0.5:
+  maze -> B=11 / B=14
+```
+
+MDL 的优势是停机理由更清楚。最终行里：
+
+```text
+open_room:
+  benefit ~= 1, cost ~= 7.1, gain < 0
+
+four_rooms:
+  benefit ~= 1, cost ~= 9.7, gain < 0
+
+maze edge_cost=0.5:
+  deterministic final benefit ~= 11, cost ~= 17.3, gain < 0
+  slip=0.05 final benefit ~= 14, cost ~= 20.3, gain < 0
+```
+
+所以它不是“低于手调 threshold 就停”，而是：
+
+```text
+继续 split 能省下的 hidden-exposure coding cost
+已经小于新增 node + pair-edge coding cost。
+```
+
+### 18.4 当前判断
+
+`struct_distinct MDL` 比 `struct_distinct threshold` 更接近我们想要的形式：
+
+```text
+不拆 open_room
+不把 four_rooms 过拆
+maze 会拆到一个中等规模 graph
+```
+
+但它还有两个明显待改进点：
+
+```text
+1. benefit 现在是局部 proxy，没有真正 recompute split 后的 total MDL decrease。
+2. edge_cost_weight 仍然是一个模型复杂度系数，需要从 option library encoding 或 validation curve 里确定。
+```
+
+下一步更严谨的版本应该做 greedy one-step lookahead：
+
+```text
+for candidate h:
+  temporarily add h
+  recompute row metrics
+  delta_MDL = MDL(B) - MDL(B union {h})
+
+choose h if max(delta_MDL) > 0
+```
+
+这会更慢，但可以把现在的 local proxy 变成真正的 description-length decrease。
+
+## 19. 统一 graph baseline comparison
+
+现在可以开始和 option-discovery / landmark-discovery 算法做第一层对比了。新增脚本：
+
+```text
+experiments/run_graph_baseline_comparison.py
+```
+
+它把所有方法都先当成 boundary proposer：
+
+```text
+algorithm -> proposed boundary B
+B -> canonical first-boundary targeted edge model
+B -> same residual / hidden-cross / policy-complexity diagnostics
+```
+
+这样先隔离一个问题：
+
+```text
+这个算法找到的 graph node 本身好不好？
+```
+
+而不是一开始就把不同论文里各自的 option policy、termination、training loss 全混在一起。
+
+### 19.1 当前 core comparison
+
+命令：
+
+```text
+python3 experiments/run_graph_baseline_comparison.py \
+  --fixed-methods fixed_endpoints fixed_bottleneck15 fixed_spectral25 fixed_turn_articulation \
+  --learned-methods learned_soft3 learned_raw_residual12 learned_struct_mdl_e05 \
+  --maps open_room four_rooms maze \
+  --slips 0.0 0.05 \
+  --max-splits 20 \
+  --out-dir experiments/output/graph_baseline_comparison_core
+```
+
+输出：
+
+```text
+experiments/output/graph_baseline_comparison_core/
+```
+
+核心结果：
+
+```text
+open_room:
+  endpoints / raw residual / MDL -> B=2
+  soft3 with slip=0.05 -> B=3
+  fixed turn_articulation -> B=4 but residual nearly zero only because it exposes turns
+
+four_rooms:
+  learned methods -> B=4
+  fixed bottleneck15 / turn_articulation -> B=10
+  fixed spectral25 -> B=15
+
+maze:
+  endpoints -> B=2, cheap but hides many boundary structures
+  learned_soft3 -> B=4 / 7, still hides many structures
+  learned_raw_residual12 -> B=14 / 14, lower residual but higher complexity
+  learned_struct_mdl_e05 -> B=11 / 14, lower description-length than raw residual
+  fixed_turn_articulation -> B=30, residual diagnostic almost zero but graph is too large
+```
+
+在 maze 上最有信息量的行：
+
+```text
+slip=0.00:
+  endpoints:              B=2,  DL=73.5,  hiddenDistinct=24.0
+  raw_residual12:         B=14, DL=743.6, hiddenDistinct=132.0
+  struct_mdl_e05:         B=11, DL=545.5, hiddenDistinct=55.0
+  turn_articulation:      B=30, DL=2045.8, hiddenDistinct=0.0
+
+slip=0.05:
+  endpoints:              B=2,  DL=71.7,  hiddenDistinct=24.0
+  raw_residual12:         B=14, DL=750.1, hiddenDistinct=138.3
+  struct_mdl_e05:         B=14, DL=687.7, hiddenDistinct=25.0
+  turn_articulation:      B=30, DL=2242.5, hiddenDistinct=0.0
+```
+
+当前解释：
+
+```text
+fixed_turn_articulation 是 diagnostic upper bound：
+  它把所有 turn/articulation 都暴露出来，所以 residual 很低，但图过大。
+
+endpoints 是 degenerate compact lower bound：
+  图很小，但 hidden-cross / residual 说明它把结构藏进 option。
+
+struct_mdl_e05 目前最像中间解：
+  不拆 open_room，不过拆 four_rooms，在 maze 拿到中等规模 graph。
+```
+
+### 19.2 外部 option 算法怎么接进来
+
+`run_graph_baseline_comparison.py` 现在支持外部 boundary 文件：
+
+```text
+--boundary-files method_name=path/to/boundary.json
+```
+
+JSON 可以是 state id list：
+
+```json
+[0, 13, 27]
+```
+
+也可以是 coordinate list：
+
+```json
+[[1, 1], [3, 7], [5, 19]]
+```
+
+如果一个外部 option-discovery 算法输出 option terminal states / landmarks，就先把它们导出成这个格式，然后在同一套 diagnostic 下比较。
+
+这一步回答的是：
+
+```text
+外部算法发现的 landmarks 作为 abstract graph nodes 是否更好？
+```
+
+下一层才比较：
+
+```text
+外部算法实际学到的 options 是否比 canonical first-boundary options 更好？
+```
+
+那需要再写一个 adapter，把 external option policy/termination 转成同一套 SMDP kernels 后再评估。
+
+## 20. Option-discovery style boundary baselines
+
+为了先和经典 option-discovery 思路对齐，我把两类额外 baseline 加进
+`run_graph_baseline_comparison.py`：
+
+```text
+fixed_eigen_extrema{k}:
+  Laplacian / eigenoption proxy。
+  取 normalized graph Laplacian 的低频 eigenvectors，把每个 eigenpurpose 的 extrema
+  当作 option terminal / landmark proposal。
+
+fixed_coverage{k}:
+  SPTM / SoRB / topological-memory proxy。
+  用 shortest-path metric 做 farthest-point landmarks，模拟 replay graph 上的 coverage
+  landmark selection。
+```
+
+这不是在复现外部 repo 的训练过程，而是在 tabular oracle setting 下比较它们隐含的
+landmark/boundary hypothesis：
+
+```text
+Laplacian extrema / coverage landmarks 是否能给出好的 abstract graph nodes？
+```
+
+### 20.1 命令
+
+```text
+python3 experiments/run_graph_baseline_comparison.py \
+  --fixed-methods fixed_endpoints fixed_bottleneck15 fixed_spectral25 \
+                  fixed_eigen_extrema4 fixed_eigen_extrema8 fixed_eigen_extrema12 \
+                  fixed_coverage8 fixed_coverage12 \
+  --learned-methods learned_raw_residual12 learned_struct_mdl_e05 \
+  --maps open_room four_rooms maze \
+  --slips 0.0 0.05 \
+  --max-splits 20 \
+  --out-dir experiments/output/option_discovery_boundary_comparison
+```
+
+输出：
+
+```text
+experiments/output/option_discovery_boundary_comparison/
+```
+
+这轮也加了 normalized diagnostic：
+
+```text
+struct_hidden_distinct_per_edge =
+  struct_hidden_distinct_valid_total / n_edges_valid
+```
+
+原因是 total hidden distinct 会随着 graph 边数量增长，不适合直接跨不同 `|B|`
+比较；per-edge 更像“平均每条 abstract edge 还隐藏多少 boundary 结构”。
+
+### 20.2 结果摘要
+
+open_room：
+
+```text
+learned_struct_mdl_e05 / raw_residual12 / endpoints:
+  B=2, 不拆
+
+eigen_extrema / coverage:
+  会按给定 k 继续放 landmark；
+  hidden/edge 会下降，但 DL 明显上升。
+```
+
+这说明 Laplacian/coverage 类方法如果只看几何覆盖，会在 open room 产生非必要节点。
+
+four_rooms：
+
+```text
+learned_struct_mdl_e05:
+  B=4,  DL~=68/66, hidden/edge~=0.167/0.162
+
+bottleneck15:
+  B=10, DL~=240/237, hidden/edge~=0.067/0.070
+
+eigen_extrema4:
+  B=4,  DL~=91/88, hidden/edge~=1.67/1.63
+```
+
+这里 eigen-extrema 的 4 个点没有对准门/边界结构；同样 `B=4` 时，
+learned hard/MDL 明显更好。bottleneck 可以进一步降低 hidden/edge，但复杂度高很多。
+
+maze：
+
+```text
+slip=0.00:
+  endpoints:            B=2,  DL=73.5,  hidden/edge=12.0
+  eigen_extrema4:       B=4,  DL=182.3, hidden/edge=6.42
+  eigen_extrema8:       B=8,  DL=425.7, hidden/edge=2.55
+  struct_mdl_e05:       B=11, DL=545.5, hidden/edge=0.50
+  bottleneck15:         B=13, DL=674.6, hidden/edge=0.52
+  raw_residual12:       B=14, DL=743.6, hidden/edge=0.73
+
+slip=0.05:
+  endpoints:            B=2,  DL=71.7,  hidden/edge=12.02
+  eigen_extrema8:       B=8,  DL=419.6, hidden/edge=2.56
+  struct_mdl_e05:       B=14, DL=687.7, hidden/edge=0.138
+  bottleneck15:         B=13, DL=702.5, hidden/edge=0.523
+  raw_residual12:       B=14, DL=750.1, hidden/edge=0.760
+```
+
+当前读法：
+
+```text
+eigenoptions-style extrema 是有用 baseline：
+  它确实沿 Pareto 方向改善 maze，从 endpoints 的 hidden/edge ~=12 降到 ~=2.5。
+
+但它不像最终答案：
+  同样 complexity 附近，struct_mdl_e05 的 hidden/edge 明显更低。
+
+coverage landmarks 更像空间覆盖：
+  在 open_room 降 hidden/edge，但这不是我们想要的 structural abstraction；
+  在 maze 也不如 eigen_extrema 或 MDL。
+```
+
+### 20.3 暂时结论
+
+第一层 comparison 已经给出一个很有用的反驳点：
+
+```text
+Laplacian/eigenoption 不是错。
+它能找到大尺度方向，能改善长 maze 的粗 graph。
+但它没有直接优化“abstract edge 是否隐藏 SMDP boundary structure”，
+所以会：
+  1. 在 open room / coverage setting 过放 landmarks；
+  2. 在 maze 中比 structural-MDL 更慢地降低 hidden-cross residual。
+```
+
+这正好支持我们的主线：
+
+```text
+Laplacian 可以作为 proposal / prior，
+但最终 split objective 应该是 SMDP edge residual + structural hidden exposure + model complexity。
+```
+
+下一步可以做两个方向：
+
+```text
+1. hybrid proposal:
+   candidate pool = articulation / residual_argmax / eigen_extrema / coverage landmarks
+   objective = same structural-MDL gain
+
+2. real option adapter:
+   读取外部 option algorithm 的 learned termination / policy，
+   转成 canonical SMDP kernels，再比较 option policy 本身。
+```
+
+我建议先做方向 1，因为它能直接回答：
+
+```text
+Laplacian 作为 proposal 能不能帮助 structural-MDL 找到更好 graph？
+```
+
+如果 hybrid 仍然赢不了当前 residual_argmax，那再去接真正外部 option policy 会更有信息量。
+
+### 20.4 hard-eigen hybrid 的负结果
+
+我又做了一个更激进的 hybrid：
+
+```text
+learned_struct_mdl_hard_eigen12:
+  B0_hard = articulation_only union eigen_extrema12
+  split = hard first-boundary hidden first, then structural-MDL
+```
+
+命令：
+
+```text
+python3 experiments/run_graph_baseline_comparison.py \
+  --fixed-methods fixed_endpoints fixed_eigen_extrema12 \
+  --learned-methods learned_struct_mdl_e05 learned_struct_mdl_hard_eigen12 \
+  --maps open_room four_rooms maze \
+  --slips 0.0 0.05 \
+  --max-splits 20 \
+  --out-dir experiments/output/hybrid_eigen_proposal_comparison
+```
+
+结果：
+
+```text
+open_room:
+  struct_mdl_e05:             B=2
+  hard_eigen12:               B=12
+
+four_rooms:
+  struct_mdl_e05:             B=4
+  hard_eigen12:               B=8 / 13
+
+maze:
+  struct_mdl_e05:             B=11 / 14
+  hard_eigen12:               B=22 / 22
+```
+
+具体指标：
+
+```text
+maze slip=0.00:
+  struct_mdl_e05:             DL=545.5,  hidden/edge=0.500
+  hard_eigen12:               DL=1558.7, hidden/edge=0.494
+
+maze slip=0.05:
+  struct_mdl_e05:             DL=687.7,  hidden/edge=0.138
+  hard_eigen12:               DL=1522.7, hidden/edge=0.483
+```
+
+这说明把 eigen extrema 升级成 hard B0 是错的：
+
+```text
+它在 open_room 必然过拆；
+在 maze 中复杂度暴涨，hidden/edge 没有相应收益；
+slip=0.05 甚至比当前 structural-MDL 更差。
+```
+
+因此更合理的下一步不是 `hard eigen B0`，而是：
+
+```text
+proposal-only eigen:
+  eigen extrema 可以作为 candidate split proposals，
+  但不应该作为 hidden-boundary diagnostic，也不应该强制 first-boundary termination。
+
+objective 仍然只看：
+  turn/articulation structural hidden exposure
+  + residual/value diagnostic
+  + graph/option complexity
+```
+
+这一步需要把当前代码里的 `candidate_boundary` 拆成两份：
+
+```text
+B_hard:
+  真正会让 option first-boundary stop 的 hard diagnostic set
+
+B_proposal:
+  只用于 choose split candidate，不改变 option termination / residual lens
+```
+
+这个设计比直接接外部 option policy 更重要，因为它能清楚地区分：
+
+```text
+Laplacian as ontology  -> 不行，过拆
+Laplacian as proposal  -> 还没测试，值得测试
+```
+
+### 20.5 proposal-only eigen / coverage
+
+我把 `candidate_boundary` 拆出了一个 `proposal_boundary`：
+
+```text
+B_hard:
+  仍然只用于 first-boundary option termination / hard hidden split。
+
+B_proposal:
+  只给 structural-MDL choose split candidate 用。
+  不改变 option termination，也不改变 residual diagnostic lens。
+```
+
+新增 recipe：
+
+```text
+learned_struct_mdl_proposal_eigen12
+learned_struct_mdl_proposal_coverage12
+```
+
+命令：
+
+```text
+python3 experiments/run_graph_baseline_comparison.py \
+  --fixed-methods fixed_endpoints fixed_eigen_extrema12 fixed_coverage12 \
+  --learned-methods learned_struct_mdl_e05 \
+                    learned_struct_mdl_proposal_eigen12 \
+                    learned_struct_mdl_proposal_coverage12 \
+  --maps open_room four_rooms maze \
+  --slips 0.0 0.05 \
+  --max-splits 20 \
+  --out-dir experiments/output/proposal_only_option_comparison
+```
+
+结果：
+
+```text
+open_room:
+  struct_mdl_e05:             B=2
+  proposal_eigen12:           B=2
+  proposal_coverage12:        B=2
+
+four_rooms:
+  struct_mdl_e05:             B=4
+  proposal_eigen12:           B=4
+  proposal_coverage12:        B=4
+
+maze slip=0.00:
+  struct_mdl_e05:             B=11, DL=545.5, hidden/edge=0.500
+  proposal_eigen12:           B=13, DL=674.9, hidden/edge=0.404
+  proposal_coverage12:        B=14, DL=740.7, hidden/edge=0.368
+
+maze slip=0.05:
+  struct_mdl_e05:             B=14, DL=687.7, hidden/edge=0.138
+  proposal_eigen12:           B=16, DL=824.7, hidden/edge=0.113
+  proposal_coverage12:        B=17, DL=893.5, hidden/edge=0.103
+```
+
+这比 hard-eigen 结果健康很多：
+
+```text
+proposal-only 不再拆 open_room；
+不再过拆 four_rooms；
+只在 maze 里多加节点。
+```
+
+但它是否更好取决于 tradeoff：
+
+```text
+proposal_eigen/coverage 可以进一步降低 hidden/edge，
+但代价是更高 graph + option library complexity。
+```
+
+当前判断：
+
+```text
+如果目标是极低 hidden/edge：
+  proposal-only eigen/coverage 有帮助。
+
+如果目标是最小 DL 下足够低 residual：
+  原始 struct_mdl_e05 仍是更强默认点。
+```
+
+这给了下一轮很明确的问题：
+
+```text
+MDL cost 现在可能低估了 residual/hidden improvement 的收益，
+或高估了 added pair edges 的成本。
+
+需要做一条 lambda sweep：
+  lambda_hidden / edge_cost_weight / node_cost_weight
+看 proposal_eigen12 是否在某个合理权重下进入 Pareto frontier。
+```
