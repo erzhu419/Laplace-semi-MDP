@@ -1,0 +1,1472 @@
+[
+  {
+    "option": "fb_001_to_000",
+    "src_state": 10,
+    "src_coord": [
+      1,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.97,
+    "soft_argmax_state": 9,
+    "soft_argmax_coord": [
+      1,
+      10
+    ],
+    "soft_argmax_score": 0.97,
+    "reward": -8.752529103502392,
+    "map": "corridor",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 10,
+    "target_coord": [
+      1,
+      11
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.7602310586545651,
+    "soft_argmax_state": 9,
+    "soft_argmax_coord": [
+      1,
+      10
+    ],
+    "soft_argmax_score": 0.7602310586545651,
+    "reward": -8.75252910350239,
+    "map": "corridor",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 10,
+    "src_coord": [
+      1,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.999999999999999,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.0342918231950553,
+    "soft_argmax_state": 9,
+    "soft_argmax_coord": [
+      1,
+      10
+    ],
+    "soft_argmax_score": 1.0342918231950553,
+    "reward": -9.255363868888725,
+    "map": "corridor",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 10,
+    "target_coord": [
+      1,
+      11
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999989,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.7838731241815932,
+    "soft_argmax_state": 9,
+    "soft_argmax_coord": [
+      1,
+      10
+    ],
+    "soft_argmax_score": 0.7838731241815932,
+    "reward": -9.255363868888725,
+    "map": "corridor",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0,
+    "hidden_gamma_mass": 0.8852928099999999,
+    "hidden_argmax_state": 6,
+    "hidden_argmax_coord": [
+      1,
+      7
+    ],
+    "hidden_argmax_prob": 1.0,
+    "soft_cost": 0.97,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.97,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0,
+    "hidden_gamma_mass": 0.8852928099999999,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 1.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -5.567599835699999,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_002_to_000",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.97,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.97,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -5.567599835699999,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_002_to_001",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.97,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.97,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_000_to_002",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0,
+    "hidden_gamma_mass": 0.8852928099999999,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 1.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_001_to_002",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.912673,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.912673,
+    "reward": -3.823573,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -5.567599835699999,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_000",
+    "src_state": 28,
+    "src_coord": [
+      5,
+      1
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -3.823573,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_000",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.97,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.97,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -5.567599835699999,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_001",
+    "src_state": 28,
+    "src_coord": [
+      5,
+      1
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -3.823573,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_001",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.97,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.97,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_002",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 28,
+    "target_coord": [
+      5,
+      1
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_002",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 28,
+    "target_coord": [
+      5,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.912673,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.912673,
+    "reward": -3.823573,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_002",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 28,
+    "target_coord": [
+      5,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.882673,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.97,
+    "reward": -5.567599835699999,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_003",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "reward": -3.8235729999999997,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_003",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.912673,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.912673,
+    "reward": -3.823573,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_003",
+    "src_state": 28,
+    "src_coord": [
+      5,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.7174680513999998,
+    "soft_argmax_state": 32,
+    "soft_argmax_coord": [
+      5,
+      5
+    ],
+    "soft_argmax_score": 0.8587340256999999,
+    "reward": -5.567599835699999,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.06416353811193333,
+    "hidden_mass": 0.9358364618880669,
+    "hidden_gamma_mass": 0.8236069192964655,
+    "hidden_argmax_state": 6,
+    "hidden_argmax_coord": [
+      1,
+      7
+    ],
+    "hidden_argmax_prob": 0.935836461453894,
+    "soft_cost": 0.01812624217072081,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.01781402703454222,
+    "reward": -4.332039004404954,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.06416353811193333,
+    "hidden_mass": 0.9358364618880667,
+    "hidden_gamma_mass": 0.8236069192964657,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 0.9358364614538938,
+    "soft_cost": 0.21454469208296828,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 0.05649883051180478,
+    "reward": -4.332039004404955,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999938131268,
+    "hidden_mass": 6.1868732518842665e-09,
+    "hidden_gamma_mass": 4.471971358880575e-09,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 6.1868732518842665e-09,
+    "soft_cost": 3.2559081772622354e-07,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 8.445462027860479e-08,
+    "reward": -5.994087865458839,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_002_to_000",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999995658273,
+    "hidden_mass": 4.3417287375003936e-10,
+    "hidden_gamma_mass": 2.832513836847338e-10,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 4.3417287375003936e-10,
+    "soft_cost": 0.01812624217072081,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.01781402703454222,
+    "reward": -4.332039004404954,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999035764953,
+    "hidden_mass": 9.642350469677185e-08,
+    "hidden_gamma_mass": 8.440908977807416e-08,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 9.642350469677185e-08,
+    "soft_cost": 3.1083154218521637e-07,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 8.313804910438455e-08,
+    "reward": -5.994087865458839,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_002_to_001",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999627933,
+    "hidden_mass": 3.7206795262507756e-11,
+    "hidden_gamma_mass": 3.0087543823158634e-11,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 3.7206795262507756e-11,
+    "soft_cost": 0.018126229019795704,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.017814026931900522,
+    "reward": -4.119704630606855,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_000_to_002",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.06416353854610621,
+    "hidden_mass": 0.9358364614538938,
+    "hidden_gamma_mass": 0.8236069190132143,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 0.9358364614538938,
+    "soft_cost": 0.21454469208296828,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 0.05649883051180478,
+    "reward": -4.332039004404955,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_001_to_002",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999946408199,
+    "hidden_mass": 5.359179968182262e-09,
+    "hidden_gamma_mass": 3.869606620869691e-09,
+    "hidden_argmax_state": 28,
+    "hidden_argmax_coord": [
+      5,
+      1
+    ],
+    "hidden_argmax_prob": 5.359179968182262e-09,
+    "soft_cost": 0.061823010632770514,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.05828218900110399,
+    "reward": -4.119704630606856,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 3.2559081772622354e-07,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 8.445462027860479e-08,
+    "reward": -5.994087865458839,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_000",
+    "src_state": 28,
+    "src_coord": [
+      5,
+      1
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999998,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0003122037938653797,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 0.000306746524420294,
+    "reward": -4.119704630606856,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_000",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0000000000000002,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.01812624217072081,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.01781402703454222,
+    "reward": -4.332039004404954,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 3.1083154218521637e-07,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 8.313804910438455e-08,
+    "reward": -5.994087865458839,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_001",
+    "src_state": 28,
+    "src_coord": [
+      5,
+      1
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999998,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.00031222078764630076,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 0.00030675067015108643,
+    "reward": -4.332039004404954,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_001",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 6,
+    "target_coord": [
+      1,
+      7
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0000000000000002,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.018126229019795704,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.017814026931900522,
+    "reward": -4.119704630606855,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_002",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 28,
+    "target_coord": [
+      5,
+      1
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0035409633957835304,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 0.0033976406073234523,
+    "reward": -4.119704630606857,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_002",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 28,
+    "target_coord": [
+      5,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999999,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.220178749690727,
+    "soft_argmax_state": 32,
+    "soft_argmax_coord": [
+      5,
+      5
+    ],
+    "soft_argmax_score": 0.05649883051180477,
+    "reward": -4.332039004404954,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_002",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 28,
+    "target_coord": [
+      5,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999998,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 3.934571969055182,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 1.0331285666248693,
+    "reward": -5.99408786545884,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_003",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.21454469208296828,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 0.05649883051180478,
+    "reward": -4.332039004404955,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_003",
+    "src_state": 6,
+    "src_coord": [
+      1,
+      7
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 4.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999999,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.061823010632770514,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.05828218900110399,
+    "reward": -4.119704630606856,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_003",
+    "src_state": 28,
+    "src_coord": [
+      5,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999996,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 3.7912369545213656,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 0.9994572945038515,
+    "reward": -5.994087865458839,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 2
+  }
+]

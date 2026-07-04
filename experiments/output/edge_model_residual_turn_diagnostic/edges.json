@@ -1,0 +1,2342 @@
+[
+  {
+    "option": "fb_001_to_000",
+    "src_state": 10,
+    "src_coord": [
+      1,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.97,
+    "soft_argmax_state": 9,
+    "soft_argmax_coord": [
+      1,
+      10
+    ],
+    "soft_argmax_score": 0.97,
+    "model_residual": 1.9984014443252818e-16,
+    "residual_reward_abs": 1.7763568394002505e-15,
+    "residual_gamma_l1": 1.1102230246251565e-16,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": null,
+    "residual_argmax_coord": null,
+    "residual_argmax_prob": 0.0,
+    "reward": -8.752529103502392,
+    "map": "corridor",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 10,
+    "target_coord": [
+      1,
+      11
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.7602310586545651,
+    "soft_argmax_state": 9,
+    "soft_argmax_coord": [
+      1,
+      10
+    ],
+    "soft_argmax_score": 0.7602310586545651,
+    "model_residual": 1.1102230246251565e-16,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 1.1102230246251565e-16,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": null,
+    "residual_argmax_coord": null,
+    "residual_argmax_prob": 0.0,
+    "reward": -8.75252910350239,
+    "map": "corridor",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 10,
+    "src_coord": [
+      1,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.999999999999999,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.0342918231950553,
+    "soft_argmax_state": 9,
+    "soft_argmax_coord": [
+      1,
+      10
+    ],
+    "soft_argmax_score": 1.0342918231950553,
+    "model_residual": 0.14017118395240075,
+    "residual_reward_abs": 0.593716988105621,
+    "residual_gamma_l1": 0.1104853345471197,
+    "residual_hit_l1": 0.1333333333333333,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": null,
+    "residual_argmax_coord": null,
+    "residual_argmax_prob": 0.0,
+    "reward": -9.255363868888725,
+    "map": "corridor",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 10,
+    "target_coord": [
+      1,
+      11
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999989,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.7838731241815932,
+    "soft_argmax_state": 9,
+    "soft_argmax_coord": [
+      1,
+      10
+    ],
+    "soft_argmax_score": 0.7838731241815932,
+    "model_residual": 0.14017118395240077,
+    "residual_reward_abs": 0.5937169881056192,
+    "residual_gamma_l1": 0.11048533454711981,
+    "residual_hit_l1": 0.13333333333333286,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": null,
+    "residual_argmax_coord": null,
+    "residual_argmax_prob": 0.0,
+    "reward": -9.255363868888725,
+    "map": "corridor",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.97,
+    "soft_argmax_state": 27,
+    "soft_argmax_coord": [
+      4,
+      7
+    ],
+    "soft_argmax_score": 0.97,
+    "model_residual": 0.9838719320700477,
+    "residual_reward_abs": 4.92895610350239,
+    "residual_gamma_l1": 0.7374241268949282,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.8852928099999999,
+    "residual_argmax_state": 6,
+    "residual_argmax_coord": [
+      1,
+      7
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -8.75252910350239,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.5204621173091302,
+    "soft_argmax_state": 32,
+    "soft_argmax_coord": [
+      5,
+      5
+    ],
+    "soft_argmax_score": 0.7602310586545651,
+    "model_residual": 0.9838719320700477,
+    "residual_reward_abs": 4.92895610350239,
+    "residual_gamma_l1": 0.7374241268949282,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.8852928099999999,
+    "residual_argmax_state": 28,
+    "residual_argmax_coord": [
+      5,
+      1
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -8.75252910350239,
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 34,
+    "src_coord": [
+      5,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.018126511590962843,
+    "soft_argmax_state": 33,
+    "soft_argmax_coord": [
+      5,
+      6
+    ],
+    "soft_argmax_score": 0.017814097830386316,
+    "model_residual": 0.9134444674604744,
+    "residual_reward_abs": 4.491877408200449,
+    "residual_gamma_l1": 0.6888505970504519,
+    "residual_hit_l1": 0.9358364618880668,
+    "residual_hidden_mass": 0.9358364618880669,
+    "residual_hidden_gamma_mass": 0.8236069192964655,
+    "residual_argmax_state": 6,
+    "residual_argmax_coord": [
+      1,
+      7
+    ],
+    "residual_argmax_prob": 0.935836461453894,
+    "reward": -9.268811904277364,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 34,
+    "target_coord": [
+      5,
+      7
+    ],
+    "primitive_distance": 10.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 3.337033911680864,
+    "soft_argmax_state": 30,
+    "soft_argmax_coord": [
+      5,
+      3
+    ],
+    "soft_argmax_score": 0.8796588346772263,
+    "model_residual": 0.9134444674604748,
+    "residual_reward_abs": 4.491877408200448,
+    "residual_gamma_l1": 0.6888505970504524,
+    "residual_hit_l1": 0.9358364618880667,
+    "residual_hidden_mass": 0.9358364618880667,
+    "residual_hidden_gamma_mass": 0.8236069192964657,
+    "residual_argmax_state": 28,
+    "residual_argmax_coord": [
+      5,
+      1
+    ],
+    "residual_argmax_prob": 0.9358364614538938,
+    "reward": -9.268811904277364,
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0,
+    "hidden_gamma_mass": 0.8329720049289999,
+    "hidden_argmax_state": 26,
+    "hidden_argmax_coord": [
+      3,
+      7
+    ],
+    "hidden_argmax_prob": 1.0,
+    "soft_cost": 1.2329439104767141,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6352433976385771,
+    "model_residual": 0.953062489907928,
+    "residual_reward_abs": 6.00452424894641,
+    "residual_gamma_l1": 0.6528362774606075,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.8329720049289999,
+    "residual_argmax_state": 26,
+    "residual_argmax_coord": [
+      3,
+      7
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0,
+    "hidden_gamma_mass": 0.8329720049289999,
+    "hidden_argmax_state": 24,
+    "hidden_argmax_coord": [
+      3,
+      5
+    ],
+    "hidden_argmax_prob": 1.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.953062489907928,
+    "residual_reward_abs": 6.00452424894641,
+    "residual_gamma_l1": 0.6528362774606075,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.8329720049289999,
+    "residual_argmax_state": 24,
+    "residual_argmax_coord": [
+      3,
+      5
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 26,
+    "src_coord": [
+      3,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0,
+    "hidden_gamma_mass": 0.9409,
+    "hidden_argmax_state": 24,
+    "hidden_argmax_coord": [
+      3,
+      5
+    ],
+    "hidden_argmax_prob": 1.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 1.0456710937082025,
+    "residual_reward_abs": 5.238554685410129,
+    "residual_gamma_l1": 0.783743359437696,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.9409,
+    "residual_argmax_state": 24,
+    "residual_argmax_coord": [
+      3,
+      5
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -1.97,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_002_to_000",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 24,
+    "hidden_argmax_coord": [
+      3,
+      5
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.2329439104767141,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6352433976385771,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 26,
+    "target_coord": [
+      3,
+      7
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0,
+    "hidden_gamma_mass": 0.8329720049289999,
+    "hidden_argmax_state": 24,
+    "hidden_argmax_coord": [
+      3,
+      5
+    ],
+    "hidden_argmax_prob": 1.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.8657911019232025,
+    "residual_reward_abs": 1.6409548497101296,
+    "residual_gamma_l1": 0.783743359437696,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.8329720049289999,
+    "residual_argmax_state": 24,
+    "residual_argmax_coord": [
+      3,
+      5
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_002_to_001",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 26,
+    "target_coord": [
+      3,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 24,
+    "hidden_argmax_coord": [
+      3,
+      5
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.2329439104767141,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6352433976385771,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_000_to_002",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0,
+    "hidden_gamma_mass": 0.8329720049289999,
+    "hidden_argmax_state": 24,
+    "hidden_argmax_coord": [
+      3,
+      5
+    ],
+    "hidden_argmax_prob": 1.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.8657911019232025,
+    "residual_reward_abs": 1.6409548497101296,
+    "residual_gamma_l1": 0.783743359437696,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.8329720049289999,
+    "residual_argmax_state": 24,
+    "residual_argmax_coord": [
+      3,
+      5
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_001_to_002",
+    "src_state": 26,
+    "src_coord": [
+      3,
+      7
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 24,
+    "hidden_argmax_coord": [
+      3,
+      5
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.1247528250588064,
+    "soft_argmax_state": 48,
+    "soft_argmax_coord": [
+      5,
+      9
+    ],
+    "soft_argmax_score": 0.5623764125294032,
+    "model_residual": 1.012851996714,
+    "residual_reward_abs": 3.5975998356999996,
+    "residual_gamma_l1": 0.8329720049289999,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.9409,
+    "residual_argmax_state": 46,
+    "residual_argmax_coord": [
+      5,
+      7
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 24,
+    "src_coord": [
+      3,
+      5
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 1.012851996714,
+    "residual_reward_abs": 3.5975998356999996,
+    "residual_gamma_l1": 0.8329720049289999,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.9409,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_000",
+    "src_state": 26,
+    "src_coord": [
+      3,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -1.97,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_000",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.2329439104767141,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6352433976385771,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 24,
+    "target_coord": [
+      3,
+      5
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_001",
+    "src_state": 26,
+    "src_coord": [
+      3,
+      7
+    ],
+    "target_state": 24,
+    "target_coord": [
+      3,
+      5
+    ],
+    "primitive_distance": 2.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -1.97,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_001",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 24,
+    "target_coord": [
+      3,
+      5
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.2329439104767141,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6352433976385771,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_002",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 26,
+    "target_coord": [
+      3,
+      7
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_002",
+    "src_state": 24,
+    "src_coord": [
+      3,
+      5
+    ],
+    "target_state": 26,
+    "target_coord": [
+      3,
+      7
+    ],
+    "primitive_distance": 2.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -1.97,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_002",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 26,
+    "target_coord": [
+      3,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.2329439104767141,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6352433976385771,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_003",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_003",
+    "src_state": 24,
+    "src_coord": [
+      3,
+      5
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.0,
+    "soft_argmax_state": null,
+    "soft_argmax_coord": null,
+    "soft_argmax_score": 0.0,
+    "model_residual": 0.0,
+    "residual_reward_abs": 0.0,
+    "residual_gamma_l1": 0.0,
+    "residual_hit_l1": 0.0,
+    "residual_hidden_mass": 0.0,
+    "residual_hidden_gamma_mass": 0.0,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.0,
+    "reward": -1.97,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_003",
+    "src_state": 26,
+    "src_coord": [
+      3,
+      7
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.1247528250588064,
+    "soft_argmax_state": 48,
+    "soft_argmax_coord": [
+      5,
+      9
+    ],
+    "soft_argmax_score": 0.5623764125294032,
+    "model_residual": 1.012851996714,
+    "residual_reward_abs": 3.5975998356999996,
+    "residual_gamma_l1": 0.8329720049289999,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.9409,
+    "residual_argmax_state": 46,
+    "residual_argmax_coord": [
+      5,
+      7
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -5.567599835699999,
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 0.9999999999999994,
+    "hidden_gamma_mass": 0.8206644506471236,
+    "hidden_argmax_state": 26,
+    "hidden_argmax_coord": [
+      3,
+      7
+    ],
+    "hidden_argmax_prob": 0.9999999999999994,
+    "soft_cost": 0.6676582215190286,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6552799465478026,
+    "model_residual": 0.9353997146900606,
+    "residual_reward_abs": 5.734326922811219,
+    "residual_gamma_l1": 0.6486833685494996,
+    "residual_hit_l1": 0.9999999999999993,
+    "residual_hidden_mass": 0.9999999999999998,
+    "residual_hidden_gamma_mass": 0.8207131762338362,
+    "residual_argmax_state": 26,
+    "residual_argmax_coord": [
+      3,
+      7
+    ],
+    "residual_argmax_prob": 0.9996759388772498,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 1.0000000000000004,
+    "hidden_gamma_mass": 0.8206644506471233,
+    "hidden_argmax_state": 24,
+    "hidden_argmax_coord": [
+      3,
+      5
+    ],
+    "hidden_argmax_prob": 1.0000000000000004,
+    "soft_cost": 0.00018265072057415448,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 0.00018265072057415448,
+    "model_residual": 0.9353997146900601,
+    "residual_reward_abs": 5.734326922811206,
+    "residual_gamma_l1": 0.6486833685494997,
+    "residual_hit_l1": 0.9999999999999997,
+    "residual_hidden_mass": 0.9999999999999998,
+    "residual_hidden_gamma_mass": 0.8207131762338361,
+    "residual_argmax_state": 24,
+    "residual_argmax_coord": [
+      3,
+      5
+    ],
+    "residual_argmax_prob": 0.9996759388772498,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 24,
+    "src_coord": [
+      3,
+      5
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.9996976916196132,
+    "hidden_mass": 0.00030230838038643035,
+    "hidden_gamma_mass": 0.0002832569197053986,
+    "hidden_argmax_state": 26,
+    "hidden_argmax_coord": [
+      3,
+      7
+    ],
+    "hidden_argmax_prob": 0.00030230838038643035,
+    "soft_cost": 5.4771001686652154e-08,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 5.4771001686652154e-08,
+    "model_residual": 0.9754565430497713,
+    "residual_reward_abs": 3.4588377520243605,
+    "residual_gamma_l1": 0.8025146554485533,
+    "residual_hit_l1": 0.9667293146404526,
+    "residual_hidden_mass": 0.9667293146404526,
+    "residual_hidden_gamma_mass": 0.9062797880092843,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.9661298250649621,
+    "reward": -5.946006119837077,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_002_to_000",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 0.9999999999999994,
+    "hidden_gamma_mass": 0.8206644506471236,
+    "hidden_argmax_state": 26,
+    "hidden_argmax_coord": [
+      3,
+      7
+    ],
+    "hidden_argmax_prob": 0.9999999999999994,
+    "soft_cost": 0.6676582215190286,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6552799465478026,
+    "model_residual": 0.8484203945928543,
+    "residual_reward_abs": 1.3853609179508917,
+    "residual_gamma_l1": 0.7791523486953098,
+    "residual_hit_l1": 0.9999999999999994,
+    "residual_hidden_mass": 0.9999999999999998,
+    "residual_hidden_gamma_mass": 0.8207131762338362,
+    "residual_argmax_state": 26,
+    "residual_argmax_coord": [
+      3,
+      7
+    ],
+    "residual_argmax_prob": 0.9996759388772498,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 24,
+    "target_coord": [
+      3,
+      5
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0000000000000004,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 26,
+    "hidden_argmax_coord": [
+      3,
+      7
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.00018265072057415448,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 0.00018265072057415448,
+    "model_residual": 0.10144775077261481,
+    "residual_reward_abs": 0.28537911057351106,
+    "residual_gamma_l1": 0.08717879524393926,
+    "residual_hit_l1": 0.09972453246689328,
+    "residual_hidden_mass": 0.000324061122749875,
+    "residual_hidden_gamma_mass": 0.00028205274396991495,
+    "residual_argmax_state": 41,
+    "residual_argmax_coord": [
+      5,
+      1
+    ],
+    "residual_argmax_prob": 0.000303270258409239,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_002_to_001",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 24,
+    "target_coord": [
+      3,
+      5
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 0.0,
+    "hidden_mass": 0.9999999999999994,
+    "hidden_gamma_mass": 0.8206644506471236,
+    "hidden_argmax_state": 26,
+    "hidden_argmax_coord": [
+      3,
+      7
+    ],
+    "hidden_argmax_prob": 0.9999999999999994,
+    "soft_cost": 0.6676582215190286,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6552799465478026,
+    "model_residual": 0.8484203945928543,
+    "residual_reward_abs": 1.3853609179508917,
+    "residual_gamma_l1": 0.7791523486953098,
+    "residual_hit_l1": 0.9999999999999994,
+    "residual_hidden_mass": 0.9999999999999998,
+    "residual_hidden_gamma_mass": 0.8207131762338362,
+    "residual_argmax_state": 26,
+    "residual_argmax_coord": [
+      3,
+      7
+    ],
+    "residual_argmax_prob": 0.9996759388772498,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_000_to_002",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0000000000000004,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": 26,
+    "hidden_argmax_coord": [
+      3,
+      7
+    ],
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.00018265072057415448,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 0.00018265072057415448,
+    "model_residual": 0.10144775077261481,
+    "residual_reward_abs": 0.28537911057351106,
+    "residual_gamma_l1": 0.08717879524393926,
+    "residual_hit_l1": 0.09972453246689328,
+    "residual_hidden_mass": 0.000324061122749875,
+    "residual_hidden_gamma_mass": 0.00028205274396991495,
+    "residual_argmax_state": 41,
+    "residual_argmax_coord": [
+      5,
+      1
+    ],
+    "residual_argmax_prob": 0.000303270258409239,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_001_to_002",
+    "src_state": 24,
+    "src_coord": [
+      3,
+      5
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": false,
+    "visible_mass": 4.394861634310756e-10,
+    "hidden_mass": 0.9999999995605137,
+    "hidden_gamma_mass": 0.9358446861315065,
+    "hidden_argmax_state": 26,
+    "hidden_argmax_coord": [
+      3,
+      7
+    ],
+    "hidden_argmax_prob": 0.9999999995605137,
+    "soft_cost": 9.34785184515909e-09,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 9.34785184515909e-09,
+    "model_residual": 1.037653386258505,
+    "residual_reward_abs": 5.086929072152278,
+    "residual_gamma_l1": 0.783306932650891,
+    "residual_hit_l1": 0.9999999995932509,
+    "residual_hidden_mass": 0.999999999593251,
+    "residual_hidden_gamma_mass": 0.9359148048154595,
+    "residual_argmax_state": 26,
+    "residual_argmax_coord": [
+      3,
+      7
+    ],
+    "residual_argmax_prob": 0.9993945057345781,
+    "reward": -2.138510450303426,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 24,
+    "src_coord": [
+      3,
+      5
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999997,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 5.4771001686652154e-08,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 5.4771001686652154e-08,
+    "model_residual": 0.9751879128316419,
+    "residual_reward_abs": 3.4582601528503205,
+    "residual_gamma_l1": 0.8022749051891258,
+    "residual_hit_l1": 0.9664567319274437,
+    "residual_hidden_mass": 0.9664271847097834,
+    "residual_hidden_gamma_mass": 0.9059966779329903,
+    "residual_argmax_state": 4,
+    "residual_argmax_coord": [
+      1,
+      5
+    ],
+    "residual_argmax_prob": 0.9661298250649621,
+    "reward": -5.946006119837077,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_000",
+    "src_state": 26,
+    "src_coord": [
+      3,
+      7
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.0049103168510595e-05,
+    "soft_argmax_state": 47,
+    "soft_argmax_coord": [
+      5,
+      8
+    ],
+    "soft_argmax_score": 9.706334125492793e-06,
+    "model_residual": 0.1266632273588539,
+    "residual_reward_abs": 0.13090482578222495,
+    "residual_gamma_l1": 0.12011798606974267,
+    "residual_hit_l1": 0.13215312601748372,
+    "residual_hidden_mass": 0.000605493858672945,
+    "residual_hidden_gamma_mass": 0.0005669460818013027,
+    "residual_argmax_state": 46,
+    "residual_argmax_coord": [
+      5,
+      7
+    ],
+    "residual_argmax_prob": 0.0003027467259618634,
+    "reward": -2.138510450303426,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_000",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999994,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.6676582215190286,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6552799465478026,
+    "model_residual": 0.10144775077261464,
+    "residual_reward_abs": 0.2853791105735075,
+    "residual_gamma_l1": 0.08717879524393926,
+    "residual_hit_l1": 0.09972453246689339,
+    "residual_hidden_mass": 0.0003240611227498748,
+    "residual_hidden_gamma_mass": 0.000282052743969915,
+    "residual_argmax_state": 9,
+    "residual_argmax_coord": [
+      1,
+      11
+    ],
+    "residual_argmax_prob": 0.00030327025840923885,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 24,
+    "target_coord": [
+      3,
+      5
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0000000000000004,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.00018265072057415448,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 0.00018265072057415448,
+    "model_residual": 0.10144775077261481,
+    "residual_reward_abs": 0.28537911057351106,
+    "residual_gamma_l1": 0.08717879524393926,
+    "residual_hit_l1": 0.09972453246689328,
+    "residual_hidden_mass": 0.000324061122749875,
+    "residual_hidden_gamma_mass": 0.00028205274396991495,
+    "residual_argmax_state": 41,
+    "residual_argmax_coord": [
+      5,
+      1
+    ],
+    "residual_argmax_prob": 0.000303270258409239,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_001",
+    "src_state": 26,
+    "src_coord": [
+      3,
+      7
+    ],
+    "target_state": 24,
+    "target_coord": [
+      3,
+      5
+    ],
+    "primitive_distance": 2.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.0049103168510595e-05,
+    "soft_argmax_state": 47,
+    "soft_argmax_coord": [
+      5,
+      8
+    ],
+    "soft_argmax_score": 9.706334125492793e-06,
+    "model_residual": 0.1266632273588539,
+    "residual_reward_abs": 0.13090482578222495,
+    "residual_gamma_l1": 0.12011798606974267,
+    "residual_hit_l1": 0.13215312601748372,
+    "residual_hidden_mass": 0.000605493858672945,
+    "residual_hidden_gamma_mass": 0.0005669460818013027,
+    "residual_argmax_state": 46,
+    "residual_argmax_coord": [
+      5,
+      7
+    ],
+    "residual_argmax_prob": 0.0003027467259618634,
+    "reward": -2.138510450303426,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_001",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 24,
+    "target_coord": [
+      3,
+      5
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999994,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.6676582215190286,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6552799465478026,
+    "model_residual": 0.10144775077261464,
+    "residual_reward_abs": 0.2853791105735075,
+    "residual_gamma_l1": 0.08717879524393926,
+    "residual_hit_l1": 0.09972453246689339,
+    "residual_hidden_mass": 0.0003240611227498748,
+    "residual_hidden_gamma_mass": 0.000282052743969915,
+    "residual_argmax_state": 9,
+    "residual_argmax_coord": [
+      1,
+      11
+    ],
+    "residual_argmax_prob": 0.00030327025840923885,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_002",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 26,
+    "target_coord": [
+      3,
+      7
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0000000000000004,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.00018265072057415448,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 0.00018265072057415448,
+    "model_residual": 0.10144775077261481,
+    "residual_reward_abs": 0.28537911057351106,
+    "residual_gamma_l1": 0.08717879524393926,
+    "residual_hit_l1": 0.09972453246689328,
+    "residual_hidden_mass": 0.000324061122749875,
+    "residual_hidden_gamma_mass": 0.00028205274396991495,
+    "residual_argmax_state": 41,
+    "residual_argmax_coord": [
+      5,
+      1
+    ],
+    "residual_argmax_prob": 0.000303270258409239,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_002",
+    "src_state": 24,
+    "src_coord": [
+      3,
+      5
+    ],
+    "target_state": 26,
+    "target_coord": [
+      3,
+      7
+    ],
+    "primitive_distance": 2.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999998,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 9.34785184515909e-09,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 9.34785184515909e-09,
+    "model_residual": 0.12666322735885388,
+    "residual_reward_abs": 0.1309048257822245,
+    "residual_gamma_l1": 0.12011798606974265,
+    "residual_hit_l1": 0.1321531260174842,
+    "residual_hidden_mass": 0.0006054938586729451,
+    "residual_hidden_gamma_mass": 0.0005669460818013026,
+    "residual_argmax_state": 45,
+    "residual_argmax_coord": [
+      5,
+      5
+    ],
+    "residual_argmax_prob": 0.0003027467259618635,
+    "reward": -2.138510450303426,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_003_to_002",
+    "src_state": 50,
+    "src_coord": [
+      5,
+      11
+    ],
+    "target_state": 26,
+    "target_coord": [
+      3,
+      7
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999994,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.6676582215190286,
+    "soft_argmax_state": 40,
+    "soft_argmax_coord": [
+      4,
+      11
+    ],
+    "soft_argmax_score": 0.6552799465478026,
+    "model_residual": 0.10144775077261464,
+    "residual_reward_abs": 0.2853791105735075,
+    "residual_gamma_l1": 0.08717879524393926,
+    "residual_hit_l1": 0.09972453246689339,
+    "residual_hidden_mass": 0.0003240611227498748,
+    "residual_hidden_gamma_mass": 0.000282052743969915,
+    "residual_argmax_state": 9,
+    "residual_argmax_coord": [
+      1,
+      11
+    ],
+    "residual_argmax_prob": 0.00030327025840923885,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_000_to_003",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 14.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0000000000000004,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 0.00018265072057415448,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 0.00018265072057415448,
+    "model_residual": 0.10144775077261481,
+    "residual_reward_abs": 0.28537911057351106,
+    "residual_gamma_l1": 0.08717879524393926,
+    "residual_hit_l1": 0.09972453246689328,
+    "residual_hidden_mass": 0.000324061122749875,
+    "residual_hidden_gamma_mass": 0.00028205274396991495,
+    "residual_argmax_state": 41,
+    "residual_argmax_coord": [
+      5,
+      1
+    ],
+    "residual_argmax_prob": 0.000303270258409239,
+    "reward": -5.977851645095878,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_003",
+    "src_state": 24,
+    "src_coord": [
+      3,
+      5
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 8.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999998,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 9.34785184515909e-09,
+    "soft_argmax_state": 42,
+    "soft_argmax_coord": [
+      5,
+      2
+    ],
+    "soft_argmax_score": 9.34785184515909e-09,
+    "model_residual": 0.12666322735885388,
+    "residual_reward_abs": 0.1309048257822245,
+    "residual_gamma_l1": 0.12011798606974265,
+    "residual_hit_l1": 0.1321531260174842,
+    "residual_hidden_mass": 0.0006054938586729451,
+    "residual_hidden_gamma_mass": 0.0005669460818013026,
+    "residual_argmax_state": 45,
+    "residual_argmax_coord": [
+      5,
+      5
+    ],
+    "residual_argmax_prob": 0.0003027467259618635,
+    "reward": -2.138510450303426,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_002_to_003",
+    "src_state": 26,
+    "src_coord": [
+      3,
+      7
+    ],
+    "target_state": 50,
+    "target_coord": [
+      5,
+      11
+    ],
+    "primitive_distance": 6.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0000000000000002,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 1.830496678282954,
+    "soft_argmax_state": 47,
+    "soft_argmax_coord": [
+      5,
+      8
+    ],
+    "soft_argmax_score": 0.6335449604052737,
+    "model_residual": 0.9751879128316416,
+    "residual_reward_abs": 3.4582601528503196,
+    "residual_gamma_l1": 0.8022749051891257,
+    "residual_hit_l1": 0.9664567319274435,
+    "residual_hidden_mass": 0.9664271847097837,
+    "residual_hidden_gamma_mass": 0.9059966779329901,
+    "residual_argmax_state": 46,
+    "residual_argmax_coord": [
+      5,
+      7
+    ],
+    "residual_argmax_prob": 0.9661298250649626,
+    "reward": -5.946006119837075,
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 80,
+    "src_coord": [
+      7,
+      19
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 36.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 4.309620929135694,
+    "soft_argmax_state": 63,
+    "soft_argmax_coord": [
+      6,
+      19
+    ],
+    "soft_argmax_score": 0.97,
+    "model_residual": 1.345481558749936,
+    "residual_reward_abs": 20.229077937496825,
+    "residual_gamma_l1": 0.3340276618750948,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.9409,
+    "residual_argmax_state": 57,
+    "residual_argmax_coord": [
+      5,
+      19
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -22.199077937496824,
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 80,
+    "target_coord": [
+      7,
+      19
+    ],
+    "primitive_distance": 36.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 1.0,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 2.0661504858253283,
+    "soft_argmax_state": 77,
+    "soft_argmax_coord": [
+      7,
+      16
+    ],
+    "soft_argmax_score": 0.34435841430422154,
+    "model_residual": 1.3454815587499362,
+    "residual_reward_abs": 20.22907793749683,
+    "residual_gamma_l1": 0.33402766187509486,
+    "residual_hit_l1": 1.0,
+    "residual_hidden_mass": 1.0,
+    "residual_hidden_gamma_mass": 0.9409,
+    "residual_argmax_state": 23,
+    "residual_argmax_coord": [
+      3,
+      1
+    ],
+    "residual_argmax_prob": 1.0,
+    "reward": -22.199077937496824,
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0
+  },
+  {
+    "option": "fb_001_to_000",
+    "src_state": 80,
+    "src_coord": [
+      7,
+      19
+    ],
+    "target_state": 0,
+    "target_coord": [
+      1,
+      1
+    ],
+    "primitive_distance": 36.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.999999999999997,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 2.969813937889218,
+    "soft_argmax_state": 63,
+    "soft_argmax_coord": [
+      6,
+      19
+    ],
+    "soft_argmax_score": 1.017021309114977,
+    "model_residual": 1.3328148050908424,
+    "residual_reward_abs": 19.794144024558808,
+    "residual_gamma_l1": 0.3431076038629019,
+    "residual_hit_l1": 0.999999999999997,
+    "residual_hidden_mass": 0.9999999999999998,
+    "residual_hidden_gamma_mass": 0.9369319245996661,
+    "residual_argmax_state": 57,
+    "residual_argmax_coord": [
+      5,
+      19
+    ],
+    "residual_argmax_prob": 0.9827638342908979,
+    "reward": -23.006627682363693,
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0
+  },
+  {
+    "option": "fb_000_to_001",
+    "src_state": 0,
+    "src_coord": [
+      1,
+      1
+    ],
+    "target_state": 80,
+    "target_coord": [
+      7,
+      19
+    ],
+    "primitive_distance": 36.0,
+    "within_horizon": true,
+    "edge_valid": true,
+    "visible_mass": 0.9999999999999956,
+    "hidden_mass": 0.0,
+    "hidden_gamma_mass": 0.0,
+    "hidden_argmax_state": null,
+    "hidden_argmax_coord": null,
+    "hidden_argmax_prob": 0.0,
+    "soft_cost": 3.334608285737951,
+    "soft_argmax_state": 47,
+    "soft_argmax_coord": [
+      5,
+      7
+    ],
+    "soft_argmax_score": 0.5747410106607281,
+    "model_residual": 1.332813138330618,
+    "residual_reward_abs": 19.794060686547596,
+    "residual_gamma_l1": 0.3431101040032383,
+    "residual_hit_l1": 0.999999999999997,
+    "residual_hidden_mass": 0.9999999999999998,
+    "residual_hidden_gamma_mass": 0.9369319245996663,
+    "residual_argmax_state": 23,
+    "residual_argmax_coord": [
+      3,
+      1
+    ],
+    "residual_argmax_prob": 0.9827638342908979,
+    "reward": -23.006540118862866,
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0
+  }
+]

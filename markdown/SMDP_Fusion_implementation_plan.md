@@ -646,3 +646,541 @@ weighted objective:
 我自己的判断是：下一步不能只调 lambda。应该实现一个 `candidate_boundary_targeted`
 或 `bypass_gated_targeted` option set，让 option 不能穿过 `B0` 中的第三个 candidate boundary。
 否则 multi-objective 会一直在“强 global option 很省 graph node”和“local graph 应该暴露结构”之间摇摆。
+
+## 12. first-candidate-boundary targeted 结果
+
+根据 `GPT_answer_2.md` 的建议，我实现了 pair-specific first-boundary option：
+
+```text
+experiments/run_first_boundary_targeted.py
+```
+
+语义是：
+
+```text
+给定 current boundary B 和 candidate boundary B0
+对每个 pair (b -> g):
+  policy 仍然朝 g 走
+  但 termination 是 first hit of B0 \ {b}
+
+如果 first terminal 在 B0 \ B:
+  当前 edge invalid
+  hidden terminal 作为 split_candidate
+```
+
+每条 edge 都输出：
+
+```text
+hidden_mass
+hidden_gamma_mass
+hidden_argmax_state / hidden_argmax_coord
+edge_valid
+split_candidate
+```
+
+输出目录：
+
+```text
+experiments/output/first_boundary_targeted_bottleneck/
+experiments/output/first_boundary_targeted_turn_articulation/
+experiments/output/first_boundary_targeted_turn_articulation_maze35/
+```
+
+### 12.1 bottleneck as hard B0
+
+如果直接把上一轮 `bottleneck` saliency 当 hard `B0`，结果是：
+
+```text
+corridor:
+  B = 2
+
+open_room:
+  B = 7
+
+four_rooms:
+  B = 6 deterministic, B = 10 with slip
+
+maze:
+  B = 13
+```
+
+这个和 pure bypass 很接近，说明：
+
+```text
+把 betweenness/bottleneck saliency 直接升级成 hard constraint 会让 open_room 过拆。
+```
+
+这验证了 GPT 的 hard/soft 分层建议：`bottleneck` 里有一部分应该是 soft saliency，
+不能全部当 hard boundary。
+
+### 12.2 turn_articulation as hard B0
+
+我又加了一个更硬的 candidate selector：
+
+```text
+turn_articulation:
+  endpoints
+  + articulation points that are not straight corridor states
+  + degree-2 turns
+```
+
+第一轮结果：
+
+```text
+corridor:
+  B = 2
+
+open_room:
+  B = 4
+  start_gap deterministic = 0
+  start_gap slip=0.05 ~= 0.0788
+
+four_rooms:
+  B = 6 deterministic
+  B = 10 slip=0.05
+
+maze:
+  max_splits=20 时还没清零 hidden crossing
+```
+
+然后我单独把 maze 跑到 `max_splits=35`：
+
+```text
+maze deterministic:
+  B = 26, hidden_mass_max = 0, start_gap ~= 0
+
+maze slip=0.05:
+  B = 30, hidden_mass_max = 0, start_gap ~= 0
+```
+
+这一步的解释：
+
+```text
+first-boundary targeted 成功把 hidden-cross 从 soft cost 变成 hard legality；
+只要某个 edge 会先撞到 B0 \ B，它就不能被当前 graph 当作合法 edge。
+```
+
+它也让退化解更清楚：
+
+```text
+endpoints + global_targeted:
+  低 gap，但 edge 会穿过 hidden B0，因此 infeasible。
+
+first-boundary targeted:
+  初始 endpoints graph 通常 infeasible；
+  必须逐步 split 到没有 hidden-cross，才得到合法 SMDP graph。
+```
+
+现在比较清楚的下一步是：
+
+```text
+保留 B0_hard = turn_articulation
+保留 B0_soft = bottleneck/value_gradient/transition_entropy
+
+edge validity:
+  hidden_cross over B0_hard -> invalid
+  hidden_cross / occupancy over B0_soft -> penalty + split priority
+```
+
+这样 open_room 不会因为 soft betweenness 过度拆，
+maze/four_rooms 又能通过 hard first-boundary 约束杀掉 “one option solves the whole maze”。
+
+## 13. hard/soft hybrid 结果
+
+我把 `run_first_boundary_targeted.py` 扩展成 hybrid 模式：
+
+```text
+B0_hard:
+  candidate_kind = turn_articulation
+
+B0_soft:
+  soft_kind = combined
+  combined = bottleneck/value_gradient/transition_entropy
+
+split:
+  hard hidden-cross -> split
+  soft saliency -> penalty/report only
+```
+
+运行命令：
+
+```text
+python3 experiments/run_first_boundary_targeted.py \
+  --candidate-kind turn_articulation \
+  --soft-kind combined \
+  --soft-split-policy never \
+  --slips 0.0 0.05 \
+  --max-splits 30 \
+  --out-dir experiments/output/first_boundary_hybrid_turn_soft_combined
+```
+
+输出：
+
+```text
+experiments/output/first_boundary_hybrid_turn_soft_combined/
+```
+
+最终行：
+
+```text
+corridor:
+  B = 2
+  hidden_mass_max = 0
+
+open_room:
+  B = 4
+  hidden_mass_max = 0
+  soft_cost_valid_total ~= 7.37 deterministic, 8.26 slip=0.05
+
+four_rooms:
+  B = 6 deterministic
+  B = 10 slip=0.05
+  hidden_mass_max = 0
+
+maze:
+  B = 26 deterministic
+  B = 30 slip=0.05
+  hidden_mass_max = 0
+  soft_cost_valid_total ~= 158 deterministic, 293 slip=0.05
+```
+
+这轮正好得到我们想要的区分：
+
+```text
+hard B0 决定合法性：
+  option 不能穿过 turn/articulation 后仍声称是当前 graph 的 direct edge。
+
+soft B0 决定代价和诊断：
+  value-gradient / transition-entropy / betweenness 不再强迫 open_room 继续 split。
+```
+
+我还修正了 first-boundary targeted 的 MDL 计费：
+
+```text
+pair-specific model / edge interface:
+  按 n_pair_options 计费
+
+internal policy library:
+  按 target-policy library 计费
+```
+
+原因是 pair-specific reduction 的 terminal set 依赖 source-target pair，
+但内部 shortest-path policy 是按 target 共享的；如果把 policy complexity 也按 pair 重复加总，
+会严重高估 first-boundary option 的描述长度。
+
+当前剩下的关键问题：
+
+```text
+maze 的 hard-feasible graph 仍然偏大：
+  deterministic B=26
+  slip B=30
+```
+
+这说明 `turn_articulation` 作为 hard B0 可能还是过细，尤其在 maze 里把很多普通转角都变成了必须显式暴露的 graph node。
+下一步应该比较几种 hard B0：
+
+```text
+articulation_only:
+  只把真正割点/门作为 hard boundary
+
+turn_articulation:
+  割点 + 转角
+
+learned_hard:
+  只把会造成 high hidden-cross + high planning gap 的 candidate 升级成 hard
+```
+
+我的判断是，最终版本应该是：
+
+```text
+hard:
+  terminal / reward / reset / true bottleneck / high rollout residual
+
+soft:
+  turn / betweenness / value-gradient / transition-entropy
+```
+
+也就是说，turn 不应该天然 hard；它应该先是 soft，只有在 rollout residual 或 SMDP inconsistency 证明它必须被暴露时才升级。
+
+## 14. hard B0 对比与 learned_hard 初版
+
+我继续把 hard candidate selector 加成了：
+
+```text
+articulation_only:
+  endpoints
+  + articulation points that are not straight corridor states
+
+turn_articulation:
+  endpoints
+  + articulation points that are not straight corridor states
+  + degree-2 turns
+```
+
+并把 `learned_hard` 先实现成一个可跑的近似：
+
+```text
+initial hard B0 = articulation_only
+soft saliency = combined
+if max per-edge soft_cost > threshold:
+  promote soft_argmax to boundary
+  from then on it becomes an effective first-boundary terminal
+```
+
+对应输出：
+
+```text
+experiments/output/first_boundary_hybrid_articulation_soft_combined/
+experiments/output/first_boundary_learned_hard_soft2/
+experiments/output/first_boundary_learned_hard_soft3/
+experiments/output/first_boundary_learned_hard_soft4/
+experiments/output/first_boundary_hybrid_turn_soft_combined/
+```
+
+最终比较：
+
+```text
+articulation_only:
+  open_room: B=2
+  four_rooms: B=4
+  maze: B=2
+
+learned_hard, soft_threshold=2:
+  open_room: B=2 deterministic, B=5 slip=0.05
+  four_rooms: B=4
+  maze: B=7 deterministic, B=9 slip=0.05
+
+learned_hard, soft_threshold=3:
+  open_room: B=2 deterministic, B=3 slip=0.05
+  four_rooms: B=4
+  maze: B=4 deterministic, B=7 slip=0.05
+
+learned_hard, soft_threshold=4:
+  open_room: B=2
+  four_rooms: B=4
+  maze: B=3 deterministic, B=2 slip=0.05
+
+turn_articulation:
+  open_room: B=4
+  four_rooms: B=6 deterministic, B=10 slip=0.05
+  maze: B=26 deterministic, B=30 slip=0.05
+```
+
+这组结果很有信息量：
+
+1. `turn_articulation` 作为 hard B0 明显过细，尤其在 maze 里把几乎所有转角都强制暴露。
+2. `articulation_only` 作为 hard B0 又太宽，maze 退回 `B=2`，说明它没有杀掉 global targeted 的隐藏规划。
+3. `learned_hard` 介于二者之间，尤其 `soft_threshold=3` 当前看起来最合理：
+
+```text
+open_room:
+  deterministic 不拆，slip=0.05 只加一个 soft point
+
+four_rooms:
+  只保留两个门点，B=4
+
+maze:
+  deterministic B=4
+  slip=0.05 B=7
+```
+
+`learned_hard soft3` 选出的新增点：
+
+```text
+open_room slip=0.05:
+  (5,3)
+
+four_rooms:
+  (3,7), (3,5)
+
+maze deterministic:
+  (6,19), (5,19)
+
+maze slip=0.05:
+  (5,7), (7,18), (7,17), (7,9), (7,16)
+```
+
+注意一个读数细节：
+
+```text
+soft split 是按 per-edge soft_cost_max 触发；
+soft_cost_valid_total 可能在 split 后上升。
+```
+
+原因是加 boundary 会增加 pair-specific edges，因此 total soft exposure 不是单调量。
+这和之前 pure bypass 的非单调现象一致。选择 split 时更应该看：
+
+```text
+per-edge violation
+occupancy-weighted violation
+feasible Pareto front
+held-out residual
+```
+
+而不是要求 total soft cost 每步下降。
+
+当前最清楚的下一步：
+
+```text
+把 learned_hard 的触发条件从 raw soft_cost_max
+替换成:
+
+  hinge(max_edge_soft_cost - epsilon_soft)
+  + rollout/model residual
+  + SMDP consistency residual
+
+并报告 feasible Pareto front：
+  hard hidden-cross = 0
+  max soft violation <= threshold
+  planning gap <= epsilon
+  minimal MDL
+```
+
+如果暂时还没有 sample-based rollout residual，下一步可以先做一个 deterministic oracle residual：
+
+```text
+比较 pair-specific first-boundary edge model
+和 global targeted edge model
+在同一 source-target 上的 terminal distribution / reward 差异。
+```
+
+这个 residual 会直接量化“global option 到底隐藏了多少 first-boundary 结构”。
+
+## 15. Edge-model residual: 用模型差异替代 raw soft cost
+
+我把上面的 deterministic oracle residual 做进了
+`experiments/run_first_boundary_targeted.py`。现在每条 pair-specific edge
+都会同时算两个模型：
+
+```text
+global targeted edge:
+  policy = shortest path to target
+  absorbing = target only
+  reduce onto current boundary B
+
+first-boundary diagnostic edge:
+  policy = same shortest path to target
+  absorbing = residual candidate boundary B_res
+  project first-hit terminal distribution back onto current B
+```
+
+然后比较两者在同一个 `(source, target)` 上的 terminal model：
+
+```text
+model_residual =
+  ||Gamma_global(source, :) - Gamma_first_boundary_to_B(source, :)||_1
+  + 0.05 * |R_global(source) - R_first_boundary(source)|
+```
+
+一开始只用 discounted terminal distribution 的 L1 residual，但是 maze
+里的长路径被 `gamma^tau` 压得太厉害，反而没有稳定区分出来。因此加了一个
+小权重的 reward residual。这个 reward residual 在当前 gridworld 里近似记录
+global option 比 first-boundary model 多隐藏了多少步。
+
+新增参数：
+
+```text
+--residual-kind
+--residual-top-fraction
+--residual-threshold
+--residual-reward-weight
+--residual-hit-weight
+--residual-split-policy {never,threshold}
+```
+
+当前最有信息量的三组输出：
+
+```text
+diagnostic only:
+  experiments/output/edge_model_residual_turn_diagnostic/
+
+residual threshold = 1.0:
+  experiments/output/edge_model_residual_learned_threshold1/
+
+residual threshold = 1.2:
+  experiments/output/edge_model_residual_learned_threshold12/
+
+residual threshold = 1.1 / 1.3:
+  experiments/output/edge_model_residual_learned_threshold11/
+  experiments/output/edge_model_residual_learned_threshold13/
+
+raw soft3 with residual diagnostics:
+  experiments/output/first_boundary_learned_hard_soft3_with_residual/
+```
+
+关键对比：
+
+```text
+raw soft3:
+  open_room slip=0.00  B=2
+  open_room slip=0.05  B=3
+  four_rooms           B=4
+  maze slip=0.00       B=4, residual_max=1.345
+  maze slip=0.05       B=7, residual_max=1.313
+
+residual threshold = 1.2:
+  open_room            B=2
+  four_rooms           B=4
+  maze                 B=14, residual_max<1.2
+
+residual threshold = 1.3:
+  open_room            B=2
+  four_rooms           B=4
+  maze slip=0.00       B=10, residual_max=1.284
+  maze slip=0.05       B=6,  residual_max=1.299
+
+residual threshold = 1.1:
+  open_room            B=2
+  four_rooms           B=4
+  maze slip=0.00       B=21, residual_max=1.077
+  maze slip=0.05       B=18, residual_max=1.096
+```
+
+这个结果比 raw soft 更符合现在的目标。raw soft3 看起来 compact，但是 residual
+诊断显示 maze 里仍有 `model_residual_max > 1.3` 的 global option；也就是说
+它还在隐藏 first-boundary 结构。另一方面，`turn_articulation` 作为 hard B0
+会把 open/four_rooms/maze 都拆得太细。`residual_threshold=1.2` 目前正好介于
+二者之间：不拆 open room，不把 four_rooms 拆过头，但会继续拆 maze 里的长隐藏
+边界。
+
+补充 sweep 后可以更准确地说：当前 knee 在 `epsilon_residual=1.2~1.3`。
+`1.1` 已经明显过细；`1.3` 更 compact，但 deterministic maze 仍要拆到 `B=10`，
+说明 residual 确实在惩罚 raw soft3 没看到的隐藏边界。接下来应该把 `1.2` 和
+`1.3` 都保留为 Pareto candidates，而不是过早固定一个阈值。
+
+需要注意：
+
+```text
+model_residual_valid_total 不是单调优化目标。
+```
+
+因为加 boundary 会增加 pair-specific edges，总 residual 可能上升。当前更适合
+把 residual 当作 per-edge constraint：
+
+```text
+hidden_mass_max = 0
+model_residual_max <= epsilon_residual
+planning gap <= epsilon_value
+在满足这些约束后最小化 MDL / graph size
+```
+
+下一步不应该再问“total residual 是否每一步下降”，而应该做 Pareto sweep：
+
+```text
+epsilon_residual in [0.9, 1.0, 1.1, 1.2, 1.3]
+compare:
+  B size
+  model_residual_max
+  start/value gap
+  held-out target residual
+  graph readability
+```
+
+这一步已经足够拿给 GPT 反驳/质询：为什么这个 residual 不是在重新发明 heuristic
+bottleneck，而是真的在逼近“global option 隐藏的 first-boundary model error”。
+我会优先让它攻击两个点：
+
+```text
+1. first-boundary diagnostic boundary B_res 是否本身带入了 heuristic bias？
+2. residual threshold 是否应该按 task/discount/option duration 归一化？
+```

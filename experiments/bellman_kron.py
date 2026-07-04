@@ -101,6 +101,15 @@ class BellmanKronReduction:
     expected_tau: np.ndarray
 
 
+@dataclass(frozen=True)
+class FirstHitReduction:
+    terminals: np.ndarray
+    gamma_terminal: np.ndarray
+    reward: float
+    hit_probability: np.ndarray
+    expected_tau: np.ndarray
+
+
 def default_map() -> Tuple[str, ...]:
     return (
         "#####################",
@@ -581,6 +590,94 @@ def discounted_interior_occupancy(
     P_II = P[np.ix_(I, I)]
     occupancy = gamma * P_BI @ _solve_or_pinv(np.eye(len(I)) - gamma * P_II, np.eye(len(I)))
     return B, I, occupancy
+
+
+def first_hit_reduce(
+    P: np.ndarray,
+    r: np.ndarray,
+    start_state: State,
+    terminals: Sequence[State],
+    gamma: float,
+) -> FirstHitReduction:
+    """Reduce a process from one start state to the first hit of a terminal set."""
+
+    n = P.shape[0]
+    T = np.array(sorted(set(terminals)), dtype=int)
+    if start_state in set(T.tolist()):
+        raise ValueError("start_state must not be in terminals.")
+    if len(T) == 0:
+        return FirstHitReduction(
+            terminals=T,
+            gamma_terminal=np.zeros(0, dtype=float),
+            reward=0.0,
+            hit_probability=np.zeros(0, dtype=float),
+            expected_tau=np.zeros(0, dtype=float),
+        )
+
+    terminal_set = set(T.tolist())
+    I = np.array([s for s in range(n) if s not in terminal_set], dtype=int)
+    start_pos = int(np.flatnonzero(I == start_state)[0])
+    P_II = P[np.ix_(I, I)]
+    P_IT = P[np.ix_(I, T)]
+    r_I = r[I]
+
+    N_gamma = _solve_or_pinv(np.eye(len(I)) - gamma * P_II, np.eye(len(I)))
+    reward = float((N_gamma @ r_I)[start_pos])
+    gamma_terminal = gamma * N_gamma @ P_IT
+
+    N_one = _solve_or_pinv(np.eye(len(I)) - P_II, np.eye(len(I)))
+    hit_probability = N_one @ P_IT
+    dgamma_at_one = N_one @ P_IT + N_one @ P_II @ N_one @ P_IT
+    expected_tau = np.divide(
+        dgamma_at_one,
+        hit_probability,
+        out=np.full_like(dgamma_at_one, np.nan),
+        where=hit_probability > 1e-12,
+    )
+
+    return FirstHitReduction(
+        terminals=T,
+        gamma_terminal=gamma_terminal[start_pos],
+        reward=reward,
+        hit_probability=hit_probability[start_pos],
+        expected_tau=expected_tau[start_pos],
+    )
+
+
+def first_hit_interior_occupancy(
+    P: np.ndarray,
+    start_state: State,
+    terminals: Sequence[State],
+    gamma: float,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Return I and discounted occupancy over non-terminal states after leaving start."""
+
+    n = P.shape[0]
+    terminal_set = set(terminals)
+    if start_state in terminal_set:
+        raise ValueError("start_state must not be in terminals.")
+    I = np.array([s for s in range(n) if s not in terminal_set], dtype=int)
+    if len(I) == 0:
+        return I, np.zeros(0, dtype=float)
+    P_sI = P[np.ix_([start_state], I)]
+    P_II = P[np.ix_(I, I)]
+    occupancy = gamma * P_sI @ _solve_or_pinv(np.eye(len(I)) - gamma * P_II, np.eye(len(I)))
+    return I, occupancy[0]
+
+
+def first_hit_expected_interior_cost(
+    P: np.ndarray,
+    start_state: State,
+    terminals: Sequence[State],
+    gamma: float,
+    state_cost: np.ndarray,
+) -> float:
+    """Expected discounted interior cost before first terminal hit from one start."""
+
+    interior, occupancy = first_hit_interior_occupancy(P, start_state, terminals, gamma)
+    if len(interior) == 0:
+        return 0.0
+    return float(occupancy @ state_cost[interior])
 
 
 def expected_discounted_interior_cost(
