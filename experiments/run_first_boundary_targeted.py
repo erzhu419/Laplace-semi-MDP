@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -207,6 +208,27 @@ def normalize_structural_prob(p_hidden: float, p_ref_upper: float) -> float:
 
 def structural_bits(p_norm: float, eps: float = 1e-12) -> float:
     return float(-np.log2(max(eps, 1.0 - p_norm)))
+
+
+def log2_comb(n: int, k: int) -> float:
+    if k < 0 or k > n:
+        return float("inf")
+    if k == 0 or k == n:
+        return 0.0
+    return float((math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)) / math.log(2.0))
+
+
+def boundary_code_bits(n_states: int, n_boundary: int, n_fixed: int = 2) -> float:
+    available = max(0, n_states - n_fixed)
+    selected = max(0, n_boundary - n_fixed)
+    return log2_comb(available, selected) + math.log2(max(2, selected + 1))
+
+
+def edge_code_bits(n_boundary: int, n_edges_valid: int) -> float:
+    possible = max(0, n_boundary * max(0, n_boundary - 1))
+    if possible == 0:
+        return 0.0
+    return log2_comb(possible, min(n_edges_valid, possible))
 
 
 def build_first_boundary_reductions(
@@ -616,6 +638,12 @@ def build_first_boundary_reductions(
         "struct_hidden_distinct_max": float(
             max((float(row["struct_hidden_distinct"]) for row in edge_rows), default=0.0)
         ),
+        "struct_hidden_distinct_bits_valid_total": float(
+            sum(float(row["struct_hidden_distinct_bits"]) for row in edge_rows if bool(row["edge_valid"]))
+        ),
+        "struct_hidden_distinct_bits_max": float(
+            max((float(row["struct_hidden_distinct_bits"]) for row in edge_rows), default=0.0)
+        ),
         "struct_nohit_prob_max": float(max((float(row["struct_nohit_prob"]) for row in edge_rows), default=0.0)),
         "beta_global": float(max((float(row["beta_row"]) for row in edge_rows), default=0.0)),
         "l_gamma_row_max": float(max((float(row["l_gamma_row"]) for row in edge_rows), default=0.0)),
@@ -715,6 +743,80 @@ def choose_mdl_struct_split(
     return int(state), gain, float(benefit), split_cost
 
 
+def ranked_struct_proposal_states(edge_rows: Sequence[Mapping[str, object]]) -> List[Tuple[int, float]]:
+    benefit_by_state: Dict[int, float] = defaultdict(float)
+    for row in edge_rows:
+        if not bool(row["edge_valid"]):
+            continue
+        raw_scores = row.get("struct_distinct_scores", "{}")
+        try:
+            scores = json.loads(str(raw_scores))
+        except json.JSONDecodeError:
+            scores = {}
+        edge_exposure = float(row.get("struct_hidden_distinct", 0.0))
+        for state, score in scores.items():
+            benefit_by_state[int(state)] += edge_exposure * float(score)
+    return sorted(benefit_by_state.items(), key=lambda item: item[1], reverse=True)
+
+
+def mdl_code_length(
+    row: Mapping[str, object],
+    edge_rows: Sequence[Mapping[str, object]],
+    struct_kind: str,
+    option_pair_bit_cost: float,
+    policy_tv_bit_cost: float,
+    policy_region_bit_cost: float,
+    model_residual_bit_cost: float,
+    include_edge_encoding: bool,
+) -> float:
+    n_boundary = int(row["n_boundary"])
+    n_edges_valid = int(row["n_edges_valid"])
+    if struct_kind == "occupancy_distinct":
+        struct_bits = float(row.get("occupancy_struct_hidden_distinct", 0.0))
+    elif struct_kind == "occupancy_distinct_bits":
+        struct_bits = float(row.get("occupancy_struct_hidden_distinct_bits", 0.0))
+    elif struct_kind == "distinct_bits":
+        struct_bits = float(row.get("struct_hidden_distinct_bits_valid_total", 0.0))
+    elif struct_kind == "hidden_bits":
+        struct_bits = float(row.get("struct_hidden_bits_valid_total", 0.0))
+    else:
+        struct_bits = float(row.get("struct_hidden_distinct_valid_total", 0.0))
+
+    edge_bits = edge_code_bits(n_boundary, n_edges_valid) if include_edge_encoding else 0.0
+    return (
+        boundary_code_bits(int(row["n_states"]), n_boundary)
+        + edge_bits
+        + option_pair_bit_cost * float(row["n_pair_options"])
+        + policy_tv_bit_cost * float(row["target_policy_tv_total"])
+        + policy_region_bit_cost * float(row["target_policy_regions_total"])
+        + model_residual_bit_cost * float(row["model_residual_valid_total"])
+        + struct_bits
+    )
+
+
+def policy_boundary_occupancy(
+    reductions: Mapping[str, BellmanKronReduction],
+    policy_smdp: Sequence[str],
+    start_pos: int,
+    goal_pos: int,
+) -> np.ndarray:
+    n = len(policy_smdp)
+    P_pi = np.zeros((n, n), dtype=float)
+    for src_pos, action in enumerate(policy_smdp):
+        if src_pos == goal_pos or action not in reductions:
+            continue
+        P_pi[src_pos, :] = reductions[action].hit_probability[src_pos]
+    P_pi[goal_pos, :] = 0.0
+    eye = np.eye(n, dtype=float)
+    start = np.zeros(n, dtype=float)
+    start[start_pos] = 1.0
+    try:
+        occupancy = np.linalg.solve(eye - P_pi.T, start)
+    except np.linalg.LinAlgError:
+        occupancy = np.linalg.lstsq(eye - P_pi.T, start, rcond=None)[0]
+    return np.maximum(0.0, np.nan_to_num(occupancy, nan=0.0, posinf=0.0, neginf=0.0))
+
+
 def evaluate_boundary(
     map_name: str,
     grid: GridWorld,
@@ -780,6 +882,8 @@ def evaluate_boundary(
     value_gap_max = float("inf")
     start_value_smdp = float("nan")
     start_best_option = "INFEASIBLE"
+    policy_smdp: List[str] = []
+    occupancy_by_boundary = np.zeros(len(boundary), dtype=float)
     if start in boundary_to_pos and goal in boundary_to_pos:
         try:
             V_smdp, policy_smdp = smdp_value_iteration(
@@ -795,10 +899,39 @@ def evaluate_boundary(
             start_gap = float(abs(V_smdp[boundary_to_pos[start]] - V_full[start]))
             value_gap_max = float(value_gap[nonterminal].max()) if np.any(nonterminal) else 0.0
             start_best_option = policy_smdp[boundary_to_pos[start]]
+            occupancy_by_boundary = policy_boundary_occupancy(
+                reductions=reductions,
+                policy_smdp=policy_smdp,
+                start_pos=boundary_to_pos[start],
+                goal_pos=boundary_to_pos[goal],
+            )
         except ValueError:
             feasible = False
     else:
         feasible = False
+
+    occupancy_struct_hidden_distinct = 0.0
+    occupancy_struct_hidden_distinct_bits = 0.0
+    occupancy_model_residual = 0.0
+    occupancy_soft_cost = 0.0
+    occupancy_mass_total = 0.0
+    if feasible and len(policy_smdp) == len(boundary):
+        for edge_row in edge_rows:
+            src_state = int(edge_row["src_state"])
+            src_pos = boundary_to_pos.get(src_state)
+            if src_pos is None or src_pos >= len(policy_smdp):
+                continue
+            if str(edge_row["option"]) != str(policy_smdp[src_pos]) or not bool(edge_row["edge_valid"]):
+                continue
+            occ = float(occupancy_by_boundary[src_pos])
+            edge_row["policy_occupancy"] = occ
+            occupancy_mass_total += occ
+            occupancy_struct_hidden_distinct += occ * float(edge_row["struct_hidden_distinct"])
+            occupancy_struct_hidden_distinct_bits += occ * float(edge_row["struct_hidden_distinct_bits"])
+            occupancy_model_residual += occ * float(edge_row["model_residual"])
+            occupancy_soft_cost += occ * float(edge_row["soft_cost"])
+    for edge_row in edge_rows:
+        edge_row.setdefault("policy_occupancy", 0.0)
 
     pair_policy_metrics = policy_complexity_stats(grid, policies["pair"])
     target_policy_metrics = policy_complexity_stats(grid, policies["target"])
@@ -890,6 +1023,11 @@ def evaluate_boundary(
         "target_policy_regions_total": target_policy_metrics["policy_regions_total"],
         "target_policy_tv_mean": target_policy_metrics["policy_tv_mean"],
         "target_policy_regions_mean": target_policy_metrics["policy_regions_mean"],
+        "occupancy_mass_total": occupancy_mass_total,
+        "occupancy_struct_hidden_distinct": occupancy_struct_hidden_distinct,
+        "occupancy_struct_hidden_distinct_bits": occupancy_struct_hidden_distinct_bits,
+        "occupancy_model_residual": occupancy_model_residual,
+        "occupancy_soft_cost": occupancy_soft_cost,
         "hard_split_candidate_state": hard_split_state,
         "hard_split_candidate_coord": idx_to_coord[hard_split_state] if hard_split_state is not None else None,
         "hard_split_candidate_score": hard_split_score,
@@ -948,6 +1086,13 @@ def run_one(
     soft_split_policy: str,
     max_splits: int,
     proposal_kind: str = "candidate",
+    exact_mdl_top_k: int = 8,
+    exact_mdl_struct_kind: str = "occupancy_distinct",
+    exact_mdl_option_pair_bit_cost: float = 1.0,
+    exact_mdl_policy_tv_bit_cost: float = 0.2,
+    exact_mdl_policy_region_bit_cost: float = 0.5,
+    exact_mdl_model_residual_bit_cost: float = 1.0,
+    exact_mdl_include_edge_encoding: bool = False,
 ) -> Tuple[List[Dict[str, object]], List[Dict[str, object]]]:
     grid = GridWorld(rows)
     goal = grid.symbol_states("G")[0]
@@ -1037,6 +1182,93 @@ def run_one(
             edge_row.update({"map": map_name, "slip": slip, "step": step})
         trace.append(row)
         all_edges.extend(edge_rows)
+        _, idx_to_coord = grid.index_maps()
+
+        exact_mdl_split_state = None
+        exact_mdl_split_gain = 0.0
+        exact_mdl_base_bits = 0.0
+        exact_mdl_candidate_bits = 0.0
+        exact_mdl_candidates_evaluated = 0
+        if residual_split_policy == "exact_mdl":
+            ranked_candidates = [
+                state for state, _ in ranked_struct_proposal_states(edge_rows) if state not in set(boundary)
+            ]
+            if exact_mdl_top_k > 0:
+                ranked_candidates = ranked_candidates[:exact_mdl_top_k]
+            exact_mdl_base_bits = mdl_code_length(
+                row,
+                edge_rows,
+                struct_kind=exact_mdl_struct_kind,
+                option_pair_bit_cost=exact_mdl_option_pair_bit_cost,
+                policy_tv_bit_cost=exact_mdl_policy_tv_bit_cost,
+                policy_region_bit_cost=exact_mdl_policy_region_bit_cost,
+                model_residual_bit_cost=exact_mdl_model_residual_bit_cost,
+                include_edge_encoding=exact_mdl_include_edge_encoding,
+            )
+            search_bits = math.log2(max(2, len(ranked_candidates)))
+            best_candidate_bits = float("inf")
+            best_gain = -float("inf")
+            for candidate_state in ranked_candidates:
+                trial_boundary = sorted(set(boundary).union({int(candidate_state)}))
+                candidate_row, candidate_edges = evaluate_boundary(
+                    map_name=map_name,
+                    grid=grid,
+                    boundary=trial_boundary,
+                    candidate_boundary=candidate_boundary,
+                    residual_boundary=residual_boundary,
+                    soft_state_cost=soft_state_cost,
+                    slip=slip,
+                    gamma=gamma,
+                    local_horizon=local_horizon,
+                    hidden_threshold=hidden_threshold,
+                    soft_threshold=soft_threshold,
+                    residual_threshold=residual_threshold,
+                    residual_reward_weight=residual_reward_weight,
+                    residual_hit_weight=residual_hit_weight,
+                    residual_threshold_mode=residual_threshold_mode,
+                    compute_struct_distinct=compute_struct_distinct,
+                    struct_mdl_node_cost_weight=struct_mdl_node_cost_weight,
+                    struct_mdl_edge_cost_weight=struct_mdl_edge_cost_weight,
+                    struct_mdl_exposure_bit_weight=struct_mdl_exposure_bit_weight,
+                    struct_mdl_min_gain=struct_mdl_min_gain,
+                    residual_kind=residual_kind,
+                    residual_top_fraction=residual_top_fraction,
+                    soft_kind=soft_kind,
+                    soft_top_fraction=soft_top_fraction,
+                    soft_cost_weight=soft_cost_weight,
+                    candidate_kind=candidate_kind,
+                    candidate_top_fraction=candidate_top_fraction,
+                    proposal_boundary=proposal_boundary,
+                )
+                candidate_bits = mdl_code_length(
+                    candidate_row,
+                    candidate_edges,
+                    struct_kind=exact_mdl_struct_kind,
+                    option_pair_bit_cost=exact_mdl_option_pair_bit_cost,
+                    policy_tv_bit_cost=exact_mdl_policy_tv_bit_cost,
+                    policy_region_bit_cost=exact_mdl_policy_region_bit_cost,
+                    model_residual_bit_cost=exact_mdl_model_residual_bit_cost,
+                    include_edge_encoding=exact_mdl_include_edge_encoding,
+                ) + search_bits
+                gain = exact_mdl_base_bits - candidate_bits
+                exact_mdl_candidates_evaluated += 1
+                if gain > best_gain:
+                    exact_mdl_split_state = int(candidate_state)
+                    best_gain = float(gain)
+                    best_candidate_bits = float(candidate_bits)
+            if best_gain > struct_mdl_min_gain:
+                exact_mdl_split_gain = best_gain
+                exact_mdl_candidate_bits = best_candidate_bits
+            else:
+                exact_mdl_split_state = None
+                exact_mdl_split_gain = best_gain if np.isfinite(best_gain) else 0.0
+                exact_mdl_candidate_bits = best_candidate_bits if np.isfinite(best_candidate_bits) else 0.0
+        row["exact_mdl_split_candidate_state"] = exact_mdl_split_state
+        row["exact_mdl_split_candidate_coord"] = idx_to_coord[exact_mdl_split_state] if exact_mdl_split_state is not None else None
+        row["exact_mdl_split_gain"] = exact_mdl_split_gain
+        row["exact_mdl_base_bits"] = exact_mdl_base_bits
+        row["exact_mdl_candidate_bits"] = exact_mdl_candidate_bits
+        row["exact_mdl_candidates_evaluated"] = exact_mdl_candidates_evaluated
 
         split_state = row["hard_split_candidate_state"]
         split_source = "hard_hidden"
@@ -1049,6 +1281,10 @@ def run_one(
             split_state = row["struct_mdl_split_candidate_state"]
             split_score = row["struct_mdl_split_gain"]
             split_source = "residual_mdl"
+        if split_state is None and residual_split_policy == "exact_mdl":
+            split_state = row["exact_mdl_split_candidate_state"]
+            split_score = row["exact_mdl_split_gain"]
+            split_source = "residual_exact_mdl"
         if split_state is None and soft_split_policy == "threshold":
             split_state = row["soft_split_candidate_state"]
             split_score = row["soft_split_candidate_score"]
@@ -1056,7 +1292,6 @@ def run_one(
         row["split_candidate_state"] = split_state
         row["split_candidate_score"] = split_score if split_state is not None else 0.0
         row["split_candidate_source"] = split_source if split_state is not None else "none"
-        _, idx_to_coord = grid.index_maps()
         row["split_candidate_coord"] = idx_to_coord[int(split_state)] if split_state is not None else None
         if split_state is None:
             row["stop_reason"] = "hybrid_threshold"
@@ -1138,10 +1373,15 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
                 "struct_hidden_prob_max",
                 "struct_hidden_bits_valid_total",
                 "struct_hidden_distinct_valid_total",
+                "occupancy_struct_hidden_distinct",
                 "struct_mdl_split_benefit",
                 "struct_mdl_split_cost",
                 "struct_mdl_split_gain",
                 "struct_mdl_split_candidate_coord",
+                "exact_mdl_split_gain",
+                "exact_mdl_split_candidate_coord",
+                "exact_mdl_base_bits",
+                "exact_mdl_candidate_bits",
                 "residual_split_candidate_coord",
                 "soft_split_candidate_coord",
                 "feasible",
@@ -1175,9 +1415,14 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
                 "struct_hidden_prob_max",
                 "struct_hidden_bits_valid_total",
                 "struct_hidden_distinct_valid_total",
+                "occupancy_struct_hidden_distinct",
                 "struct_mdl_split_benefit",
                 "struct_mdl_split_cost",
                 "struct_mdl_split_gain",
+                "exact_mdl_split_gain",
+                "exact_mdl_base_bits",
+                "exact_mdl_candidate_bits",
+                "exact_mdl_candidates_evaluated",
                 "feasible",
                 "start_gap",
                 "split_candidate_coord",
@@ -1294,11 +1539,22 @@ def main() -> None:
     parser.add_argument("--compute-struct-distinct", action="store_true")
     parser.add_argument("--residual-reward-weight", type=float, default=0.05)
     parser.add_argument("--residual-hit-weight", type=float, default=0.0)
-    parser.add_argument("--residual-split-policy", choices=["never", "threshold", "mdl"], default="never")
+    parser.add_argument("--residual-split-policy", choices=["never", "threshold", "mdl", "exact_mdl"], default="never")
     parser.add_argument("--struct-mdl-node-cost-weight", type=float, default=1.0)
     parser.add_argument("--struct-mdl-edge-cost-weight", type=float, default=0.1)
     parser.add_argument("--struct-mdl-exposure-bit-weight", type=float, default=1.0)
     parser.add_argument("--struct-mdl-min-gain", type=float, default=0.0)
+    parser.add_argument("--exact-mdl-top-k", type=int, default=8)
+    parser.add_argument(
+        "--exact-mdl-struct-kind",
+        choices=["distinct", "distinct_bits", "hidden_bits", "occupancy_distinct", "occupancy_distinct_bits"],
+        default="occupancy_distinct",
+    )
+    parser.add_argument("--exact-mdl-option-pair-bit-cost", type=float, default=1.0)
+    parser.add_argument("--exact-mdl-policy-tv-bit-cost", type=float, default=0.2)
+    parser.add_argument("--exact-mdl-policy-region-bit-cost", type=float, default=0.5)
+    parser.add_argument("--exact-mdl-model-residual-bit-cost", type=float, default=1.0)
+    parser.add_argument("--exact-mdl-include-edge-encoding", action="store_true")
     parser.add_argument(
         "--soft-kind",
         choices=["none", "bottleneck", "betweenness", "value_gradient", "transition_entropy", "combined"],
@@ -1316,7 +1572,7 @@ def main() -> None:
     args.effective_compute_struct_distinct = (
         args.compute_struct_distinct
         or args.residual_threshold_mode == "struct_distinct"
-        or args.residual_split_policy == "mdl"
+        or args.residual_split_policy in {"mdl", "exact_mdl"}
     )
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -1354,6 +1610,13 @@ def main() -> None:
                 soft_split_policy=args.soft_split_policy,
                 max_splits=args.max_splits,
                 proposal_kind=args.proposal_kind,
+                exact_mdl_top_k=args.exact_mdl_top_k,
+                exact_mdl_struct_kind=args.exact_mdl_struct_kind,
+                exact_mdl_option_pair_bit_cost=args.exact_mdl_option_pair_bit_cost,
+                exact_mdl_policy_tv_bit_cost=args.exact_mdl_policy_tv_bit_cost,
+                exact_mdl_policy_region_bit_cost=args.exact_mdl_policy_region_bit_cost,
+                exact_mdl_model_residual_bit_cost=args.exact_mdl_model_residual_bit_cost,
+                exact_mdl_include_edge_encoding=args.exact_mdl_include_edge_encoding,
             )
             trace_rows.extend(trace)
             edge_rows.extend(edges)

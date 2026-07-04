@@ -2277,3 +2277,232 @@ MDL cost 现在可能低估了 residual/hidden improvement 的收益，
   lambda_hidden / edge_cost_weight / node_cost_weight
 看 proposal_eigen12 是否在某个合理权重下进入 Pareto frontier。
 ```
+
+## 21. GPT_answer_5 后续：exact ΔMDL 与 occupancy exposure
+
+`GPT_answer_5.md` 的核心反驳是：
+
+```text
+proposal-only eigen/coverage 降低 hidden/edge 不等于应该被 MDL 接受。
+MDL 应该比较完整 code length：
+  graph/boundary/edge/option cost + total 或 occupancy-weighted structural exposure。
+
+per-edge hidden 只能是 diagnostic。
+```
+
+本轮补了新增 reference：
+
+```text
+reference/papers/mdl_principle_coding_modeling_1998__minimum-description-length-principle-in-coding-and-modeling.pdf
+reference/gpt_answer_5_download_report.md
+```
+
+`GPT_answer_5.md` 里的其他 GitHub 链接都指回本仓库，没有新 repo。
+
+### 21.1 实现
+
+新增 exact MDL split mode：
+
+```text
+--residual-split-policy exact_mdl
+```
+
+它不再用：
+
+```text
+benefit(h) ~= edge_exposure * score - fixed split cost
+```
+
+而是对 top-k candidate 直接重算：
+
+```text
+L0 = mdl_bits(B)
+Lh = mdl_bits(B union {h}) + log2(|proposal candidates|)
+gain = L0 - Lh
+
+accept if max_h gain(h) > 0
+```
+
+当前 `mdl_bits` 包括：
+
+```text
+boundary_bits:
+  log2 C(|S|-|B_fixed|, |B|-|B_fixed|)
+
+edge_bits:
+  optional log2 C(|B|(|B|-1), n_edges_valid)
+
+option/policy/model terms:
+  option_pair_bit_cost * n_pair_options
+  policy_tv_bit_cost * target_policy_tv_total
+  policy_region_bit_cost * target_policy_regions_total
+  model_residual_bit_cost * model_residual_valid_total
+
+structural term:
+  total distinct / total bits / occupancy distinct / occupancy bits
+```
+
+同时新增了 occupancy-weighted structural diagnostics：
+
+```text
+occupancy_struct_hidden_distinct
+occupancy_struct_hidden_distinct_bits
+occupancy_model_residual
+occupancy_soft_cost
+```
+
+这个是按当前 abstract policy 实际使用的 edge 加权，而不是把 unused option
+library 全算进 data cost。
+
+### 21.2 strict exact MDL：会拒绝 maze split
+
+命令：
+
+```text
+python3 experiments/run_first_boundary_targeted.py \
+  --maps open_room four_rooms maze \
+  --slips 0.0 0.05 \
+  --candidate-kind articulation_only \
+  --residual-kind turn_articulation \
+  --residual-split-policy exact_mdl \
+  --proposal-kind candidate \
+  --exact-mdl-option-pair-bit-cost 0.25 \
+  --exact-mdl-policy-tv-bit-cost 0.2 \
+  --exact-mdl-policy-region-bit-cost 0.5 \
+  --exact-mdl-model-residual-bit-cost 1.0 \
+  --exact-mdl-struct-kind occupancy_distinct \
+  --exact-mdl-top-k 8 \
+  --soft-kind combined \
+  --soft-split-policy never \
+  --max-splits 20 \
+  --out-dir experiments/output/exact_mdl_strict_pair025
+```
+
+结果：
+
+```text
+open_room:
+  B=2
+
+four_rooms:
+  B=4
+
+maze:
+  B=2
+```
+
+maze step 0：
+
+```text
+strict pair025:
+  occupancy_struct ~= 11.0 / 11.07
+  exact gain ~= -31.1 / -40.2
+```
+
+也就是说，只要把 option-library / policy / model cost 也算进 code length，
+当前 exact MDL 会认为 maze split 不划算。
+
+这不是实现 bug，而是一个重要结论：
+
+```text
+如果没有 hard hidden constraint 或 task-distribution calibration，
+strict MDL 会偏向 endpoints + strong option。
+```
+
+### 21.3 occupancy-struct-only exact MDL：只接受很少 split
+
+为了隔离 structural term，我又跑了一个只看 occupancy structural exposure 的版本：
+
+```text
+python3 experiments/run_first_boundary_targeted.py \
+  --maps open_room four_rooms maze \
+  --slips 0.0 0.05 \
+  --candidate-kind articulation_only \
+  --residual-kind turn_articulation \
+  --residual-split-policy exact_mdl \
+  --proposal-kind candidate \
+  --exact-mdl-option-pair-bit-cost 0.0 \
+  --exact-mdl-policy-tv-bit-cost 0.0 \
+  --exact-mdl-policy-region-bit-cost 0.0 \
+  --exact-mdl-model-residual-bit-cost 0.0 \
+  --exact-mdl-struct-kind occupancy_distinct \
+  --exact-mdl-top-k 8 \
+  --soft-kind combined \
+  --soft-split-policy never \
+  --max-splits 12 \
+  --out-dir experiments/output/exact_mdl_occupancy_struct_only
+```
+
+结果：
+
+```text
+open_room:
+  B=2
+
+four_rooms:
+  B=4
+
+maze:
+  slip=0.00 -> B=3
+  slip=0.05 -> B=2
+```
+
+deterministic maze step 0：
+
+```text
+base_bits ~= 12.0
+candidate_bits ~= 10.3
+gain ~= 1.70
+accepted split: (1, 5)
+```
+
+但下一步 gain 变负：
+
+```text
+B=3:
+  occupancy_struct ~= 0
+  gain ~= -8.87
+```
+
+所以 exact occupancy MDL 的行为比 proxy MDL 保守得多。
+
+### 21.4 当前解释
+
+这轮把问题暴露得更准确了：
+
+```text
+proxy MDL:
+  能产生实用 graph，但 benefit 是局部 proxy。
+
+strict exact MDL:
+  理论上更干净，但如果 option cost 进入主 objective，
+  会重新偏向 endpoints + strong option。
+
+occupancy-struct-only exact MDL:
+  说明 exact recomputation 可以工作，
+  但单任务 occupancy 会让 split 很快停止。
+```
+
+因此下一步不应该再调 `edge_cost_weight`，而应该明确约束形式：
+
+```text
+主优化：
+  minimize graph/option code length
+
+hard constraints:
+  occupancy_struct_hidden <= epsilon_hidden
+  residual/value-impact <= epsilon_residual
+  planning gap <= epsilon_plan
+
+或：
+  用 break-even lambda 报告每个 candidate split：
+    lambda* = added_code / structural_exposure_reduction
+```
+
+这正好回答 GPT 的反驳：
+
+```text
+只靠 unconstrained MDL 会拒绝 maze split；
+所以我们的目标不是普通 MDL，而是 constrained MDL / rate-distortion：
+  在 hidden-cross/residual 约束下找最短 graph-option code。
+```
