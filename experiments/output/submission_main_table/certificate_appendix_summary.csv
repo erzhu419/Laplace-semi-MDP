@@ -1,0 +1,4 @@
+certificate,rows,interval_certified,fallback_used,final_certified,status,row_q_lt_1_edges,weighted_q_lt_1_edges,max_weight_dynamic_range,certificates_found,rational_verified,max_rational_violation
+adaptive_frontier_tail_plus_top_set_fallback,20,4,16,20,runtime_decision_procedure,,,,,,
+weighted_spectral_sufficient,8,,,,appendix_sufficient_certificate,0,16,8.839127906400585e+19,,,
+conditioned_rational_weighted_audit,48,,,,appendix_reproducibility_audit,,,,92,92,0.0

@@ -5458,3 +5458,75 @@ The reason is visible in corridor: even a rational-verified conditioned
 certificate can be very conservative compared with the actual tail. Its value
 is not tight selection; its value is a stronger sufficient convergence/safety
 certificate when raw row-substochasticity fails.
+
+## 32. GPT Advice 1 Paper-Facing Alignment
+
+GPT advice 1 was mostly right: the next bottleneck was not another theorem, but
+artifact alignment.
+
+Implemented:
+
+```text
+top-level README
+requirements.txt
+scripts/reproduce_proofs.sh
+scripts/reproduce_certificates.sh
+scripts/reproduce_core.sh
+experiments/run_submission_main_table.py
+experiments/output/submission_main_table/summary.md
+```
+
+The main table now states the intended paper hierarchy explicitly:
+
+```text
+exact Green:
+  reference operator
+
+certified adaptive Green + top-set exact fallback:
+  main implementation
+
+fixed-K Green:
+  ablation
+
+weighted spectral / conditioned rational certificates:
+  theorem and reproducibility appendix
+```
+
+The current certification summary is:
+
+```text
+exact top-1 matches: 20 / 20
+interval-certified top-1 decisions: 4 / 20
+top-set exact fallback rows: 16 / 20
+final certified decisions: 20 / 20
+```
+
+The submission table also makes the uncomfortable but useful fact visible:
+fallback can dominate single-task corridor timing because all corridor
+candidates are exact ties. That is not a contradiction; it clarifies the story.
+The core evidence becomes:
+
+```text
+planning compression:
+  thousands-x backup/time reduction on long corridors
+
+certified decision:
+  final top choice certified by interval separation or top-set exact fallback
+
+amortized value:
+  exact fallback/kernel costs need multi-task reuse or tighter tie handling
+```
+
+Solver-validity output is now paper-readable as an aggregate table. On the
+compact oracle suite:
+
+```text
+actual_refine beam:
+  boundary_match_rate = 1.0 for beam widths 1, 2, 4
+
+operator-only beam:
+  boundary_match_rate improves 0.0 -> 0.6667 -> 1.0
+```
+
+No new external references/repos were introduced by GPT advice 1; reference
+manifests were recorded under the ignored `reference/` directory.

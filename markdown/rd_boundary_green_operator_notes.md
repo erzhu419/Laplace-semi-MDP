@@ -369,9 +369,12 @@ discounted residual-to-value-gap bound
 group-constrained feasibility
 ```
 
-These are Lean-checked as finite/scaled certificates. A Mathlib-real
-instantiation remains the next formalization step, but the proof obligations
-the paper needs are now named and mechanically checked.
+These were first Lean-checked as finite/scaled certificates. The Mathlib real
+finite-matrix layer has since been added in `proof/RDOperatorReal.lean`,
+including Neumann tail certificates, Bellman contraction/value-gap bounds,
+top-set exact fallback, weighted spectral certificates, and bits-curvature
+Taylor bounds. The remaining proof work is optional cleanup: a Mathlib
+spectral-radius API statement and a `HasSum`/`tsum` infinite-tail formulation.
 
 ## Submission Evidence Pass
 
@@ -910,3 +913,64 @@ frontier-tail score intervals + top-set exact fallback
 
 while conditioned/rational weighted certificates live in the theorem/appendix
 layer as a stronger sufficient certificate and reproducibility audit.
+
+## GPT Advice 1 Artifact Alignment
+
+`markdown/GPT_advice_1.md` flagged an artifact gap rather than a missing theorem.
+The public-facing repo is now aligned around this main claim:
+
+```text
+exact Green = reference operator
+certified adaptive Green + top-set exact fallback = runtime decision procedure
+fixed-K / weighted spectral / conditioned rational = ablations and appendix audits
+```
+
+Concrete updates:
+
+```text
+README.md
+requirements.txt
+scripts/reproduce_proofs.sh
+scripts/reproduce_certificates.sh
+scripts/reproduce_core.sh
+experiments/run_submission_main_table.py
+experiments/output/submission_main_table/summary.md
+```
+
+The adaptive certification suite now covers the large-scale table's public
+boundary selectors:
+
+```text
+map_specs = corridor:64,128 open_room:12 maze:13 four_rooms:11
+boundary_methods = endpoints turn_articulation
+final certified decisions = 20 / 20
+interval-certified without fallback = 4 / 20
+top-set exact fallback used = 16 / 20
+```
+
+This is deliberately honest. Corridor has many exact ties, so fallback can
+erase single-task wall-clock speedup even though graph-SMDP planning has large
+backup compression. That supports the paper framing:
+
+```text
+single task:
+  value gap and decision certification are the headline
+
+large / multi-task:
+  upfront exact fallback and kernel construction must be amortized
+```
+
+`experiments/run_solver_validity.py` now emits an aggregate table before the
+row-level exhaustive-oracle comparisons. Current compact status:
+
+```text
+exact-refined beam:
+  boundary_match_rate = 1.0 for beam widths 1, 2, 4
+
+operator-only beam:
+  improves from 0.0 to 1.0 boundary match as beam width grows from 1 to 4
+```
+
+The weighted spectral and conditioned rational certificates remain appendix
+certificates. They are stronger sufficient theorems/audits, not the runtime
+top-choice certificate.

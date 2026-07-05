@@ -427,7 +427,7 @@ def write_csv_all_fields(path: Path, rows: Sequence[Mapping[str, object]]) -> No
             if key not in fields:
                 fields.append(key)
     with path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 

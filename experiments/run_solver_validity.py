@@ -529,6 +529,18 @@ def write_report(
     out_path: Path,
     args: argparse.Namespace,
 ) -> None:
+    aggregate_rows = solver_aggregate_rows(rows)
+    aggregate_columns = [
+        "solver",
+        "beam_width",
+        "n_rows",
+        "boundary_match_rate",
+        "zero_total_violation_gap_rate",
+        "feasible_decision_match_rate",
+        "mean_extra_jaccard",
+        "median_selection_time_sec",
+        "median_oracle_time_sec",
+    ]
     columns = [
         "map",
         "solver",
@@ -576,9 +588,57 @@ def write_report(
         f"- feasible/infeasible decision matches: `{feasible_matches}/{len(rows)}`",
         f"- oracle subsets evaluated: `{len(oracle_rows)}`",
         "",
+        "## Aggregate",
+        "",
+        markdown_table(aggregate_rows, aggregate_columns),
+        "",
+        "## Rows",
+        "",
         markdown_table(rows, columns),
     ]
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def median(values: Sequence[float]) -> float:
+    vals = sorted(value for value in values if math.isfinite(value))
+    if not vals:
+        return float("nan")
+    mid = len(vals) // 2
+    if len(vals) % 2 == 1:
+        return vals[mid]
+    return 0.5 * (vals[mid - 1] + vals[mid])
+
+
+def solver_aggregate_rows(rows: Sequence[Mapping[str, object]]) -> List[Dict[str, object]]:
+    groups: Dict[Tuple[str, int], List[Mapping[str, object]]] = {}
+    for row in rows:
+        key = (str(row["solver"]), int(row["beam_width"]))
+        groups.setdefault(key, []).append(row)
+
+    aggregate: List[Dict[str, object]] = []
+    for (solver, beam_width), group in sorted(groups.items()):
+        n = len(group)
+        boundary_matches = sum(1 for row in group if bool(row["same_boundary_as_oracle"]))
+        zero_gap = sum(1 for row in group if abs(float(row["total_violation_gap"])) <= 1e-9)
+        feasible_matches = sum(
+            1
+            for row in group
+            if bool(row["oracle_all_feasible"]) == bool(row["chosen_all_feasible"])
+        )
+        aggregate.append(
+            {
+                "solver": solver,
+                "beam_width": beam_width,
+                "n_rows": n,
+                "boundary_match_rate": boundary_matches / max(1, n),
+                "zero_total_violation_gap_rate": zero_gap / max(1, n),
+                "feasible_decision_match_rate": feasible_matches / max(1, n),
+                "mean_extra_jaccard": sum(float(row["extra_jaccard_with_oracle"]) for row in group) / max(1, n),
+                "median_selection_time_sec": median([finite_float(row["selection_time_sec"]) for row in group]),
+                "median_oracle_time_sec": median([finite_float(row["oracle_time_sec"]) for row in group]),
+            }
+        )
+    return aggregate
 
 
 def main() -> None:

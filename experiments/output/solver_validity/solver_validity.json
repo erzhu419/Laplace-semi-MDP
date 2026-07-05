@@ -11,10 +11,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 9.084139751968905,
+    "oracle_time_sec": 8.442000973969698,
     "beam_width": 1,
     "beam_expand": 6,
-    "selection_time_sec": 0.966027321992442,
+    "selection_time_sec": 0.9427240049699321,
     "start_boundary": [
       0,
       24
@@ -73,10 +73,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 9.084139751968905,
+    "oracle_time_sec": 8.442000973969698,
     "beam_width": 2,
     "beam_expand": 6,
-    "selection_time_sec": 1.642264056019485,
+    "selection_time_sec": 1.6506466710125096,
     "start_boundary": [
       0,
       24
@@ -127,10 +127,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 9.084139751968905,
+    "oracle_time_sec": 8.442000973969698,
     "beam_width": 4,
     "beam_expand": 6,
-    "selection_time_sec": 1.5426244160044007,
+    "selection_time_sec": 1.599664687004406,
     "start_boundary": [
       0,
       24
@@ -186,10 +186,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 9.084139751968905,
+    "oracle_time_sec": 8.442000973969698,
     "beam_width": 1,
     "beam_expand": 6,
-    "selection_time_sec": 2.8002888479968533,
+    "selection_time_sec": 2.7433843400212936,
     "start_boundary": [
       0,
       24
@@ -245,10 +245,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 9.084139751968905,
+    "oracle_time_sec": 8.442000973969698,
     "beam_width": 2,
     "beam_expand": 6,
-    "selection_time_sec": 2.7861842089914717,
+    "selection_time_sec": 2.9184113199589774,
     "start_boundary": [
       0,
       24
@@ -304,10 +304,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 9.084139751968905,
+    "oracle_time_sec": 8.442000973969698,
     "beam_width": 4,
     "beam_expand": 6,
-    "selection_time_sec": 2.9687811770127155,
+    "selection_time_sec": 2.7062736689695157,
     "start_boundary": [
       0,
       24
@@ -363,10 +363,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 16.176918354001828,
+    "oracle_time_sec": 15.567459884041455,
     "beam_width": 1,
     "beam_expand": 6,
-    "selection_time_sec": 1.811825918033719,
+    "selection_time_sec": 1.9194902409799397,
     "start_boundary": [
       0,
       39
@@ -422,10 +422,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 16.176918354001828,
+    "oracle_time_sec": 15.567459884041455,
     "beam_width": 2,
     "beam_expand": 6,
-    "selection_time_sec": 3.14489625004353,
+    "selection_time_sec": 2.9242526180460118,
     "start_boundary": [
       0,
       39
@@ -473,10 +473,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 16.176918354001828,
+    "oracle_time_sec": 15.567459884041455,
     "beam_width": 4,
     "beam_expand": 6,
-    "selection_time_sec": 5.426436456036754,
+    "selection_time_sec": 5.380242406972684,
     "start_boundary": [
       0,
       39
@@ -524,10 +524,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 16.176918354001828,
+    "oracle_time_sec": 15.567459884041455,
     "beam_width": 1,
     "beam_expand": 6,
-    "selection_time_sec": 10.212392090994399,
+    "selection_time_sec": 10.736974212981295,
     "start_boundary": [
       0,
       39
@@ -575,10 +575,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 16.176918354001828,
+    "oracle_time_sec": 15.567459884041455,
     "beam_width": 2,
     "beam_expand": 6,
-    "selection_time_sec": 15.475738945009653,
+    "selection_time_sec": 14.732435520039871,
     "start_boundary": [
       0,
       39
@@ -626,10 +626,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 16.176918354001828,
+    "oracle_time_sec": 15.567459884041455,
     "beam_width": 4,
     "beam_expand": 6,
-    "selection_time_sec": 24.99977003200911,
+    "selection_time_sec": 24.15630420600064,
     "start_boundary": [
       0,
       39
@@ -677,10 +677,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 12.195354511961341,
+    "oracle_time_sec": 10.949797208013479,
     "beam_width": 1,
     "beam_expand": 6,
-    "selection_time_sec": 0.39682099502533674,
+    "selection_time_sec": 0.3906720940140076,
     "start_boundary": [
       0,
       30
@@ -731,10 +731,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 12.195354511961341,
+    "oracle_time_sec": 10.949797208013479,
     "beam_width": 2,
     "beam_expand": 6,
-    "selection_time_sec": 0.9543428199831396,
+    "selection_time_sec": 0.8098051099805161,
     "start_boundary": [
       0,
       30
@@ -790,10 +790,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 12.195354511961341,
+    "oracle_time_sec": 10.949797208013479,
     "beam_width": 4,
     "beam_expand": 6,
-    "selection_time_sec": 0.8664524829946458,
+    "selection_time_sec": 0.8099046190036461,
     "start_boundary": [
       0,
       30
@@ -849,10 +849,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 12.195354511961341,
+    "oracle_time_sec": 10.949797208013479,
     "beam_width": 1,
     "beam_expand": 6,
-    "selection_time_sec": 3.835009041999001,
+    "selection_time_sec": 3.6683277339907363,
     "start_boundary": [
       0,
       30
@@ -908,10 +908,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 12.195354511961341,
+    "oracle_time_sec": 10.949797208013479,
     "beam_width": 2,
     "beam_expand": 6,
-    "selection_time_sec": 3.90314963797573,
+    "selection_time_sec": 4.062999501999002,
     "start_boundary": [
       0,
       30
@@ -967,10 +967,10 @@
     "oracle_pool_truncated": true,
     "max_extra_splits": 2,
     "oracle_evaluated_subsets": 22,
-    "oracle_time_sec": 12.195354511961341,
+    "oracle_time_sec": 10.949797208013479,
     "beam_width": 4,
     "beam_expand": 6,
-    "selection_time_sec": 3.781640224973671,
+    "selection_time_sec": 4.054239546007011,
     "start_boundary": [
       0,
       30
