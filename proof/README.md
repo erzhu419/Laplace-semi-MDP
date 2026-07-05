@@ -61,6 +61,10 @@ What is formalized now:
   if interval bounds cannot separate top-1, exact evaluation on an ambiguous
   top set certifies a global optimum whenever the exact best in that set beats
   all outside interval upper bounds;
+- tie-aware / epsilon-optimal certificate layer:
+  interval bounds can certify that a selected split is within `eps` of the
+  exact optimum, and any representative of an exact top tie set is globally
+  optimal when all outside states are no better;
 - conditioned/rational weighted certificate audit:
   `experiments/run_conditioned_weighted_certificate.py` searches for Collatz
   certificates under explicit condition-number caps and verifies rounded

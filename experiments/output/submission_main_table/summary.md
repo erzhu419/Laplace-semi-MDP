@@ -1,26 +1,28 @@
 # Submission Main Table
 
-Generated: 2026-07-05T15:59:12
+Generated: 2026-07-05T16:16:16
 
 This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.
 
-- best certified adaptive total speedup in the large-scale table: `3.698x`
+- best certified adaptive total speedup with unique-top fallback: `3.698x`
+- best certified adaptive total speedup with tie-aware certificate: `10.68x`
 - worst certified adaptive start-value gap in that table: `0.07851`
-- adaptive final certified decisions: `20/20`
-- exact Green is the reference operator; certified adaptive Green plus top-set exact fallback is the runtime implementation; fixed-K and weighted spectral certificates are ablations/appendix diagnostics.
+- adaptive final certified decisions under unique-top fallback: `20/20`
+- adaptive final certified decisions under tie-aware reporting: `20/20`
+- exact Green is the reference operator; certified adaptive Green plus tie-aware top-set/epsilon certificates are the runtime implementation; fixed-K and weighted spectral certificates are ablations/appendix diagnostics.
 
 ## Main Runtime Table
 
-| map | boundary_selector | method | n_states | n_boundary | state_compression_ratio | first_hit_used_steps_max | tail_bound_max | full_vi_time_sec | upfront_time_sec | smdp_solve_time_sec | total_time_with_fallback_proxy_sec | planning_speedup | total_speedup | start_gap | interval_certified | fallback_used | ambiguous_set_size | final_certified |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| corridor_64 | endpoints | certified_adaptive_green_rd | 64 | 2 | 32 | 87 | 5.982e-07 | 0.08168 | 0.01215 | 9.527e-05 | 0.1322 | 857.3 | 0.6178 | 2.946e-08 | False | True | 62 | True |
-| corridor_64 | turn_articulation | certified_adaptive_green_rd | 64 | 2 | 32 | 87 | 5.982e-07 | 0.1006 | 0.01251 | 8.714e-05 | 0.1413 | 1154 | 0.7116 | 2.946e-08 | False | True | 62 | True |
-| corridor_128 | endpoints | certified_adaptive_green_rd | 128 | 2 | 64 | 160 | 7.468e-07 | 0.2938 | 0.03139 | 0.0001048 | 5.32 | 2804 | 0.05522 | 1.024e-08 | False | True | 126 | True |
-| corridor_128 | turn_articulation | certified_adaptive_green_rd | 128 | 2 | 64 | 160 | 7.468e-07 | 0.3624 | 0.03386 | 8.845e-05 | 1.864 | 4097 | 0.1944 | 1.024e-08 | False | True | 126 | True |
-| open_room_12 | endpoints | certified_adaptive_green_rd | 144 | 2 | 72 | 41 | 3.737e-07 | 0.09671 | 0.02606 | 8.801e-05 | 0.02615 | 1099 | 3.698 | 0.07851 | True | False | 0 | True |
-| open_room_12 | turn_articulation | certified_adaptive_green_rd | 144 | 4 | 36 | 38 | 8.604e-07 | 0.1401 | 0.06182 | 0.0007079 | 9.394 | 197.9 | 0.01491 | 0.07851 | False | True | 140 | True |
-| maze_13 | endpoints | certified_adaptive_green_rd | 71 | 2 | 35.5 | 42 | 4.298e-07 | 0.0677 | 0.009614 | 8.903e-05 | 0.08879 | 760.4 | 0.7624 | 1.548e-08 | False | True | 69 | True |
-| maze_13 | turn_articulation | certified_adaptive_green_rd | 71 | 18 | 3.944 | 24 | 9.741e-07 | 0.06422 | 0.2002 | 0.03605 | 0.8148 | 1.781 | 0.07882 | 7.147e-07 | False | True | 53 | True |
+| map | boundary_selector | method | n_states | n_boundary | state_compression_ratio | first_hit_used_steps_max | tail_bound_max | full_vi_time_sec | upfront_time_sec | smdp_solve_time_sec | total_time_unique_top_fallback_sec | total_time_with_tie_certificate_sec | planning_speedup | total_speedup_unique_top_fallback | total_speedup_tie_aware | unique_top_break_even_tasks | amortization_break_even_tasks | start_gap | tie_mode | epsilon_optimal_certified | tie_set_certified | tie_aware_fallback_used | curvature_fallback_used | interval_certified | fallback_used | ambiguous_set_size | tie_aware_final_certified |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| corridor_64 | endpoints | certified_adaptive_green_rd | 64 | 2 | 32 | 87 | 5.982e-07 | 0.08168 | 0.01215 | 9.527e-05 | 0.1421 | 0.01225 | 857.3 | 0.5749 | 6.668 | 2 | 1 | 2.946e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 62 | True |
+| corridor_64 | turn_articulation | certified_adaptive_green_rd | 64 | 2 | 32 | 87 | 5.982e-07 | 0.1006 | 0.01251 | 8.714e-05 | 0.1423 | 0.0126 | 1154 | 0.7066 | 7.981 | 2 | 1 | 2.946e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 62 | True |
+| corridor_128 | endpoints | certified_adaptive_green_rd | 128 | 2 | 64 | 160 | 7.468e-07 | 0.2938 | 0.03139 | 0.0001048 | 1.903 | 0.0315 | 2804 | 0.1544 | 9.327 | 7 | 1 | 1.024e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 126 | True |
+| corridor_128 | turn_articulation | certified_adaptive_green_rd | 128 | 2 | 64 | 160 | 7.468e-07 | 0.3624 | 0.03386 | 8.845e-05 | 5.223 | 0.03395 | 4097 | 0.06939 | 10.68 | 15 | 1 | 1.024e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 126 | True |
+| open_room_12 | endpoints | certified_adaptive_green_rd | 144 | 2 | 72 | 41 | 3.737e-07 | 0.09671 | 0.02606 | 8.801e-05 | 0.02615 | 0.02615 | 1099 | 3.698 | 3.698 | 1 | 1 | 0.07851 | unique_interval_top1 | True | False | False | False | True | False | 0 | True |
+| open_room_12 | turn_articulation | certified_adaptive_green_rd | 144 | 4 | 36 | 38 | 8.604e-07 | 0.1401 | 0.06182 | 0.0007079 | 23.72 | 0.06253 | 197.9 | 0.005905 | 2.24 | 171 | 1 | 0.07851 | epsilon_optimal_interval | True | True | False | False | False | True | 140 | True |
+| maze_13 | endpoints | certified_adaptive_green_rd | 71 | 2 | 35.5 | 42 | 4.298e-07 | 0.0677 | 0.009614 | 8.903e-05 | 0.09614 | 0.09614 | 760.4 | 0.7041 | 0.7041 | 2 | 2 | 1.548e-08 | curvature_exact_fallback | False | False | True | True | False | True | 69 | True |
+| maze_13 | turn_articulation | certified_adaptive_green_rd | 71 | 18 | 3.944 | 24 | 9.741e-07 | 0.06422 | 0.2002 | 0.03605 | 0.9096 | 0.2362 | 1.781 | 0.07061 | 0.2719 | 32 | 8 | 7.147e-07 | epsilon_optimal_interval | True | True | False | False | False | True | 53 | True |
 
 ## Compact Baseline Aggregate
 
@@ -48,11 +50,11 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 
 ## Certificate Appendix Summary
 
-| certificate | rows | interval_certified | fallback_used | final_certified | row_q_lt_1_edges | weighted_q_lt_1_edges | certificates_found | rational_verified | status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| adaptive_frontier_tail_plus_top_set_fallback | 20 | 4 | 16 | 20 |  |  |  |  | runtime_decision_procedure |
-| weighted_spectral_sufficient | 8 |  |  |  | 0 | 16 |  |  | appendix_sufficient_certificate |
-| conditioned_rational_weighted_audit | 48 |  |  |  |  |  | 92 | 92 | appendix_reproducibility_audit |
+| certificate | rows | interval_certified | fallback_used | tie_fallback_used | curvature_fallback_used | tie_set_certified | epsilon_optimal_certified | final_certified | tie_aware_final_certified | row_q_lt_1_edges | weighted_q_lt_1_edges | certificates_found | rational_verified | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| adaptive_frontier_tail_plus_top_set_fallback | 20 | 4 | 16 | 14 | 2 | 14 | 11 | 20 | 20 |  |  |  |  | runtime_decision_procedure |
+| weighted_spectral_sufficient | 8 |  |  |  |  |  |  |  |  | 0 | 16 |  |  | appendix_sufficient_certificate |
+| conditioned_rational_weighted_audit | 48 |  |  |  |  |  |  |  |  |  |  | 92 | 92 | appendix_reproducibility_audit |
 
 ## Source Artifacts
 

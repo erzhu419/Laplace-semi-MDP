@@ -5530,3 +5530,86 @@ operator-only beam:
 
 No new external references/repos were introduced by GPT advice 1; reference
 manifests were recorded under the ignored `reference/` directory.
+
+## 33. GPT Answer 14 Tie-Aware Certificate
+
+GPT answer 14 made the right distinction:
+
+```text
+corridor slowdown:
+  tie / uniqueness-certification overhead
+
+maze endpoint slowdown:
+  real curvature / interval uncertainty fallback
+```
+
+I implemented tie-aware certification before running a larger group-constrained
+adaptive table.
+
+Code/output changes:
+
+```text
+experiments/run_adaptive_green_certification.py
+experiments/run_submission_main_table.py
+experiments/output/adaptive_green_certification/summary.md
+experiments/output/submission_main_table/summary.md
+proof/RDOperatorReal.lean
+```
+
+The certification summary now separates:
+
+```text
+unique interval top-1
+epsilon-optimal interval certificate
+exact tie-set canonical certificate
+curvature exact fallback
+```
+
+Current counts:
+
+```text
+exact top-1 matches: 20 / 20
+interval-certified unique top-1: 4 / 20
+unique-top fallback rows: 16 / 20
+tie-aware final certified decisions: 20 / 20
+tie fallback rows under unique-top certification: 14 / 20
+curvature fallback rows after tie-aware certification: 2 / 20
+```
+
+The submission table now reports both runtime stories:
+
+```text
+total_speedup_unique_top_fallback
+total_speedup_tie_aware
+unique_top_break_even_tasks
+amortization_break_even_tasks
+```
+
+Key result:
+
+```text
+best unique-top total speedup = 3.698x
+best tie-aware total speedup = 10.68x
+```
+
+Interpretation for the paper:
+
+```text
+Do not claim:
+  certified adaptive Green always wins one-shot total runtime
+
+Claim:
+  it compresses planning strongly; tie-heavy uniqueness failures can be
+  certified as epsilon/top-set decisions; true curvature fallback remains
+  explicit and amortized by repeated planning queries.
+```
+
+Lean now includes two simple order theorems:
+
+```text
+epsilon_interval_certified_optimality
+exact_tie_set_representative_optimal
+```
+
+These sit beside the existing interval top-choice and top-set exact fallback
+theorems.

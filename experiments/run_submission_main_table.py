@@ -75,6 +75,13 @@ def rate(values: Iterable[bool | None]) -> float:
     return sum(1 for value in vals if value) / len(vals) if vals else float("nan")
 
 
+def break_even_tasks(upfront_cost: float, full_time: float, graph_solve_time: float) -> int | str:
+    saving_per_task = full_time - graph_solve_time
+    if not math.isfinite(upfront_cost) or not math.isfinite(saving_per_task) or saving_per_task <= 0.0:
+        return ""
+    return int(math.ceil(max(0.0, upfront_cost) / max(1e-12, saving_per_task)))
+
+
 def group_rows(rows: Sequence[Mapping[str, object]], keys: Sequence[str]) -> Dict[Tuple[str, ...], List[Mapping[str, object]]]:
     groups: Dict[Tuple[str, ...], List[Mapping[str, object]]] = defaultdict(list)
     for row in rows:
@@ -136,7 +143,12 @@ def build_main_runtime_rows(
         upfront = finite_float(row.get("upfront_time_sec"), 0.0)
         smdp = finite_float(row.get("smdp_solve_time_sec"), 0.0)
         fallback_proxy = finite_float(cert.get("fallback_exact_time_proxy_sec", 0.0) if cert else 0.0, 0.0)
+        tie_proxy = finite_float(
+            cert.get("tie_aware_exact_time_proxy_sec", fallback_proxy) if cert else fallback_proxy,
+            fallback_proxy,
+        )
         total_with_fallback = upfront + smdp + fallback_proxy
+        total_with_tie_certificate = upfront + smdp + tie_proxy
         out.append(
             {
                 "map": row.get("map", ""),
@@ -151,17 +163,28 @@ def build_main_runtime_rows(
                 "full_vi_time_sec": full_time,
                 "upfront_time_sec": upfront,
                 "smdp_solve_time_sec": smdp,
-                "total_time_with_fallback_proxy_sec": total_with_fallback,
+                "total_time_unique_top_fallback_sec": total_with_fallback,
+                "total_time_with_tie_certificate_sec": total_with_tie_certificate,
                 "planning_speedup": finite_float(row.get("planning_time_speedup_vs_full_vi")),
-                "total_speedup": full_time / max(1e-12, total_with_fallback),
+                "total_speedup_unique_top_fallback": full_time / max(1e-12, total_with_fallback),
+                "total_speedup_tie_aware": full_time / max(1e-12, total_with_tie_certificate),
+                "unique_top_break_even_tasks": break_even_tasks(upfront + fallback_proxy, full_time, smdp),
+                "amortization_break_even_tasks": break_even_tasks(upfront + tie_proxy, full_time, smdp),
                 "backup_compression_ratio": finite_float(row.get("backup_compression_ratio")),
                 "start_gap": finite_float(row.get("start_gap")),
                 "value_gap_max": finite_float(row.get("value_gap_max")),
+                "tie_mode": cert.get("tie_mode", "") if cert else "",
+                "epsilon_optimal_certified": cert.get("epsilon_optimal_certified", "") if cert else "",
+                "epsilon_optimality_gap_bound": cert.get("epsilon_optimality_gap_bound", "") if cert else "",
+                "tie_set_certified": cert.get("tie_set_certified", "") if cert else "",
+                "tie_aware_fallback_used": cert.get("tie_aware_fallback_used", "") if cert else "",
+                "curvature_fallback_used": cert.get("curvature_fallback_used", "") if cert else "",
                 "interval_certified": cert.get("top1_certified", "") if cert else "",
                 "fallback_used": cert.get("fallback_used", "") if cert else "",
                 "ambiguous_set_size": cert.get("ambiguous_set_size", "") if cert else "",
                 "fallback_reason": cert.get("fallback_reason", "") if cert else "",
                 "final_certified": cert.get("final_certified", "") if cert else "",
+                "tie_aware_final_certified": cert.get("tie_aware_final_certified", "") if cert else "",
                 "final_certificate": cert.get("final_certificate", "") if cert else "",
             }
         )
@@ -234,7 +257,12 @@ def build_certificate_rows(
             "rows": len(adaptive),
             "interval_certified": sum(1 for row in adaptive if parse_bool(row.get("top1_certified"))),
             "fallback_used": sum(1 for row in adaptive if parse_bool(row.get("fallback_used"))),
+            "tie_fallback_used": sum(1 for row in adaptive if parse_bool(row.get("tie_fallback_used"))),
+            "curvature_fallback_used": sum(1 for row in adaptive if parse_bool(row.get("curvature_fallback_used"))),
+            "tie_set_certified": sum(1 for row in adaptive if parse_bool(row.get("tie_set_certified"))),
+            "epsilon_optimal_certified": sum(1 for row in adaptive if parse_bool(row.get("epsilon_optimal_certified"))),
             "final_certified": sum(1 for row in adaptive if parse_bool(row.get("final_certified"))),
+            "tie_aware_final_certified": sum(1 for row in adaptive if parse_bool(row.get("tie_aware_final_certified"))),
             "status": "runtime_decision_procedure",
         },
         {
@@ -282,14 +310,23 @@ def write_report(
         "full_vi_time_sec",
         "upfront_time_sec",
         "smdp_solve_time_sec",
-        "total_time_with_fallback_proxy_sec",
+        "total_time_unique_top_fallback_sec",
+        "total_time_with_tie_certificate_sec",
         "planning_speedup",
-        "total_speedup",
+        "total_speedup_unique_top_fallback",
+        "total_speedup_tie_aware",
+        "unique_top_break_even_tasks",
+        "amortization_break_even_tasks",
         "start_gap",
+        "tie_mode",
+        "epsilon_optimal_certified",
+        "tie_set_certified",
+        "tie_aware_fallback_used",
+        "curvature_fallback_used",
         "interval_certified",
         "fallback_used",
         "ambiguous_set_size",
-        "final_certified",
+        "tie_aware_final_certified",
     ]
     compact_columns = [
         "method_spec",
@@ -317,14 +354,20 @@ def write_report(
         "rows",
         "interval_certified",
         "fallback_used",
+        "tie_fallback_used",
+        "curvature_fallback_used",
+        "tie_set_certified",
+        "epsilon_optimal_certified",
         "final_certified",
+        "tie_aware_final_certified",
         "row_q_lt_1_edges",
         "weighted_q_lt_1_edges",
         "certificates_found",
         "rational_verified",
         "status",
     ]
-    best_total = max((finite_float(row.get("total_speedup")) for row in main_rows), default=float("nan"))
+    best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
+    best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
     worst_gap = max((finite_float(row.get("start_gap")) for row in main_rows), default=float("nan"))
     final_certs = next(
         (row for row in certificate_rows if row.get("certificate") == "adaptive_frontier_tail_plus_top_set_fallback"),
@@ -341,10 +384,12 @@ def write_report(
         "",
         "This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.",
         "",
-        f"- best certified adaptive total speedup in the large-scale table: `{best_total:.4g}x`",
+        f"- best certified adaptive total speedup with unique-top fallback: `{best_total_unique:.4g}x`",
+        f"- best certified adaptive total speedup with tie-aware certificate: `{best_total_tie:.4g}x`",
         f"- worst certified adaptive start-value gap in that table: `{worst_gap:.4g}`",
-        f"- adaptive final certified decisions: `{final_certs.get('final_certified', '')}/{final_certs.get('rows', '')}`",
-        "- exact Green is the reference operator; certified adaptive Green plus top-set exact fallback is the runtime implementation; fixed-K and weighted spectral certificates are ablations/appendix diagnostics.",
+        f"- adaptive final certified decisions under unique-top fallback: `{final_certs.get('final_certified', '')}/{final_certs.get('rows', '')}`",
+        f"- adaptive final certified decisions under tie-aware reporting: `{final_certs.get('tie_aware_final_certified', '')}/{final_certs.get('rows', '')}`",
+        "- exact Green is the reference operator; certified adaptive Green plus tie-aware top-set/epsilon certificates are the runtime implementation; fixed-K and weighted spectral certificates are ablations/appendix diagnostics.",
         "",
         "## Main Runtime Table",
         "",

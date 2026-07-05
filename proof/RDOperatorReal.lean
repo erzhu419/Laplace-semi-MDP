@@ -539,6 +539,27 @@ theorem interval_certified_top_choice
   have hyRunner := hRunner y hy
   linarith
 
+/-- If interval bounds show that no candidate can beat `x` by more than `eps`, `x` is
+epsilon-optimal for the exact score. -/
+theorem epsilon_interval_certified_optimality
+    {X : Type} {exact lower upper : X -> ℝ} {x y : X} {eps : ℝ}
+    (hxLower : lower x ≤ exact x)
+    (hyUpper : exact y ≤ upper y)
+    (hGap : upper y - lower x ≤ eps) :
+    exact y - exact x ≤ eps := by
+  linarith
+
+/-- Any representative of an exact top tie set is globally optimal if all states in
+the set tie with it and all outside states are no better. -/
+theorem exact_tie_set_representative_optimal
+    {X : Type} {exact : X -> ℝ} {inTie : X -> Prop} {x y : X}
+    (hTie : ∀ z, inTie z -> exact z = exact x)
+    (hOutside : ∀ z, ¬ inTie z -> exact z ≤ exact x) :
+    exact y ≤ exact x := by
+  by_cases hy : inTie y
+  · exact le_of_eq (hTie y hy)
+  · exact hOutside y hy
+
 /-- Exact evaluation on an ambiguous top set certifies global optimality if it beats all outside upper bounds. -/
 theorem top_set_exact_fallback_global_optimal
     {X : Type} {exact upper : X -> ℝ} {inAmbiguous : X -> Prop} {xBest y : X}

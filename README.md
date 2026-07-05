@@ -7,7 +7,7 @@ This repository is an experimental artifact for a rate-distortion graph abstract
 The current paper-facing path is:
 
 1. **Reference operator:** exact first-hit Green kernels define the frozen RD split score.
-2. **Runtime implementation:** certified adaptive Green intervals are used first; when top-1 separation fails, the algorithm invokes exact Green only on the ambiguous top set.
+2. **Runtime implementation:** certified adaptive Green intervals are used first; uniqueness failures are separated into epsilon-optimal/tie-set certificates versus true curvature fallback.
 3. **Planner:** the selected boundary states become graph vertices, first-boundary options become graph-SMDP actions, and value iteration/planning runs on that compressed graph.
 4. **Appendix certificates:** weighted spectral and conditioned rational Collatz certificates justify convergence/safety as sufficient certificates, but they are not the main runtime decision rule.
 
@@ -55,8 +55,8 @@ bash scripts/reproduce_core.sh
 
 ## Current Artifact Status
 
-- Certified adaptive Green plus top-set exact fallback reaches final certified decisions on the current certification suite.
-- The large-scale adaptive table currently shows planning-only speedups in the thousands on long corridors. With the conservative top-set exact fallback proxy included, the submission table still has a positive single-task total-speedup row, while corridor rows expose the expected tie/fallback overhead that should be amortized in multi-task use.
+- Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.
+- The large-scale adaptive table currently shows planning-only speedups in the thousands on long corridors. The submission table reports both conservative unique-top fallback and tie-aware timing; tie-aware certification separates corridor tie overhead from true curvature fallback.
 - The compact benchmark compares full VI, exact RD graph variants, group-constrained RD, eigenoptions, betweenness bottlenecks, random landmarks, and coverage landmarks under the same map/slip suite.
 - Solver-validity diagnostics compare operator-only and exact-refined beam search against small exhaustive oracles.
 - Weighted spectral certificates are reported as sufficient appendix certificates; conditioned/rational audits expose the conditioning-vs-tightness tradeoff.

@@ -974,3 +974,69 @@ operator-only beam:
 The weighted spectral and conditioned rational certificates remain appendix
 certificates. They are stronger sufficient theorems/audits, not the runtime
 top-choice certificate.
+
+## GPT Answer 14 Tie-Aware Runtime Pass
+
+GPT answer 14 argued that amortization alone should not explain corridor
+single-task slowdown. The real issue was that corridor is a uniqueness/tie
+certification case, not a high-curvature uncertainty case.
+
+Implemented:
+
+```text
+experiments/run_adaptive_green_certification.py
+experiments/run_submission_main_table.py
+proof/RDOperatorReal.lean
+```
+
+New certification fields:
+
+```text
+tie_mode
+epsilon_optimal_certified
+epsilon_optimality_gap_bound
+tie_set_certified
+tie_fallback_used
+curvature_fallback_used
+tie_aware_fallback_used
+total_time_with_tie_certificate_sec
+speedup_with_tie_certificate_vs_full_exact
+amortization_break_even_tasks
+```
+
+Current adaptive certification summary:
+
+```text
+final certified decisions/top-sets = 20 / 20
+tie-aware final certified decisions/top-sets = 20 / 20
+unique-top fallback rows = 16 / 20
+tie fallback rows under unique-top certification = 14 / 20
+curvature fallback rows after tie-aware certification = 2 / 20
+exact tie-set certificates = 14 / 20
+epsilon-optimal interval certificates = 11 / 20
+```
+
+The submission table now reports both conservative unique-top fallback and
+tie-aware timing:
+
+```text
+best total speedup with unique-top fallback = 3.698x
+best total speedup with tie-aware certificate = 10.68x
+```
+
+This changes the corridor interpretation:
+
+```text
+Before:
+  corridor single-task total-time did not win because all tied candidates were
+  exact-scored as a unique-top fallback.
+
+Now:
+  corridor is certified as an epsilon/tie-set top-set case, so the table shows
+  that the single-task overhead was a uniqueness certificate artifact rather
+  than a model uncertainty failure.
+```
+
+The remaining honest fallback case is `maze_13 endpoints`, which stays
+`curvature_exact_fallback` and has a break-even count greater than one. That is
+the row to use when discussing real interval curvature rather than exact ties.

@@ -175,6 +175,7 @@ def exact_fallback_analysis(
     exact_time_sec: float,
     adaptive_point_margin: float,
     tie_tol: float,
+    epsilon_optimal_tol: float,
 ) -> Dict[str, object]:
     if not adaptive_scores:
         return {
@@ -182,6 +183,19 @@ def exact_fallback_analysis(
             "fallback_reason": "no_candidates",
             "ambiguous_set_size": 0,
             "ambiguous_fraction": 0.0,
+            "tie_mode": "no_candidates",
+            "epsilon_optimal_certified": False,
+            "epsilon_optimality_gap_bound": float("nan"),
+            "tie_set_certified": False,
+            "canonical_tie_selected": "",
+            "curvature_fallback_used": False,
+            "tie_fallback_used": False,
+            "tie_aware_fallback_used": False,
+            "tie_aware_exact_time_proxy_sec": 0.0,
+            "total_time_with_tie_certificate_sec": adaptive_time_sec,
+            "speedup_with_tie_certificate_vs_full_exact": exact_time_sec / max(1e-12, adaptive_time_sec),
+            "tie_aware_final_certificate": "no_candidates",
+            "tie_aware_final_certified": False,
             "final_certificate": "no_candidates",
             "final_certified": False,
         }
@@ -201,12 +215,40 @@ def exact_fallback_analysis(
     exact_tie_count = sum(
         1 for row in exact_scores if abs(finite_float(row["score_point"], -float("inf")) - exact_top_score) <= tie_tol
     )
+    adaptive_top_score = adaptive_points.get(int(adaptive_top), -float("inf")) if adaptive_top is not None else -float("inf")
+    adaptive_point_tie_count = sum(
+        1
+        for row in adaptive_scores
+        if abs(finite_float(row["score_point"], -float("inf")) - adaptive_top_score) <= tie_tol
+    )
+    max_upper = max(finite_float(row["score_upper"], -float("inf")) for row in adaptive_scores)
+    selected_lower = (
+        finite_float(adaptive_by_state[int(adaptive_top)]["score_lower"], -float("inf"))
+        if adaptive_top is not None
+        else -float("inf")
+    )
+    epsilon_gap_bound = max(0.0, max_upper - selected_lower)
     if top1_certified:
         return {
             "fallback_used": False,
             "fallback_reason": "interval_certified",
             "ambiguous_set_size": 0,
             "ambiguous_fraction": 0.0,
+            "tie_mode": "unique_interval_top1",
+            "epsilon_optimal_certified": True,
+            "epsilon_optimality_gap_bound": 0.0,
+            "epsilon_optimal_tol": epsilon_optimal_tol,
+            "adaptive_point_tie_count": adaptive_point_tie_count,
+            "tie_set_certified": False,
+            "canonical_tie_selected": "",
+            "curvature_fallback_used": False,
+            "tie_fallback_used": False,
+            "tie_aware_fallback_used": False,
+            "tie_aware_exact_time_proxy_sec": 0.0,
+            "total_time_with_tie_certificate_sec": adaptive_time_sec,
+            "speedup_with_tie_certificate_vs_full_exact": exact_time_sec / max(1e-12, adaptive_time_sec),
+            "tie_aware_final_certificate": "adaptive_interval_top1",
+            "tie_aware_final_certified": True,
             "exact_tie_count": exact_tie_count,
             "exact_top_margin": exact_margin,
             "fallback_top_state": "",
@@ -252,6 +294,26 @@ def exact_fallback_analysis(
         fallback_reason = "curvature_uncertified_full_set"
     if exact_tie_count > 1 and fallback_global_certified:
         final_certificate = "exact_top_set_canonical_tie_break"
+    exact_full_tie = exact_tie_count == len(exact_scores) and exact_margin <= tie_tol
+    adaptive_full_tie = adaptive_point_tie_count == len(adaptive_scores) and adaptive_point_margin <= tie_tol
+    epsilon_optimal_certified = epsilon_gap_bound <= epsilon_optimal_tol
+    tie_set_certified = fallback_reason == "tie_uncertified" and adaptive_full_tie and exact_full_tie
+    if epsilon_optimal_certified:
+        tie_mode = "epsilon_optimal_interval"
+    elif tie_set_certified:
+        tie_mode = "exact_tie_set_canonical"
+    elif fallback_reason.startswith("curvature"):
+        tie_mode = "curvature_exact_fallback"
+    else:
+        tie_mode = "top_set_exact_fallback"
+    tie_aware_certified = epsilon_optimal_certified or tie_set_certified
+    tie_aware_exact_time_proxy = 0.0 if tie_aware_certified else fallback_time_proxy
+    tie_aware_total_time = adaptive_time_sec + tie_aware_exact_time_proxy
+    tie_aware_final_certificate = final_certificate
+    if epsilon_optimal_certified:
+        tie_aware_final_certificate = "epsilon_optimal_interval_certificate"
+    elif tie_set_certified:
+        tie_aware_final_certificate = "exact_tie_set_canonical_certificate"
     return {
         "fallback_used": True,
         "fallback_reason": fallback_reason,
@@ -260,6 +322,7 @@ def exact_fallback_analysis(
         "ambiguous_states_json": json.dumps(ambiguous),
         "outside_upper_max": outside_upper,
         "exact_tie_count": exact_tie_count,
+        "adaptive_point_tie_count": adaptive_point_tie_count,
         "exact_top_margin": exact_margin,
         "fallback_top_state": fallback_top,
         "fallback_top_exact_score": fallback_top_exact_score,
@@ -273,6 +336,20 @@ def exact_fallback_analysis(
         "speedup_with_fallback_proxy_vs_full_exact": exact_time_sec
         / max(1e-12, adaptive_time_sec + fallback_time_proxy),
         "total_time_with_full_exact_fallback_sec": adaptive_time_sec + exact_time_sec,
+        "tie_mode": tie_mode,
+        "epsilon_optimal_certified": epsilon_optimal_certified,
+        "epsilon_optimality_gap_bound": epsilon_gap_bound,
+        "epsilon_optimal_tol": epsilon_optimal_tol,
+        "tie_set_certified": tie_set_certified,
+        "canonical_tie_selected": adaptive_top if tie_set_certified else "",
+        "curvature_fallback_used": fallback_reason.startswith("curvature") and not tie_aware_certified,
+        "tie_fallback_used": fallback_reason == "tie_uncertified",
+        "tie_aware_fallback_used": not tie_aware_certified,
+        "tie_aware_exact_time_proxy_sec": tie_aware_exact_time_proxy,
+        "total_time_with_tie_certificate_sec": tie_aware_total_time,
+        "speedup_with_tie_certificate_vs_full_exact": exact_time_sec / max(1e-12, tie_aware_total_time),
+        "tie_aware_final_certificate": tie_aware_final_certificate,
+        "tie_aware_final_certified": tie_aware_certified or fallback_global_certified,
         "adaptive_top_exact_score": exact_points.get(int(adaptive_top), float("nan")) if adaptive_top is not None else float("nan"),
         "adaptive_top_point_score": adaptive_points.get(int(adaptive_top), float("nan")) if adaptive_top is not None else float("nan"),
     }
@@ -293,6 +370,7 @@ def summarize_certification(
     exact_time_sec: float,
     adaptive_time_sec: float,
     tie_tol: float,
+    epsilon_optimal_tol: float,
 ) -> Dict[str, object]:
     exact_top = top_state(exact_scores, "score_point")
     adaptive_top = top_state(adaptive_scores, "score_point")
@@ -316,6 +394,7 @@ def summarize_certification(
             exact_time_sec=exact_time_sec,
             adaptive_point_margin=0.0,
             tie_tol=tie_tol,
+            epsilon_optimal_tol=epsilon_optimal_tol,
         )
         return {
             "map_family": map_family,
@@ -368,6 +447,7 @@ def summarize_certification(
         exact_time_sec=exact_time_sec,
         adaptive_point_margin=point_margin,
         tie_tol=tie_tol,
+        epsilon_optimal_tol=epsilon_optimal_tol,
     )
     return {
         "map_family": map_family,
@@ -507,6 +587,7 @@ def run_one(
         exact_time_sec=exact_time_sec,
         adaptive_time_sec=adaptive_time_sec,
         tie_tol=args.tie_tol,
+        epsilon_optimal_tol=args.epsilon_optimal_tol,
     )
     score_rows = [
         {
@@ -540,20 +621,34 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "top1_margin",
         "top1_certified_margin",
         "top1_margin_over_bound",
+        "tie_mode",
+        "epsilon_optimal_certified",
+        "epsilon_optimality_gap_bound",
+        "tie_set_certified",
         "fallback_used",
         "fallback_reason",
+        "tie_fallback_used",
+        "curvature_fallback_used",
+        "tie_aware_fallback_used",
         "ambiguous_set_size",
         "ambiguous_fraction",
+        "canonical_tie_selected",
         "fallback_top_state",
         "final_top_state",
         "final_certificate",
         "final_certified",
+        "tie_aware_final_certificate",
+        "tie_aware_final_certified",
         "fallback_global_certified",
         "exact_tie_count",
+        "adaptive_point_tie_count",
         "exact_top_margin",
         "fallback_exact_time_proxy_sec",
         "total_time_with_fallback_proxy_sec",
         "speedup_with_fallback_proxy_vs_full_exact",
+        "tie_aware_exact_time_proxy_sec",
+        "total_time_with_tie_certificate_sec",
+        "speedup_with_tie_certificate_vs_full_exact",
         "max_abs_score_error_vs_exact",
         "value_diff_vs_exact",
         "status",
@@ -562,7 +657,12 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
     cert_count = sum(1 for row in rows if bool(row.get("top1_certified", False)))
     match_count = sum(1 for row in rows if bool(row.get("top1_match_exact", False)))
     final_cert_count = sum(1 for row in rows if bool(row.get("final_certified", False)))
+    tie_aware_final_cert_count = sum(1 for row in rows if bool(row.get("tie_aware_final_certified", False)))
     fallback_count = sum(1 for row in rows if bool(row.get("fallback_used", False)))
+    tie_fallback_count = sum(1 for row in rows if bool(row.get("tie_fallback_used", False)))
+    curvature_fallback_count = sum(1 for row in rows if bool(row.get("curvature_fallback_used", False)))
+    tie_set_count = sum(1 for row in rows if bool(row.get("tie_set_certified", False)))
+    eps_count = sum(1 for row in rows if bool(row.get("epsilon_optimal_certified", False)))
     display_rows: List[Dict[str, object]] = []
     for row in rows:
         display_row: Dict[str, object] = {}
@@ -580,14 +680,20 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         f"boundary_methods = {list(args.boundary_methods)}",
         f"adaptive_tail_tols = {list(args.adaptive_tail_tols)}",
         f"candidate_universe = {args.candidate_universe}",
+        f"epsilon_optimal_tol = {args.epsilon_optimal_tol}",
         "",
-        "This table runs Certified Adaptive Green: adaptive intervals are accepted when they separate, otherwise exact Green is invoked on the ambiguous top set.",
+        "This table runs Certified Adaptive Green: adaptive intervals are accepted when they separate. Tie-aware reporting distinguishes unique-top fallback, epsilon/top-set tie certificates, and curvature fallback.",
         "",
         f"- exact top-1 matches: `{match_count}/{len(rows)}`",
         f"- interval-certified top-1 decisions: `{cert_count}/{len(rows)}`",
         f"- rows using top-set fallback: `{fallback_count}/{len(rows)}`",
         f"- final certified decisions/top-sets: `{final_cert_count}/{len(rows)}`",
-        "- time columns with `proxy` scale the exact reference time by ambiguous-set fraction; full exact fallback time is also in the CSV/JSON.",
+        f"- tie-aware final certified decisions/top-sets: `{tie_aware_final_cert_count}/{len(rows)}`",
+        f"- tie fallback rows under unique-top certification: `{tie_fallback_count}/{len(rows)}`",
+        f"- curvature fallback rows after tie-aware certification: `{curvature_fallback_count}/{len(rows)}`",
+        f"- exact tie-set certificates: `{tie_set_count}/{len(rows)}`",
+        f"- epsilon-optimal interval certificates: `{eps_count}/{len(rows)}`",
+        "- `fallback_*` columns report the conservative unique-top exact fallback proxy; `tie_aware_*` columns cap tie fallback by accepting epsilon/top-set certificates.",
         "",
         markdown_table(display_rows, columns),
     ]
@@ -607,6 +713,12 @@ def main() -> None:
     parser.add_argument("--max-splits", type=int, default=18)
     parser.add_argument("--lambda-struct", type=float, default=8.0)
     parser.add_argument("--tie-tol", type=float, default=1e-9)
+    parser.add_argument(
+        "--epsilon-optimal-tol",
+        type=float,
+        default=1e-4,
+        help="RD-score tolerance for accepting an interval-certified epsilon-optimal split.",
+    )
     parser.add_argument(
         "--candidate-universe",
         choices=["all", "proposal", "proposal_or_all"],
