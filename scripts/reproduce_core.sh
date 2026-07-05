@@ -3,6 +3,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+export LAPLACE_NUM_THREADS="${LAPLACE_NUM_THREADS:-1}"
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-$LAPLACE_NUM_THREADS}"
+export OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-$LAPLACE_NUM_THREADS}"
+export MKL_NUM_THREADS="${MKL_NUM_THREADS:-$LAPLACE_NUM_THREADS}"
+export NUMEXPR_NUM_THREADS="${NUMEXPR_NUM_THREADS:-$LAPLACE_NUM_THREADS}"
+
 python3 experiments/run_core_benchmark.py \
   --map-specs corridor:16,32 open_room:7 four_rooms:7 maze:9 \
   --slips 0.0 0.05 \

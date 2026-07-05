@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Dict, List, Mapping, Sequence, Tuple
 
+import thread_limits  # noqa: F401
 import numpy as np
 
 from bellman_kron import (

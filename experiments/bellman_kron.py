@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 
+import thread_limits  # noqa: F401
 import networkx as nx
 import numpy as np
 from scipy.linalg import eigh

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Mapping, Sequence
 
 import matplotlib.pyplot as plt
+import thread_limits  # noqa: F401
 import numpy as np
 
 

@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Dict, List
 
+import thread_limits  # noqa: F401
 import numpy as np
 
 from bellman_kron import GridWorld

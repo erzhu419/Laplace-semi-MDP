@@ -5,6 +5,7 @@ import time
 from collections import deque
 from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 
+import thread_limits  # noqa: F401
 import numpy as np
 
 from bellman_kron import (

@@ -5860,15 +5860,16 @@ Current larger-table summary:
 ```text
 group_constrained / operator:
   feasible rows = 6 / 6
-  median selection time ≈ 10.4s
-  best total speedup ≈ 0.0082x
+  median selection time ≈ 5.41s
+  best total speedup ≈ 0.0167x
 
 group_constrained_incremental / insertion_score:
   feasible rows = 6 / 6
-  median selection time ≈ 5.75s
-  best total speedup ≈ 0.0275x
-  median probe Green time is now comparable to operator because it also
-  computes production occupancy weights; candidate score time remains tiny.
+  median selection time ≈ 1.58s
+  best total speedup ≈ 0.0443x
+  median probe Green time ≈ 0.0278s
+  median active-weight time ≈ 0.346s
+  candidate score time remains tiny.
 ```
 
 Interpretation:
@@ -5904,3 +5905,66 @@ semantic mismatch was occupancy weighting versus uniform fallback. The remaining
 scientific issue is whether to make the occupancy-weighted insertion backend the
 main runtime path, or keep it as an ablation until a larger scale suite confirms
 the added occupancy-weight computation amortizes well.
+
+## 38. CPU Thread Cap and Boundary-Level Occupancy Cache
+
+The local CPU saturation was not a missing CUDA path. The experiments use NumPy
+dense linear algebra, and this environment links NumPy against OpenBLAS. With no
+thread cap, each `np.linalg.solve` can fan out across the local CPU cores.
+
+I added a conservative thread guard:
+
+```text
+experiments/thread_limits.py
+scripts/reproduce_core.sh
+scripts/reproduce_certificates.sh
+```
+
+Default:
+
+```text
+LAPLACE_NUM_THREADS=1
+OMP_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1
+MKL_NUM_THREADS=1
+NUMEXPR_NUM_THREADS=1
+```
+
+On `node001` to `node006`, run for example:
+
+```bash
+LAPLACE_NUM_THREADS=64 bash scripts/reproduce_core.sh
+```
+
+The occupancy-weight cost was also cached at boundary level. Before this pass,
+`insertion_score` recomputed the production active-edge occupancy weights once
+per probe. Now `ProbeDeltaCache` stores:
+
+```text
+(map, rows, recipe, basis, boundary, gamma, slip, edge_weight, top_fraction)
+  -> active edge weights
+```
+
+and all probe lenses for the same beam node reuse that record. The larger table
+now reports `active_weight_time_sec` separately from probe Green time, making the
+remaining bottleneck visible instead of hiding it inside `green_kernel_time`.
+
+Current larger-table summary after thread cap plus occupancy-weight cache:
+
+```text
+operator backend:
+  feasible = 6 / 6
+  median selection time ≈ 5.41s
+  best total speedup ≈ 0.0167x
+
+incremental insertion_score backend:
+  feasible = 6 / 6
+  median selection time ≈ 1.58s
+  median active-weight time ≈ 0.346s
+  best total speedup ≈ 0.0443x
+```
+
+So the next optimization target is no longer per-candidate Green child solves.
+It is true incremental / cached occupancy evaluation: update the SMDP policy
+occupancy and active-edge weights after a split without rebuilding the whole
+production edge model.

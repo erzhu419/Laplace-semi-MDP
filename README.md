@@ -53,6 +53,15 @@ Rebuild the core paper-facing experiments:
 bash scripts/reproduce_core.sh
 ```
 
+By default, experiment scripts cap BLAS/OpenMP to one CPU thread so local WSL
+runs do not monopolize all cores. These experiments are NumPy/OpenBLAS linear
+algebra jobs, not CUDA/GPU training. On CPU nodes, override the cap explicitly,
+for example:
+
+```bash
+LAPLACE_NUM_THREADS=64 bash scripts/reproduce_core.sh
+```
+
 ## Current Artifact Status
 
 - Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.
@@ -61,7 +70,7 @@ bash scripts/reproduce_core.sh
 - Solver-validity diagnostics compare operator-only and exact-refined beam search against small exhaustive oracles.
 - The larger group-constrained adaptive table evaluates `open_room_12`, `four_rooms_11`, and `maze_13` at slip `0` and `0.05`; group-constrained boundaries are feasible on the current suite, while endpoint-only boundaries are not.
 - Discovery profiling is now separated from planning: `experiments/output/discovery_profile_cache/summary.md` decomposes probe construction, Green kernels, vectorized frozen scoring, full candidate recompute, and cache-hit reuse.
-- Incremental Green diagnostics now check parent-to-child boundary insertion, and `group_constrained_incremental` wires the score-level update into beam selection as an ablation. The semantic diff identified the open-room issue as edge-uniform versus occupancy-weighted accounting; the insertion backend now honors the production active-edge weights and is feasible on the larger group suite.
+- Incremental Green diagnostics now check parent-to-child boundary insertion, and `group_constrained_incremental` wires the score-level update into beam selection as an ablation. The semantic diff identified the open-room issue as edge-uniform versus occupancy-weighted accounting; the insertion backend now honors and caches the production active-edge weights and is feasible on the larger group suite.
 - Weighted spectral certificates are reported as sufficient appendix certificates; conditioned/rational audits expose the conditioning-vs-tightness tradeoff.
 
 Use `experiments/output/submission_main_table/summary.md` as the first reviewer-facing artifact rather than reading every historical output directory.

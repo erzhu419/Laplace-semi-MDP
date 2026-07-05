@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence
 
+import thread_limits  # noqa: F401
 from bellman_kron import GridWorld
 from compression_experiment_utils import (
     build_compressed_model_measured,

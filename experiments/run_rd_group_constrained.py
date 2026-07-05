@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
 
+import thread_limits  # noqa: F401
 import numpy as np
 
 from bellman_kron import (
@@ -62,17 +63,28 @@ class ProbeDeltaRecord:
 
 
 @dataclass
+class ActiveWeightRecord:
+    weights_by_edge: Dict[Tuple[int, int], float]
+    n_active_edges: int
+    eval_time_sec: float
+
+
+@dataclass
 class ProbeDeltaCache:
     enabled: bool = True
     records: Dict[Tuple[object, ...], ProbeDeltaRecord] = field(default_factory=dict)
+    active_weight_records: Dict[Tuple[object, ...], ActiveWeightRecord] = field(default_factory=dict)
     hits: int = 0
     misses: int = 0
     probe_calls: int = 0
+    active_weight_hits: int = 0
+    active_weight_misses: int = 0
     context_build_time_sec: float = 0.0
     green_kernel_time_sec: float = 0.0
     operator_delta_time_sec: float = 0.0
     recompute_time_sec: float = 0.0
     call_overhead_time_sec: float = 0.0
+    active_weight_time_sec: float = 0.0
     candidate_score_time_sec: float = 0.0
     beam_expansion_time_sec: float = 0.0
 
@@ -109,6 +121,32 @@ class ProbeDeltaCache:
             str(delta_backend),
         )
 
+    def active_weight_key(
+        self,
+        *,
+        map_name: str,
+        rows: Tuple[str, ...],
+        recipe: Mapping[str, object],
+        basis: Sequence[int],
+        boundary: Sequence[int],
+        gamma: float,
+        slip: float,
+        edge_weight: str,
+        probe_top_fraction: float,
+    ) -> Tuple[object, ...]:
+        return (
+            "active_weight",
+            map_name,
+            tuple(rows),
+            _recipe_signature(recipe),
+            tuple(sorted(int(state) for state in basis)),
+            tuple(sorted(int(state) for state in boundary)),
+            _round_key(gamma),
+            _round_key(slip),
+            str(edge_weight),
+            _round_key(probe_top_fraction),
+        )
+
     def get(self, key: Tuple[object, ...]) -> ProbeDeltaRecord | None:
         self.probe_calls += 1
         if not self.enabled:
@@ -121,6 +159,17 @@ class ProbeDeltaCache:
             self.hits += 1
         return record
 
+    def get_active_weights(self, key: Tuple[object, ...]) -> ActiveWeightRecord | None:
+        if not self.enabled:
+            self.active_weight_misses += 1
+            return None
+        record = self.active_weight_records.get(key)
+        if record is None:
+            self.active_weight_misses += 1
+        else:
+            self.active_weight_hits += 1
+        return record
+
     def put(self, key: Tuple[object, ...], record: ProbeDeltaRecord) -> None:
         if self.enabled:
             self.records[key] = record
@@ -130,14 +179,24 @@ class ProbeDeltaCache:
         self.recompute_time_sec += float(record.recompute_time_sec)
         self.call_overhead_time_sec += float(record.call_overhead_time_sec)
 
+    def put_active_weights(self, key: Tuple[object, ...], record: ActiveWeightRecord) -> None:
+        if self.enabled:
+            self.active_weight_records[key] = record
+        self.active_weight_time_sec += float(record.eval_time_sec)
+
     def summary(self) -> Dict[str, object]:
         hit_rate = self.hits / max(1, self.hits + self.misses)
+        active_weight_hit_rate = self.active_weight_hits / max(
+            1,
+            self.active_weight_hits + self.active_weight_misses,
+        )
         profiled = (
             self.context_build_time_sec
             + self.green_kernel_time_sec
             + self.operator_delta_time_sec
             + self.recompute_time_sec
             + self.call_overhead_time_sec
+            + self.active_weight_time_sec
             + self.candidate_score_time_sec
             + self.beam_expansion_time_sec
         )
@@ -155,6 +214,13 @@ class ProbeDeltaCache:
             "probe_cache_hit_rate": float(hit_rate),
             "probe_calls": int(self.probe_calls),
             "unique_probe_evals": int(len(self.records)) if self.enabled else int(self.misses),
+            "active_weight_cache_hits": int(self.active_weight_hits),
+            "active_weight_cache_misses": int(self.active_weight_misses),
+            "active_weight_cache_hit_rate": float(active_weight_hit_rate),
+            "active_weight_unique_evals": int(len(self.active_weight_records))
+            if self.enabled
+            else int(self.active_weight_misses),
+            "active_weight_time_sec": float(self.active_weight_time_sec),
             "probe_context_build_time_sec": float(self.context_build_time_sec),
             "probe_green_kernel_time_sec": float(self.green_kernel_time_sec),
             "probe_operator_delta_time_sec": float(self.operator_delta_time_sec),
@@ -238,6 +304,48 @@ def _green_terminal_probability(green: object, start_state: int, terminal_state:
     return finite_float(getattr(green, "hit_probability")[row_pos, int(matches[0])])
 
 
+def active_weight_table_for_boundary(
+    map_name: str,
+    rows: Tuple[str, ...],
+    recipe: Mapping[str, object],
+    basis: Sequence[int],
+    boundary: Sequence[int],
+    weight_probe: str,
+    gamma: float,
+    slip: float,
+    edge_weight: str,
+    probe_top_fraction: float,
+) -> ActiveWeightRecord:
+    started = time.perf_counter()
+    context = build_probe_context(
+        rows,
+        recipe=recipe,
+        fixed_candidate_basis=basis,
+        residual_kind=weight_probe,
+        gamma=gamma,
+        slip=slip,
+        probe_top_fraction=probe_top_fraction,
+    )
+    _weight_row, weight_edges = evaluate_recipe_boundary(
+        map_name=map_name,
+        context=context,
+        recipe=recipe,
+        boundary=boundary,
+        gamma=gamma,
+        slip=slip,
+    )
+    weights_by_edge = {
+        (int(edge_row["src_state"]), int(edge_row["target_state"])): float(weight)
+        for edge_row, weight in active_edges(weight_edges, edge_weight=edge_weight)
+        if float(weight) > 1e-12
+    }
+    return ActiveWeightRecord(
+        weights_by_edge=weights_by_edge,
+        n_active_edges=len(weights_by_edge),
+        eval_time_sec=time.perf_counter() - started,
+    )
+
+
 def probe_delta_table_insertion_score(
     map_name: str,
     step: int,
@@ -248,8 +356,8 @@ def probe_delta_table_insertion_score(
     probe: str,
     gamma: float,
     slip: float,
-    edge_weight: str,
     probe_top_fraction: float,
+    active_weight_by_edge: Mapping[Tuple[int, int], float] | None = None,
 ) -> ProbeDeltaRecord:
     started = time.perf_counter()
     context_start = time.perf_counter()
@@ -271,28 +379,9 @@ def probe_delta_table_insertion_score(
     distances = shortest_path_distance_matrix(grid)
     hidden_threshold = 1e-6
     local_horizon = 999.0
-    active_weight_by_edge: Dict[Tuple[int, int], float] | None = None
-    if edge_weight != "uniform":
-        weight_start = time.perf_counter()
-        _weight_row, weight_edges = evaluate_recipe_boundary(
-            map_name=map_name,
-            context=context,
-            recipe=recipe,
-            boundary=boundary,
-            gamma=gamma,
-            slip=slip,
-        )
-        active_weight_by_edge = {
-            (int(edge_row["src_state"]), int(edge_row["target_state"])): float(weight)
-            for edge_row, weight in active_edges(weight_edges, edge_weight=edge_weight)
-            if float(weight) > 1e-12
-        }
-        weight_eval_time = time.perf_counter() - weight_start
-    else:
-        weight_eval_time = 0.0
 
     edge_records: List[Dict[str, object]] = []
-    green_time = weight_eval_time
+    green_time = 0.0
     score_time = 0.0
     for target_state in boundary:
         policy = shortest_path_policy_to_target(grid, int(target_state), slip=slip)
@@ -403,7 +492,46 @@ def probe_delta_table(
     before_by_probe: Dict[str, float] = {}
     deltas_by_state: Dict[int, Dict[str, float]] = {}
     diagnostics: List[Dict[str, object]] = []
-    for probe in probes:
+    active_weight_record: ActiveWeightRecord | None = None
+    active_weight_cache_hit = False
+    if delta_backend == "insertion_score" and edge_weight != "uniform":
+        weight_cache_key = (
+            probe_cache.active_weight_key(
+                map_name=map_name,
+                rows=rows,
+                recipe=recipe,
+                basis=basis,
+                boundary=boundary,
+                gamma=gamma,
+                slip=slip,
+                edge_weight=edge_weight,
+                probe_top_fraction=probe_top_fraction,
+            )
+            if probe_cache is not None
+            else None
+        )
+        active_weight_record = (
+            probe_cache.get_active_weights(weight_cache_key)
+            if probe_cache is not None and weight_cache_key is not None
+            else None
+        )
+        active_weight_cache_hit = active_weight_record is not None
+        if active_weight_record is None:
+            active_weight_record = active_weight_table_for_boundary(
+                map_name=map_name,
+                rows=rows,
+                recipe=recipe,
+                basis=basis,
+                boundary=boundary,
+                weight_probe=str(probes[0]) if probes else "none",
+                gamma=gamma,
+                slip=slip,
+                edge_weight=edge_weight,
+                probe_top_fraction=probe_top_fraction,
+            )
+            if probe_cache is not None and weight_cache_key is not None:
+                probe_cache.put_active_weights(weight_cache_key, active_weight_record)
+    for probe_index, probe in enumerate(probes):
         cache_key = (
             probe_cache.key(
                 map_name=map_name,
@@ -437,8 +565,12 @@ def probe_delta_table(
                     probe=probe,
                     gamma=gamma,
                     slip=slip,
-                    edge_weight=edge_weight,
                     probe_top_fraction=probe_top_fraction,
+                    active_weight_by_edge=(
+                        active_weight_record.weights_by_edge
+                        if active_weight_record is not None
+                        else None
+                    ),
                 )
             else:
                 context_start = time.perf_counter()
@@ -508,6 +640,15 @@ def probe_delta_table(
                 "green_kernel_time_sec": float(record.green_kernel_time_sec) if not cache_hit else 0.0,
                 "operator_delta_time_sec": float(record.operator_delta_time_sec) if not cache_hit else 0.0,
                 "probe_uncached_time_sec": float(record.total_uncached_time_sec) if not cache_hit else 0.0,
+                "active_weight_cache_hit": bool(active_weight_cache_hit),
+                "active_weight_time_sec": (
+                    float(active_weight_record.eval_time_sec)
+                    if active_weight_record is not None and not active_weight_cache_hit and probe_index == 0
+                    else 0.0
+                ),
+                "n_active_weight_edges": int(active_weight_record.n_active_edges)
+                if active_weight_record is not None
+                else 0,
                 "delta_backend": delta_backend,
             }
         )

@@ -10,6 +10,7 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
 
+import thread_limits  # noqa: F401
 import numpy as np
 
 from bellman_kron import GridWorld, shortest_path_policy_to_target, transition_matrix_for_policy

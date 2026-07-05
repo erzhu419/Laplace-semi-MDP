@@ -8,6 +8,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import thread_limits  # noqa: F401
 import numpy as np
 
 from bellman_kron import (

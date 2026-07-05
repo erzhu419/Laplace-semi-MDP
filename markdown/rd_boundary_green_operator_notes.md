@@ -1222,12 +1222,12 @@ Current result:
 ```text
 operator backend:
   feasible = 6 / 6
-  median selection time ≈ 10.4s
+  median selection time ≈ 5.41s
 
 incremental insertion_score backend:
   feasible = 6 / 6
-  median selection time ≈ 5.75s
-  best total-speedup improves from ≈ 0.0082x to ≈ 0.0275x
+  median selection time ≈ 1.58s
+  best total-speedup improves from ≈ 0.0167x to ≈ 0.0443x
 ```
 
 The previous `open_room_12, slip=0.0` miss is fixed. The semantic diff showed it
@@ -1253,3 +1253,53 @@ incremental beam row becomes feasible on all current larger-table cases. The
 remaining runtime question is now engineering rather than semantics: can we
 cache or incrementally update the occupancy weights so the speed advantage holds
 at larger scale?
+
+## CPU Threading and Cached Occupancy Weights
+
+The high local CPU usage came from OpenBLAS threads inside NumPy linear solves,
+not from a GPU training job falling back to CPU. The experiments are CPU linear
+algebra workloads. I added:
+
+```text
+experiments/thread_limits.py
+scripts/reproduce_core.sh
+scripts/reproduce_certificates.sh
+```
+
+Default local behavior:
+
+```text
+LAPLACE_NUM_THREADS=1
+```
+
+For the 192-core CPU nodes, explicitly raise it:
+
+```bash
+LAPLACE_NUM_THREADS=64 bash scripts/reproduce_core.sh
+```
+
+The insertion backend also now caches production active-edge occupancy weights
+per boundary, instead of recomputing them for every probe lens. The profile
+separates:
+
+```text
+probe_green_kernel_time_sec
+probe_operator_delta_time_sec
+active_weight_time_sec
+candidate_score_time_sec
+```
+
+Current larger group table:
+
+```text
+operator:
+  median selection ≈ 5.41s
+
+insertion_score:
+  median selection ≈ 1.58s
+  median probe Green ≈ 0.0278s
+  median active-weight time ≈ 0.346s
+```
+
+This confirms the next bottleneck is the production occupancy-weight model, not
+the score-level Green insertion itself.

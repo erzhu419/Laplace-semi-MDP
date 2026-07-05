@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
 
+import thread_limits  # noqa: F401
 import numpy as np
 
 from run_first_boundary_targeted import (

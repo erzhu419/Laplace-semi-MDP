@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
 
+import thread_limits  # noqa: F401
 from bellman_kron import GridWorld, endpoint_boundary_states
 from compression_experiment_utils import build_compressed_model_measured, parse_map_specs
 from run_first_boundary_targeted import markdown_table
@@ -336,6 +337,8 @@ def run_method(
         "probe_context_build_time_sec": float(finite_float(selection_profile.get("probe_context_build_time_sec"), 0.0)),
         "probe_green_kernel_time_sec": float(finite_float(selection_profile.get("probe_green_kernel_time_sec"), 0.0)),
         "probe_operator_delta_time_sec": float(finite_float(selection_profile.get("probe_operator_delta_time_sec"), 0.0)),
+        "active_weight_time_sec": float(finite_float(selection_profile.get("active_weight_time_sec"), 0.0)),
+        "active_weight_cache_hit_rate": float(finite_float(selection_profile.get("active_weight_cache_hit_rate"), 0.0)),
         "probe_call_overhead_time_sec": float(finite_float(selection_profile.get("probe_call_overhead_time_sec"), 0.0)),
         "candidate_score_time_sec": float(finite_float(selection_profile.get("candidate_score_time_sec"), 0.0)),
         "beam_expansion_time_sec": float(finite_float(selection_profile.get("beam_expansion_time_sec"), 0.0)),
@@ -386,6 +389,7 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "delta_backend",
         "probe_green_kernel_time_sec",
         "probe_operator_delta_time_sec",
+        "active_weight_time_sec",
         "candidate_score_time_sec",
         "probe_cache_hit_rate",
         "kernel_time_sec",
@@ -416,6 +420,7 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "median_n_boundary",
         "median_selection_time_sec",
         "median_probe_green_kernel_time_sec",
+        "median_active_weight_time_sec",
         "median_candidate_score_time_sec",
         "median_probe_cache_hit_rate",
         "best_planning_speedup",
@@ -456,6 +461,7 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
                 "median_n_boundary": sorted(int(row["n_boundary"]) for row in group)[len(group) // 2] if group else "",
                 "median_selection_time_sec": median(finite_float(row.get("selection_time_sec")) for row in group),
                 "median_probe_green_kernel_time_sec": median(finite_float(row.get("probe_green_kernel_time_sec")) for row in group),
+                "median_active_weight_time_sec": median(finite_float(row.get("active_weight_time_sec")) for row in group),
                 "median_candidate_score_time_sec": median(finite_float(row.get("candidate_score_time_sec")) for row in group),
                 "median_probe_cache_hit_rate": median(finite_float(row.get("probe_cache_hit_rate")) for row in group),
                 "best_planning_speedup": max((finite_float(row.get("planning_speedup")) for row in group), default=float("nan")),
