@@ -220,8 +220,8 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
             ),
             "experiment_artifact": args.edge_reward_csv,
             "experiment_status": metric_status("edge_reward_multitask", edge_reward_rows),
-            "manuscript_location": "Limitation ablation / terminal-goal extension",
-            "remaining_gap": "The gap is much smaller, but exact per-query kernels are slower; count and optimize the goal-conditioned interface.",
+            "manuscript_location": "Secondary terminal-goal extension",
+            "remaining_gap": "The gap is much smaller and the backend is shared/batched, but larger multitask runs must show amortized speedup beyond the current break-even table.",
         },
         {
             "paper_claim": "The extracted graph should generalize across maze instances, not only fixed toy layouts.",

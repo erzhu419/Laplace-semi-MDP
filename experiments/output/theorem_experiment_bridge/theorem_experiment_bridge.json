@@ -96,8 +96,8 @@
     "proof_status": "proved_symbol_present",
     "experiment_artifact": "experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv",
     "experiment_status": "rows=96, additive=48, event_gap=27.52, goal_conditioned_gap=0.3494",
-    "manuscript_location": "Limitation ablation / terminal-goal extension",
-    "remaining_gap": "The gap is much smaller, but exact per-query kernels are slower; count and optimize the goal-conditioned interface."
+    "manuscript_location": "Secondary terminal-goal extension",
+    "remaining_gap": "The gap is much smaller and the backend is shared/batched, but larger multitask runs must show amortized speedup beyond the current break-even table."
   },
   {
     "paper_claim": "The extracted graph should generalize across maze instances, not only fixed toy layouts.",

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import json
 import time
 from dataclasses import dataclass
@@ -169,6 +170,24 @@ def edge_smdp_value_iteration(
 def boundary_value_gap(smdp_values: np.ndarray, full_values: np.ndarray, boundary: Sequence[int]) -> float:
     boundary_values = np.asarray(full_values, dtype=float)[np.array(boundary, dtype=int)]
     return float(np.max(np.abs(np.asarray(smdp_values, dtype=float) - boundary_values)))
+
+
+def solve_or_pinv(A: np.ndarray, B: np.ndarray) -> np.ndarray:
+    try:
+        return np.linalg.solve(A, B)
+    except np.linalg.LinAlgError:
+        return np.linalg.pinv(A) @ B
+
+
+def break_even_num_tasks(upfront_time: float, full_time: float, recurring_graph_time: float, task_count: int) -> float:
+    if task_count <= 0:
+        return math.nan
+    full_per_task = full_time / float(task_count)
+    graph_per_task = recurring_graph_time / float(task_count)
+    savings_per_task = full_per_task - graph_per_task
+    if savings_per_task <= 1e-12:
+        return math.inf
+    return float(math.ceil(upfront_time / savings_per_task))
 
 
 def choose_query_states(
@@ -344,35 +363,48 @@ def goal_conditioned_event_kernel_for_goal(
     base_gamma_rows: np.ndarray,
     base_event_time: float,
     base_event_nnz: int,
-) -> Tuple[List[EdgeKernel], np.ndarray, np.ndarray, float, int, int, float]:
-    t0 = time.perf_counter()
+) -> Tuple[List[EdgeKernel], np.ndarray, np.ndarray, float, int, int, float, float]:
+    policy_start = time.perf_counter()
     goal_policy = shortest_path_policy_to_target(model.grid, int(goal_state), slip=slip)
     P_goal, _r_goal = transition_matrix_for_policy(model.grid, goal_policy, absorbing=[])
+    policy_time = time.perf_counter() - policy_start
 
+    solve_start = time.perf_counter()
+    goal = int(goal_state)
+    boundary_array = np.array(model.boundary, dtype=int)
+    absorbing = sorted(set(model.boundary).union({goal}))
+    absorbing_set = set(absorbing)
+    interior = np.array([state for state in range(model.grid.n_states) if state not in absorbing_set], dtype=int)
+    boundary_pos = {state: pos for pos, state in enumerate(model.boundary)}
+
+    if len(interior) == 0:
+        P_Bg = P_goal[np.ix_(boundary_array, [goal])][:, 0]
+        P_BB = P_goal[np.ix_(boundary_array, boundary_array)]
+        hit_rows = gamma * P_Bg
+        gamma_rows = gamma * P_BB
+        step_rewards = np.full(len(model.boundary), model.grid.step_reward, dtype=float)
+    else:
+        P_II = P_goal[np.ix_(interior, interior)]
+        A = np.eye(len(interior), dtype=float) - gamma * P_II
+        P_Ig = P_goal[np.ix_(interior, [goal])][:, 0]
+        P_IB = P_goal[np.ix_(interior, boundary_array)]
+        h_I = solve_or_pinv(A, gamma * P_Ig)
+        G_I = solve_or_pinv(A, gamma * P_IB)
+        v_I = solve_or_pinv(A, np.full(len(interior), model.grid.step_reward, dtype=float))
+
+        P_Bg = P_goal[np.ix_(boundary_array, [goal])][:, 0]
+        P_BI = P_goal[np.ix_(boundary_array, interior)]
+        P_BB = P_goal[np.ix_(boundary_array, boundary_array)]
+        hit_rows = gamma * P_Bg + gamma * (P_BI @ h_I)
+        gamma_rows = gamma * P_BB + gamma * (P_BI @ G_I)
+        step_rewards = model.grid.step_reward + gamma * (P_BI @ v_I)
+    solve_time = time.perf_counter() - solve_start
+
+    local_nnz = int(np.count_nonzero(np.abs(hit_rows) > 1e-12))
+    local_nnz += int(np.count_nonzero(np.abs(gamma_rows) > 1e-12))
     local_edges: List[EdgeKernel] = []
-    local_rewards: List[float] = []
-    local_gamma_rows: List[np.ndarray] = []
-    local_nnz = 0
     for src_pos, src_state in enumerate(model.boundary):
-        if int(goal_state) == int(src_state):
-            continue
-        terminals = sorted((set(model.boundary) - {int(src_state)}).union({int(goal_state)}))
-        first_hit = first_hit_reduce(
-            P=P_goal,
-            r=np.full(model.grid.n_states, model.grid.step_reward, dtype=float),
-            start_state=int(src_state),
-            terminals=terminals,
-            gamma=gamma,
-        )
-        gamma_row = np.zeros(len(model.boundary), dtype=float)
-        for term, discounted_prob in zip(first_hit.terminals, first_hit.gamma_terminal):
-            term_int = int(term)
-            if term_int == int(goal_state):
-                local_nnz += 1
-                continue
-            if term_int in model.boundary_to_pos:
-                gamma_row[model.boundary_to_pos[term_int]] = float(discounted_prob)
-        local_nnz += int(np.count_nonzero(np.abs(gamma_row) > 1e-12))
+        src_pos = boundary_pos[int(src_state)]
         local_edges.append(
             EdgeKernel(
                 label=f"gc_{src_pos:03d}_to_goal",
@@ -380,30 +412,24 @@ def goal_conditioned_event_kernel_for_goal(
                 dst_pos=-1,
                 src_state=int(src_state),
                 dst_state=int(goal_state),
-                gamma_row=gamma_row,
+                gamma_row=gamma_rows[src_pos].copy(),
                 occupancy_row=np.zeros(model.grid.n_states, dtype=float),
                 policy_matrix=P_goal,
             )
         )
-        local_rewards.append(float(first_hit.reward))
-        local_gamma_rows.append(gamma_row)
-
-    local_time = time.perf_counter() - t0
-    if local_edges:
-        combined_rewards = np.concatenate([base_edge_rewards, np.array(local_rewards, dtype=float)])
-        combined_gamma = np.vstack([base_gamma_rows, np.vstack(local_gamma_rows)])
-    else:
-        combined_rewards = base_edge_rewards.copy()
-        combined_gamma = base_gamma_rows.copy()
+    local_rewards = step_rewards.copy()
+    combined_rewards = np.concatenate([base_edge_rewards, np.array(local_rewards, dtype=float)])
+    combined_gamma = np.vstack([base_gamma_rows, gamma_rows])
     combined_edges = list(model.edges) + local_edges
     return (
         combined_edges,
         combined_rewards,
         combined_gamma,
-        base_event_time + local_time,
+        base_event_time + policy_time + solve_time,
         int(base_event_nnz + local_nnz),
         len(local_edges),
-        local_time,
+        policy_time,
+        solve_time,
     )
 
 
@@ -572,6 +598,7 @@ def run_map_method(
                     gc_event_nnz,
                     gc_option_count,
                     gc_policy_build_time,
+                    gc_batched_solve_time,
                 ) = goal_conditioned_event_kernel_for_goal(
                     model,
                     goal_state=int(query_state),
@@ -597,6 +624,7 @@ def run_map_method(
                         "event_kernel_time_sec": gc_event_time,
                         "event_kernel_nnz": int(gc_event_nnz),
                         "goal_policy_build_time_sec": gc_policy_build_time,
+                        "batched_event_solve_time_sec": gc_batched_solve_time,
                         "smdp_solve_time_sec": float(gc_smdp["time_sec"]),
                         "smdp_edge_backup_count": int(gc_smdp["edge_backup_count"]),
                         "start_gap": abs(float(gc_smdp["V"][start_pos]) - float(full["V"][start_state])),
@@ -619,6 +647,12 @@ def run_map_method(
                 solve_time = sum(float(row["smdp_solve_time_sec"]) for row in prefix)
                 graph_total = fixed_upfront + relabel_time + solve_time
                 gaps = [float(row["start_gap"]) for row in prefix]
+                break_even = break_even_num_tasks(
+                    fixed_upfront,
+                    full_time,
+                    relabel_time + solve_time,
+                    count,
+                )
                 rows_out.append(
                     {
                         "map_family": family,
@@ -637,12 +671,16 @@ def run_map_method(
                         "certified_kernel_error_bound": 0.0,
                         "goal_option_interface_size": 0,
                         "goal_conditioned_options": 0,
+                        "n_goal_policies": 0,
                         "construction_time_sec": model.construction_time_sec,
                         "kernel_time_sec": model.kernel_time_sec,
                         "task_kernel_time_sec": relabel_time,
+                        "policy_build_time_sec": 0.0,
+                        "batched_event_solve_time_sec": 0.0,
                         "smdp_solve_time_sec": solve_time,
                         "full_total_time_sec": full_time,
                         "graph_total_time_sec": graph_total,
+                        "break_even_num_tasks": break_even,
                         "amortized_speedup_vs_full_vi": full_time / max(1e-12, graph_total),
                         "planning_only_speedup_vs_full_vi": full_time / max(1e-12, solve_time + relabel_time),
                         "start_gap_mean": float(np.mean(gaps)),
@@ -659,6 +697,12 @@ def run_map_method(
             solve_time = sum(float(row["smdp_solve_time_sec"]) for row in prefix)
             graph_total = fixed_upfront + event_time + solve_time
             gaps = [float(row["start_gap"]) for row in prefix]
+            break_even = break_even_num_tasks(
+                fixed_upfront,
+                full_time,
+                event_time + solve_time,
+                count,
+            )
             rows_out.append(
                 {
                     "map_family": family,
@@ -677,12 +721,16 @@ def run_map_method(
                     "certified_kernel_error_bound": 0.0,
                     "goal_option_interface_size": 0,
                     "goal_conditioned_options": 0,
+                    "n_goal_policies": 0,
                     "construction_time_sec": model.construction_time_sec,
                     "kernel_time_sec": model.kernel_time_sec,
                     "task_kernel_time_sec": event_time,
+                    "policy_build_time_sec": 0.0,
+                    "batched_event_solve_time_sec": 0.0,
                     "smdp_solve_time_sec": solve_time,
                     "full_total_time_sec": full_time,
                     "graph_total_time_sec": graph_total,
+                    "break_even_num_tasks": break_even,
                     "amortized_speedup_vs_full_vi": full_time / max(1e-12, graph_total),
                     "planning_only_speedup_vs_full_vi": full_time / max(1e-12, event_time + solve_time),
                     "start_gap_mean": float(np.mean(gaps)),
@@ -696,10 +744,18 @@ def run_map_method(
                 gc_prefix = terminal_goal_conditioned_rows[:count]
                 gc_full_time = sum(float(row["full_time_sec"]) for row in gc_prefix)
                 gc_event_time = sum(float(row["event_kernel_time_sec"]) for row in gc_prefix)
+                gc_policy_time = sum(float(row["goal_policy_build_time_sec"]) for row in gc_prefix)
+                gc_batched_time = sum(float(row["batched_event_solve_time_sec"]) for row in gc_prefix)
                 gc_solve_time = sum(float(row["smdp_solve_time_sec"]) for row in gc_prefix)
                 gc_total = fixed_upfront + gc_event_time + gc_solve_time
                 gc_gaps = [float(row["start_gap"]) for row in gc_prefix]
                 gc_interface = sum(int(row["goal_option_interface_size"]) for row in gc_prefix)
+                gc_break_even = break_even_num_tasks(
+                    fixed_upfront + gc_event_time,
+                    gc_full_time,
+                    gc_solve_time,
+                    count,
+                )
                 rows_out.append(
                     {
                         "map_family": family,
@@ -718,12 +774,16 @@ def run_map_method(
                         "certified_kernel_error_bound": 0.0,
                         "goal_option_interface_size": gc_interface,
                         "goal_conditioned_options": gc_interface,
+                        "n_goal_policies": count,
                         "construction_time_sec": model.construction_time_sec,
                         "kernel_time_sec": model.kernel_time_sec,
                         "task_kernel_time_sec": gc_event_time,
+                        "policy_build_time_sec": gc_policy_time,
+                        "batched_event_solve_time_sec": gc_batched_time,
                         "smdp_solve_time_sec": gc_solve_time,
                         "full_total_time_sec": gc_full_time,
                         "graph_total_time_sec": gc_total,
+                        "break_even_num_tasks": gc_break_even,
                         "amortized_speedup_vs_full_vi": gc_full_time / max(1e-12, gc_total),
                         "planning_only_speedup_vs_full_vi": gc_full_time / max(1e-12, gc_event_time + gc_solve_time),
                         "start_gap_mean": float(np.mean(gc_gaps)),
@@ -748,6 +808,12 @@ def run_map_method(
                 )
                 promote_construction = time.perf_counter() - t_promote - promote_kernel - promote_solve
                 promote_total = promote_kernel + promote_solve
+                promote_break_even = break_even_num_tasks(
+                    max(0.0, promote_construction) + promote_kernel,
+                    full_time,
+                    promote_solve,
+                    count,
+                )
                 rows_out.append(
                     {
                         "map_family": family,
@@ -766,12 +832,16 @@ def run_map_method(
                         "certified_kernel_error_bound": 0.0,
                         "goal_option_interface_size": count,
                         "goal_conditioned_options": count,
+                        "n_goal_policies": 0,
                         "construction_time_sec": max(0.0, promote_construction),
                         "kernel_time_sec": promote_kernel,
                         "task_kernel_time_sec": 0.0,
+                        "policy_build_time_sec": 0.0,
+                        "batched_event_solve_time_sec": 0.0,
                         "smdp_solve_time_sec": promote_solve,
                         "full_total_time_sec": full_time,
                         "graph_total_time_sec": promote_total,
+                        "break_even_num_tasks": promote_break_even,
                         "amortized_speedup_vs_full_vi": full_time / max(1e-12, promote_total),
                         "planning_only_speedup_vs_full_vi": full_time / max(1e-12, promote_solve),
                         "start_gap_mean": np.nan,
@@ -795,6 +865,9 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         gaps = [float(row["start_gap_max"]) for row in group if str(row.get("start_gap_max")) != "nan"]
         boundary_gaps = [float(row["boundary_gap_max"]) for row in group if str(row.get("boundary_gap_max")) != "nan"]
         interfaces = [float(row.get("goal_option_interface_size", 0.0)) for row in group]
+        policies = [float(row.get("n_goal_policies", 0.0)) for row in group]
+        break_even = [float(row.get("break_even_num_tasks", np.nan)) for row in group]
+        finite_break_even = [value for value in break_even if math.isfinite(value)]
         summary_rows.append(
             {
                 "variant": variant,
@@ -807,6 +880,8 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
                 "max_start_gap": float(np.max(gaps)) if gaps else np.nan,
                 "max_boundary_gap": float(np.max(boundary_gaps)) if boundary_gaps else np.nan,
                 "median_goal_interface": float(np.median(interfaces)),
+                "median_goal_policies": float(np.median(policies)),
+                "median_break_even_tasks": float(np.median(finite_break_even)) if finite_break_even else np.inf,
             }
         )
 
@@ -823,7 +898,11 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "graph_total_time_sec",
         "amortized_speedup_vs_full_vi",
         "planning_only_speedup_vs_full_vi",
+        "break_even_num_tasks",
         "goal_option_interface_size",
+        "n_goal_policies",
+        "policy_build_time_sec",
+        "batched_event_solve_time_sec",
         "start_gap_max",
         "boundary_gap_max",
     ]
@@ -839,6 +918,7 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "This experiment keeps the decision boundary graph fixed and moves task variation into edge reward or event kernels.",
         "Additive rewards use exact discounted occupancy relabeling; terminal goals use exact query-time first-hit event kernels.",
         "The goal-conditioned variant appends query-time local options to the event model while keeping `B` fixed, and counts their interface size separately.",
+        "Its shared/batched backend builds one goal-conditioned policy per queried goal and solves all boundary-start event rows together.",
         "",
         "## Summary",
         "",
@@ -855,6 +935,8 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
                 "max_start_gap",
                 "max_boundary_gap",
                 "median_goal_interface",
+                "median_goal_policies",
+                "median_break_even_tasks",
             ],
         ),
         "",

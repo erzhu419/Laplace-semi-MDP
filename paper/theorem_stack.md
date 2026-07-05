@@ -231,6 +231,22 @@ kernel approximation error.  The new goal-conditioned option ablation is a
 proof of concept that this bias can be reduced without promoting `g` into `B`,
 but its interface size and event-kernel cost must be reported separately.
 
+Batched implementation hook: for a shared goal-conditioned policy `pi_g`,
+absorbing set `A_g = B union {g}`, and interior `I_g = S \ A_g`, the event rows
+can be obtained for all boundary starts with one matrix solve:
+
+```text
+h_I = (I - gamma P_II)^(-1) gamma P_Ig
+G_I = (I - gamma P_II)^(-1) gamma P_IB
+H_B(b,g) = gamma P_bg + gamma P_bI h_I
+Gamma_B^{not g}(b,.) = gamma P_bB + gamma P_bI G_I.
+```
+
+This turns the extension from per-boundary option solves into one shared policy
+and one batched event solve per queried goal.  The experiment reports
+`n_goal_policies`, `policy_build_time_sec`, `batched_event_solve_time_sec`, and
+`break_even_num_tasks` so the extension is not a hidden complexity sink.
+
 Lean hooks:
 
 - `proof/RDOperatorReal.lean`: `goal_event_kernel_value_gap_real`
