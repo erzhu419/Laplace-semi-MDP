@@ -594,6 +594,7 @@ def build_first_boundary_reductions(
                     ),
                     "struct_distinct_argmax_score": struct_distinct_argmax_score,
                     "struct_distinct_scores": json.dumps(struct_distinct_scores, sort_keys=True),
+                    "residual_hidden_probs": json.dumps(residual_hidden_probs, sort_keys=True),
                     "residual_hidden_mass": residual_hidden_mass,
                     "residual_hidden_gamma_mass": residual_hidden_gamma_mass,
                     "residual_argmax_state": residual_argmax,
