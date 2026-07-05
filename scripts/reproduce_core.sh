@@ -60,6 +60,14 @@ python3 experiments/run_incremental_green_update_check.py \
 python3 experiments/run_fair_budget_frontier.py \
   --out-dir experiments/output/fair_budget_frontier
 
+python3 experiments/run_edge_reward_kernel_multitask.py \
+  --map-specs corridor:128 open_room:16 four_rooms:15 maze:17 \
+  --methods endpoints turn_articulation \
+  --task-counts 1 5 10 \
+  --max-tasks 10 \
+  --continue-on-error \
+  --out-dir experiments/output/edge_reward_kernel_multitask
+
 python3 experiments/plot_graph_abstraction_figures.py \
   --out-dir experiments/output/graph_abstraction_figures
 

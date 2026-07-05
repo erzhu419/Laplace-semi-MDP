@@ -121,6 +121,12 @@ scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
 - Discovery profiling is now separated from planning: `experiments/output/discovery_profile_cache/summary.md` decomposes probe construction, Green kernels, vectorized frozen scoring, full candidate recompute, and cache-hit reuse.
 - Incremental Green diagnostics now check parent-to-child boundary insertion, and `group_constrained_incremental` wires the score-level update into beam selection as an ablation. The semantic diff identified the open-room issue as edge-uniform versus occupancy-weighted accounting; the insertion backend now honors and caches the production active-edge weights and is feasible on the larger group suite.
 - Weighted spectral certificates are reported as sufficient appendix certificates; conditioned/rational audits expose the conditioning-vs-tightness tradeoff.
+- Fixed-boundary multi-task relabeling is now separated from graph topology:
+  `experiments/output/edge_reward_kernel_multitask/summary.md` compares full VI
+  against exact edge discounted-occupancy reward kernels and query-time
+  first-hit event kernels. Additive reward relabeling preserves compression;
+  terminal-goal event kernels keep `B` fixed but expose the remaining
+  option/boundary restriction gap.
 - Paper-facing scaffolding now lives under `paper/`, including the main claim, related-work matrix, theorem stack, experiment matrix, and figure plan.
 - `experiments/run_random_maze_generalization.py`, `experiments/run_fair_budget_frontier.py`, `experiments/plot_graph_abstraction_figures.py`, and `experiments/run_theorem_experiment_bridge.py` add random-topology stress tests, shared budget-frontier aggregation, interpretability figures, and theorem/proof/experiment alignment.
 

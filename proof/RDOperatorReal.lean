@@ -988,4 +988,84 @@ theorem residual_to_value_gap_real_budget
     hGap.trans hResidual
   exact le_of_mul_le_mul_left hScaled hpos
 
+/-!
+## Edge reward-kernel relabeling bounds
+
+The multi-task paper claim keeps the boundary graph fixed and relabels rewards
+through an edge occupancy kernel.  These real lemmas instantiate the only new
+analytic burden: kernel/reward residuals plug directly into the same Bellman
+residual-to-value-gap theorem, and an `l1` occupancy-kernel error controls the
+reward residual for bounded rewards.
+-/
+
+/-- `l1` edge-occupancy error times reward sup-norm bounds reward residual. -/
+theorem reward_kernel_error_le_l1
+    {S : Type} [Fintype S]
+    (delta r : S -> ℝ) {rMax epsM : ℝ}
+    (hr : ∀ s, |r s| ≤ rMax)
+    (hdelta : (∑ s : S, |delta s|) ≤ epsM)
+    (hrMaxNonneg : 0 ≤ rMax) :
+    |∑ s : S, delta s * r s| ≤ rMax * epsM := by
+  calc
+    |∑ s : S, delta s * r s|
+        ≤ ∑ s : S, |delta s * r s| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ s : S, |delta s| * |r s| := by
+          apply Finset.sum_congr rfl
+          intro s _hs
+          rw [abs_mul]
+    _ ≤ ∑ s : S, |delta s| * rMax := by
+          apply Finset.sum_le_sum
+          intro s _hs
+          exact mul_le_mul_of_nonneg_left (hr s) (abs_nonneg (delta s))
+    _ = (∑ s : S, |delta s|) * rMax := by
+          rw [Finset.sum_mul]
+    _ ≤ epsM * rMax := by
+          exact mul_le_mul_of_nonneg_right hdelta hrMaxNonneg
+    _ = rMax * epsM := by
+          ring
+
+/-- Reward/continuation kernel residual budget gives the graph-SMDP value gap. -/
+theorem reward_kernel_value_gap_real
+    {beta epsilonR epsilonGamma Vmax valueGap : ℝ}
+    (hbeta : beta < 1)
+    (hGap : (1 - beta) * valueGap ≤ epsilonR + Vmax * epsilonGamma) :
+    valueGap ≤ (epsilonR + Vmax * epsilonGamma) / (1 - beta) := by
+  exact residual_to_value_gap_real_div hbeta hGap
+
+/-- Bounded rewards convert an `l1` occupancy-kernel budget into value gap. -/
+theorem reward_kernel_value_gap_from_l1_budget
+    {beta epsilonR rMax epsM epsilonGamma Vmax valueGap : ℝ}
+    (hbeta : beta < 1)
+    (hGap : (1 - beta) * valueGap ≤ epsilonR + Vmax * epsilonGamma)
+    (hRewardResidual : epsilonR ≤ rMax * epsM) :
+    valueGap ≤ (rMax * epsM + Vmax * epsilonGamma) / (1 - beta) := by
+  have hScaled : (1 - beta) * valueGap ≤ rMax * epsM + Vmax * epsilonGamma := by
+    linarith
+  exact residual_to_value_gap_real_div hbeta hScaled
+
+/--
+Triangle-inequality decomposition used in the paper text:
+full primitive value vs. approximate reward-kernel graph value is bounded by
+option/boundary restriction bias, exact reduction error, and kernel error.
+-/
+theorem primitive_to_reward_kernel_gap_decomposition
+    {vStar vRestricted vExact vApprox : ℝ} :
+    |vStar - vApprox| ≤
+      |vStar - vRestricted| + |vRestricted - vExact| + |vExact - vApprox| := by
+  have hDecomp :
+      vStar - vApprox =
+        (vStar - vRestricted) + (vRestricted - vExact) + (vExact - vApprox) := by
+    ring
+  rw [hDecomp]
+  calc
+    |(vStar - vRestricted) + (vRestricted - vExact) + (vExact - vApprox)|
+        ≤ |(vStar - vRestricted) + (vRestricted - vExact)| + |vExact - vApprox| := by
+          simpa [add_assoc] using
+            abs_add_le ((vStar - vRestricted) + (vRestricted - vExact)) (vExact - vApprox)
+    _ ≤ (|vStar - vRestricted| + |vRestricted - vExact|) + |vExact - vApprox| := by
+          have h := abs_add_le (vStar - vRestricted) (vRestricted - vExact)
+          linarith
+    _ = |vStar - vRestricted| + |vRestricted - vExact| + |vExact - vApprox| := by
+          ring
+
 end RDBoundaryGreen.RealProof

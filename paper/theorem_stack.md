@@ -120,3 +120,63 @@ Experiment hooks:
 
 - `experiments/run_incremental_green_update_check.py`
 - `experiments/run_group_incremental_semantic_diff.py`
+
+## T9: Edge Reward/Event Kernel Relabeling
+
+Claim: multi-task rewards should not change the boundary graph topology.  For a
+fixed boundary set `B` and option library, exact edge occupancy kernels
+
+```text
+M_B^o(b,s) = E_b^o[sum_{t=0}^{tau_B-1} gamma^t 1{S_t=s}]
+```
+
+give exact reward relabeling for every bounded additive reward:
+
+```text
+R_r^o(b) = <M_B^o(b,.), r>.
+```
+
+Together with the first-boundary continuation kernel `Gamma_B^o`, this is
+exactly the Bellman operator for the option-restricted graph SMDP.  For feature
+rewards `r_theta = Phi theta`, the same statement stores the edge successor
+feature `Psi_B^o(b) = M_B^o(b,.) Phi` and relabels by
+`R_theta^o(b) = <Psi_B^o(b), theta>`.
+
+For absorbing interior goal queries, keep `B` fixed and add query-time first-hit
+event kernels
+
+```text
+H_B^o(b,g) = E_b^o[gamma^{T_g} 1{T_g < tau_B}]
+Gamma_B^{o,not g}(b,b') = E_b^o[gamma^{tau_B} 1{tau_B < T_g, S_tau=b'}].
+```
+
+Approximation bound: if `Mhat` and `Gammahat` induce operator `That`, the exact
+graph operator is `T`, row mass is at most `beta < 1`, and
+
+```text
+epsilon_R(r) = sup_{b,o} |<(Mhat-M)_B^o(b,.), r>|
+epsilon_Gamma = sup_{b,o} ||Gammahat_B^o(b,.) - Gamma_B^o(b,.)||_1,
+```
+
+then
+
+```text
+||V_r^B - Vhat_r^B||_inf
+  <= (epsilon_R(r) + Vmax epsilon_Gamma) / (1 - beta).
+```
+
+The full primitive-MDP gap should be decomposed as option/boundary restriction
+bias plus exact reduction error plus this kernel approximation error; the exact
+reduction term is zero when the edge kernels are exact.
+
+Lean hooks:
+
+- `proof/RDOperatorReal.lean`: `reward_kernel_error_le_l1`
+- `proof/RDOperatorReal.lean`: `reward_kernel_value_gap_real`
+- `proof/RDOperatorReal.lean`: `reward_kernel_value_gap_from_l1_budget`
+- `proof/RDOperatorReal.lean`: `primitive_to_reward_kernel_gap_decomposition`
+
+Experiment hooks:
+
+- `experiments/run_edge_reward_kernel_multitask.py`
+- `experiments/output/edge_reward_kernel_multitask/summary.md`
