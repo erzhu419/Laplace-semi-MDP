@@ -1068,4 +1068,43 @@ theorem primitive_to_reward_kernel_gap_decomposition
     _ = |vStar - vRestricted| + |vRestricted - vExact| + |vExact - vApprox| := by
           ring
 
+/-!
+## Terminal goal-event kernel bounds
+
+Terminal interior goals change both rewards and termination.  The event kernel
+therefore has one extra residual term for discounted goal-hit mass, and one
+separate residual for option-family insufficiency.
+-/
+
+/-- Kernel approximation bound for terminal goal-event SMDP values. -/
+theorem goal_event_kernel_value_gap_real
+    {beta epsilonR goalReward epsilonH Vmax epsilonGamma valueGap : ℝ}
+    (hbeta : beta < 1)
+    (hGap :
+      (1 - beta) * valueGap ≤
+        epsilonR + |goalReward| * epsilonH + Vmax * epsilonGamma) :
+    valueGap ≤
+      (epsilonR + |goalReward| * epsilonH + Vmax * epsilonGamma) / (1 - beta) := by
+  exact residual_to_value_gap_real_div hbeta hGap
+
+/-- Option-completeness residual controls option/boundary restriction bias. -/
+theorem goal_event_option_bias_value_gap_real
+    {beta epsilonOpt restrictionGap : ℝ}
+    (hbeta : beta < 1)
+    (hGap : (1 - beta) * restrictionGap ≤ epsilonOpt) :
+    restrictionGap ≤ epsilonOpt / (1 - beta) := by
+  exact residual_to_value_gap_real_div hbeta hGap
+
+/-- Combined terminal-goal bound: option bias plus event-kernel approximation. -/
+theorem goal_event_total_value_gap_real
+    {beta epsilonOpt epsilonR goalReward epsilonH Vmax epsilonGamma totalGap : ℝ}
+    (hbeta : beta < 1)
+    (hGap :
+      (1 - beta) * totalGap ≤
+        epsilonOpt + epsilonR + |goalReward| * epsilonH + Vmax * epsilonGamma) :
+    totalGap ≤
+      (epsilonOpt + epsilonR + |goalReward| * epsilonH + Vmax * epsilonGamma) /
+        (1 - beta) := by
+  exact residual_to_value_gap_real_div hbeta hGap
+
 end RDBoundaryGreen.RealProof

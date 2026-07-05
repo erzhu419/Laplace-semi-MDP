@@ -80,6 +80,26 @@
     "remaining_gap": "Formalize the insertion algebra only if it becomes a central claim."
   },
   {
+    "paper_claim": "Fixed-boundary reward relabeling keeps task reward support out of the graph topology.",
+    "math_object": "R_r^o(b)=<M_B^o(b,.),r>",
+    "proof_symbols": "reward_kernel_error_le_l1; reward_kernel_value_gap_real; primitive_to_reward_kernel_gap_decomposition",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv",
+    "experiment_status": "rows=96, additive=48, event_gap=27.52, goal_conditioned_gap=0.3494",
+    "manuscript_location": "Multi-task compression and reward relabeling",
+    "remaining_gap": "Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted."
+  },
+  {
+    "paper_claim": "Goal-conditioned event options reduce terminal-goal restriction bias without adding the goal to B.",
+    "math_object": "epsilon_opt(g)/(1-beta_g) plus event-kernel residuals",
+    "proof_symbols": "goal_event_kernel_value_gap_real; goal_event_option_bias_value_gap_real; goal_event_total_value_gap_real",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv",
+    "experiment_status": "rows=96, additive=48, event_gap=27.52, goal_conditioned_gap=0.3494",
+    "manuscript_location": "Limitation ablation / terminal-goal extension",
+    "remaining_gap": "The gap is much smaller, but exact per-query kernels are slower; count and optimize the goal-conditioned interface."
+  },
+  {
     "paper_claim": "The extracted graph should generalize across maze instances, not only fixed toy layouts.",
     "math_object": "same objective on held-out DFS maze family",
     "proof_symbols": "not_a_theorem",

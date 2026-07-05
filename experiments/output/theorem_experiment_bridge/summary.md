@@ -1,10 +1,10 @@
 # Theorem-to-Experiment Bridge
 
-Generated: 2026-07-05T19:41:30
+Generated: 2026-07-05T23:59:29
 
 This report turns each theoretical claim into a proof artifact, an experiment artifact, and an explicit manuscript placement. It is meant to prevent theorem claims from drifting beyond what the code and Lean layer actually support.
 
-- proof-plus-experiment covered claims: `7/9`
+- proof-plus-experiment covered claims: `9/11`
 
 | paper_claim | math_object | proof_status | experiment_status | manuscript_location | remaining_gap |
 | --- | --- | --- | --- | --- | --- |
@@ -16,4 +16,6 @@ This report turns each theoretical claim into a proof artifact, an experiment ar
 | Margin and top-set certificates separate stable operator decisions from ambiguous ties. | m>2 epsilon_adapt implies stable top choice | proved_symbol_present | rows=20, final=20, tie_aware_final=20 | Certificate table | Use tie-aware timing as the conservative runtime accounting. |
 | Group-constrained RD makes robustness constraints explicit instead of hiding them in a scalar risk. | forall group, risk_g(B) <= budget_g | proved_symbol_present | rows=18, feasible=12 | Robust objective and main ablation | Use random-maze and held-out probes to show robustness is not hand-tuned to one map. |
 | Incremental insertion scoring is an implementation optimization, not a new theorem yet. | parent-to-child boundary insertion update | lean_pending | rows=30, selected_match=26, max_score_error=233.2 | Runtime ablation, not core correctness theorem | Formalize the insertion algebra only if it becomes a central claim. |
+| Fixed-boundary reward relabeling keeps task reward support out of the graph topology. | R_r^o(b)=<M_B^o(b,.),r> | proved_symbol_present | rows=96, additive=48, event_gap=27.52, goal_conditioned_gap=0.3494 | Multi-task compression and reward relabeling | Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted. |
+| Goal-conditioned event options reduce terminal-goal restriction bias without adding the goal to B. | epsilon_opt(g)/(1-beta_g) plus event-kernel residuals | proved_symbol_present | rows=96, additive=48, event_gap=27.52, goal_conditioned_gap=0.3494 | Limitation ablation / terminal-goal extension | The gap is much smaller, but exact per-query kernels are slower; count and optimize the goal-conditioned interface. |
 | The extracted graph should generalize across maze instances, not only fixed toy layouts. | same objective on held-out DFS maze family | empirical_stress_test | rows=6, feasible=3 | Generalization/stress-test section | Scale to larger random maps on node001-node006 for final paper numbers. |

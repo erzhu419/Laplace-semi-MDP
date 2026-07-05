@@ -180,3 +180,64 @@ Experiment hooks:
 
 - `experiments/run_edge_reward_kernel_multitask.py`
 - `experiments/output/edge_reward_kernel_multitask/summary.md`
+
+## T10: Goal-Event Kernels and Option-Restriction Bias
+
+Claim: terminal interior goals are exact only relative to the option family used
+to query them.  For a fixed boundary graph `B`, query goal `g`, and
+goal-conditioned local option family `O_g`, define
+
+```text
+tau_{B,g} = min(tau_B, T_g)
+H_B^{o,g}(b) = E_b^o[gamma^{T_g} 1{T_g < tau_B}]
+Gamma_B^{o,not g}(b,b') = E_b^o[gamma^{tau_B} 1{tau_B < T_g, S_tau=b'}].
+```
+
+Then the goal-event Bellman backup
+
+```text
+T_g^B V(b) =
+  max_{o in O_g(b)} [
+    R_step^{o,g}(b) + R_g H_B^{o,g}(b)
+    + sum_{b'} Gamma_B^{o,not g}(b,b') V(b')
+  ]
+```
+
+is a contraction with modulus
+
+```text
+beta_g = max_{b,o} sum_{b'} Gamma_B^{o,not g}(b,b') < 1,
+```
+
+and its fixed point is exact for the option-restricted goal SMDP.  This is not
+a free equality to the primitive optimal value.
+
+Kernel approximation bound:
+
+```text
+||V_g^{B,O_g} - Vhat_g^{B,O_g}||_inf
+  <= (epsilon_R + |R_g| epsilon_H + Vmax epsilon_Gamma) / (1 - beta_g).
+```
+
+Option sufficiency bound: if the one-step option-completeness residual is
+`epsilon_opt(g)`, then
+
+```text
+||V_g^*|_B - V_g^{B,O_g}||_inf <= epsilon_opt(g) / (1 - beta_g).
+```
+
+Thus the terminal-goal gap decomposes into option-family insufficiency plus
+kernel approximation error.  The new goal-conditioned option ablation is a
+proof of concept that this bias can be reduced without promoting `g` into `B`,
+but its interface size and event-kernel cost must be reported separately.
+
+Lean hooks:
+
+- `proof/RDOperatorReal.lean`: `goal_event_kernel_value_gap_real`
+- `proof/RDOperatorReal.lean`: `goal_event_option_bias_value_gap_real`
+- `proof/RDOperatorReal.lean`: `goal_event_total_value_gap_real`
+
+Experiment hooks:
+
+- `experiments/run_edge_reward_kernel_multitask.py`
+- `experiments/output/edge_reward_kernel_multitask/summary.md`

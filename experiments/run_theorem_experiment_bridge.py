@@ -62,6 +62,18 @@ def metric_status(name: str, rows: Sequence[Mapping[str, str]]) -> str:
     if name == "random_maze":
         feasible = sum(1 for row in rows if str(row.get("group_all_feasible", "")).lower() == "true")
         return f"rows={len(rows)}, feasible={feasible}"
+    if name == "edge_reward_multitask":
+        additive = [row for row in rows if str(row.get("variant")) == "fixed_B_edge_reward_kernel"]
+        event = [row for row in rows if str(row.get("variant")) == "fixed_B_event_hit_kernel"]
+        goal_conditioned = [
+            row for row in rows if str(row.get("variant")) == "fixed_B_goal_conditioned_event_options"
+        ]
+        max_event_gap = max((finite_float(row.get("start_gap_max"), 0.0) for row in event), default=0.0)
+        max_gc_gap = max((finite_float(row.get("start_gap_max"), 0.0) for row in goal_conditioned), default=0.0)
+        return (
+            f"rows={len(rows)}, additive={len(additive)}, event_gap={max_event_gap:.4g}, "
+            f"goal_conditioned_gap={max_gc_gap:.4g}"
+        )
     return f"rows={len(rows)}"
 
 
@@ -72,6 +84,7 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
     operator_rows = read_csv_rows(args.operator_checks_csv)
     incremental_rows = read_csv_rows(args.incremental_green_csv)
     random_rows = read_csv_rows(args.random_maze_csv)
+    edge_reward_rows = read_csv_rows(args.edge_reward_csv)
     return [
         {
             "paper_claim": "The frozen split score is an exact finite difference of a fixed local RD objective.",
@@ -177,6 +190,40 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
             "remaining_gap": "Formalize the insertion algebra only if it becomes a central claim.",
         },
         {
+            "paper_claim": "Fixed-boundary reward relabeling keeps task reward support out of the graph topology.",
+            "math_object": "R_r^o(b)=<M_B^o(b,.),r>",
+            "proof_symbols": "reward_kernel_error_le_l1; reward_kernel_value_gap_real; primitive_to_reward_kernel_gap_decomposition",
+            "proof_status": symbol_status(
+                args.proof_root,
+                [
+                    "reward_kernel_error_le_l1",
+                    "reward_kernel_value_gap_real",
+                    "primitive_to_reward_kernel_gap_decomposition",
+                ],
+            ),
+            "experiment_artifact": args.edge_reward_csv,
+            "experiment_status": metric_status("edge_reward_multitask", edge_reward_rows),
+            "manuscript_location": "Multi-task compression and reward relabeling",
+            "remaining_gap": "Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted.",
+        },
+        {
+            "paper_claim": "Goal-conditioned event options reduce terminal-goal restriction bias without adding the goal to B.",
+            "math_object": "epsilon_opt(g)/(1-beta_g) plus event-kernel residuals",
+            "proof_symbols": "goal_event_kernel_value_gap_real; goal_event_option_bias_value_gap_real; goal_event_total_value_gap_real",
+            "proof_status": symbol_status(
+                args.proof_root,
+                [
+                    "goal_event_kernel_value_gap_real",
+                    "goal_event_option_bias_value_gap_real",
+                    "goal_event_total_value_gap_real",
+                ],
+            ),
+            "experiment_artifact": args.edge_reward_csv,
+            "experiment_status": metric_status("edge_reward_multitask", edge_reward_rows),
+            "manuscript_location": "Limitation ablation / terminal-goal extension",
+            "remaining_gap": "The gap is much smaller, but exact per-query kernels are slower; count and optimize the goal-conditioned interface.",
+        },
+        {
             "paper_claim": "The extracted graph should generalize across maze instances, not only fixed toy layouts.",
             "math_object": "same objective on held-out DFS maze family",
             "proof_symbols": "not_a_theorem",
@@ -246,6 +293,11 @@ def main() -> None:
         "--random-maze-csv",
         type=Path,
         default=Path("experiments/output/random_maze_generalization/random_maze_generalization.csv"),
+    )
+    parser.add_argument(
+        "--edge-reward-csv",
+        type=Path,
+        default=Path("experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv"),
     )
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/theorem_experiment_bridge"))
     args = parser.parse_args()

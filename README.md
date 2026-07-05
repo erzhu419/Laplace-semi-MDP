@@ -126,7 +126,9 @@ scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
   against exact edge discounted-occupancy reward kernels and query-time
   first-hit event kernels. Additive reward relabeling preserves compression;
   terminal-goal event kernels keep `B` fixed but expose the remaining
-  option/boundary restriction gap.
+  option/boundary restriction gap. The goal-conditioned event-option ablation
+  keeps `B` fixed and reduces terminal-goal gaps, while reporting the extra
+  query-time option interface separately.
 - Paper-facing scaffolding now lives under `paper/`, including the main claim, related-work matrix, theorem stack, experiment matrix, and figure plan.
 - `experiments/run_random_maze_generalization.py`, `experiments/run_fair_budget_frontier.py`, `experiments/plot_graph_abstraction_figures.py`, and `experiments/run_theorem_experiment_bridge.py` add random-topology stress tests, shared budget-frontier aggregation, interpretability figures, and theorem/proof/experiment alignment.
 
