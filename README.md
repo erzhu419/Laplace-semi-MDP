@@ -83,9 +83,12 @@ are synced back under `experiments/output/scheduler_large_runs/`:
 python3 scripts/submit_laplace_scheduler.py --profile large --dispatch
 ```
 
-The scheduler wrapper defaults to `--cpu 192` on `node001`-`node006`; that
-value is exported as `LAPLACE_NUM_THREADS`, `OMP_NUM_THREADS`,
-`OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS`, and `NUMEXPR_NUM_THREADS`.
+The scheduler wrapper defaults to full-node BLAS/OpenMP threading
+(`--threads 192`) while reserving a slightly lower scheduler CPU estimate
+(`--cpu 128`) so transient load-average accounting does not keep otherwise
+idle `node001`-`node006` jobs queued. The `--threads` value is exported as
+`LAPLACE_NUM_THREADS`, `OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`,
+`MKL_NUM_THREADS`, and `NUMEXPR_NUM_THREADS`.
 
 For a cheap scheduler preflight:
 

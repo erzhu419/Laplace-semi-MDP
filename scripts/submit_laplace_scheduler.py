@@ -65,7 +65,7 @@ def shell_cmd(
     profile: str,
     suite: str,
     run_id: str,
-    cpu: int,
+    threads: int,
     remote_result_dir: Path,
     remote_python: Path,
 ) -> str:
@@ -74,11 +74,11 @@ def shell_cmd(
         "set -e",
         "export LC_ALL=${LC_ALL:-C}",
         "export LANG=${LANG:-C}",
-        f"export LAPLACE_NUM_THREADS={int(cpu)}",
-        f"export OMP_NUM_THREADS={int(cpu)}",
-        f"export OPENBLAS_NUM_THREADS={int(cpu)}",
-        f"export MKL_NUM_THREADS={int(cpu)}",
-        f"export NUMEXPR_NUM_THREADS={int(cpu)}",
+        f"export LAPLACE_NUM_THREADS={int(threads)}",
+        f"export OMP_NUM_THREADS={int(threads)}",
+        f"export OPENBLAS_NUM_THREADS={int(threads)}",
+        f"export MKL_NUM_THREADS={int(threads)}",
+        f"export NUMEXPR_NUM_THREADS={int(threads)}",
         f"export PYTHON_BIN={shlex.quote(str(remote_python))}",
         "export LAPLACE_USE_SYSTEM_PYTHON=1",
         f"export LAPLACE_RUN_PARTS={shlex.quote(parts)}",
@@ -126,7 +126,7 @@ def submit(args: argparse.Namespace) -> List[str]:
             "--description",
             description,
             "--cmd",
-            shell_cmd(args.profile, suite, run_id, args.cpu, remote_result_dir, args.remote_python),
+            shell_cmd(args.profile, suite, run_id, args.threads, remote_result_dir, args.remote_python),
             "--cwd",
             str(ROOT),
             "--signature",
@@ -176,7 +176,8 @@ def parse_args() -> argparse.Namespace:
         choices=["all", "thread_random", "large_scale", "amortized", "operator", "full"],
     )
     parser.add_argument("--nodes", default=",".join(CPU_NODES))
-    parser.add_argument("--cpu", type=int, default=192)
+    parser.add_argument("--threads", type=int, default=192)
+    parser.add_argument("--cpu", type=int, default=128)
     parser.add_argument("--ram-mb", type=int, default=65536)
     parser.add_argument("--dispatch", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
