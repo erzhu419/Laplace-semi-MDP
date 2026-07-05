@@ -155,6 +155,8 @@ def submit(args: argparse.Namespace) -> List[str]:
         local_result_dir = ROOT / "experiments" / "output" / "scheduler_large_runs" / run_id / suite_label
         description = f"Laplace SMDP {args.profile} {suite_label} {run_id}"
         signature = f"Laplace-semi-MDP/{args.profile}/{run_id}/{suite_label}"
+        task_threads = args.amortized_threads if suite_kind == "amortized" else args.threads
+        task_cpu = args.amortized_cpu if suite_kind == "amortized" else args.cpu
         cmd = [
             sys.executable,
             str(args.scheduler),
@@ -167,7 +169,7 @@ def submit(args: argparse.Namespace) -> List[str]:
                 suite_kind,
                 suite_label,
                 run_id,
-                args.threads,
+                task_threads,
                 remote_result_dir,
                 args.remote_python,
                 extra_env,
@@ -181,7 +183,7 @@ def submit(args: argparse.Namespace) -> List[str]:
             "--vram",
             "0",
             "--cpu",
-            str(args.cpu),
+            str(task_cpu),
             "--ram-mb",
             str(args.ram_mb),
             "--require-node",
@@ -190,11 +192,15 @@ def submit(args: argparse.Namespace) -> List[str]:
             str(remote_result_dir),
             "--local-result-dir",
             str(local_result_dir),
-            "--allow-no-ckpt",
             "--allow-no-resume",
             "--allow-remote-large-data",
             "--allow-duplicate",
-        ] + stage_args()
+        ]
+        if suite_kind == "amortized":
+            cmd.extend(["--ckpt-dir", str(remote_result_dir / "amortized_multitask")])
+        else:
+            cmd.append("--allow-no-ckpt")
+        cmd += stage_args()
         out = run_cmd(cmd, dry_run=args.dry_run)
         if out:
             print(out, end="" if out.endswith("\n") else "\n")
@@ -224,6 +230,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threads", type=int, default=192)
     parser.add_argument("--cpu", type=int, default=128)
     parser.add_argument("--ram-mb", type=int, default=65536)
+    parser.add_argument("--amortized-threads", type=int, default=16)
+    parser.add_argument("--amortized-cpu", type=int, default=16)
     parser.add_argument(
         "--amortized-shards",
         type=int,
