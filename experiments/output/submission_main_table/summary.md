@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-05T16:16:16
+Generated: 2026-07-05T16:44:01
 
 This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.
 
@@ -9,6 +9,7 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 - worst certified adaptive start-value gap in that table: `0.07851`
 - adaptive final certified decisions under unique-top fallback: `20/20`
 - adaptive final certified decisions under tie-aware reporting: `20/20`
+- larger group-constrained adaptive feasible rows: `6/6`
 - exact Green is the reference operator; certified adaptive Green plus tie-aware top-set/epsilon certificates are the runtime implementation; fixed-K and weighted spectral certificates are ablations/appendix diagnostics.
 
 ## Main Runtime Table
@@ -37,6 +38,23 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 | group_constrained_rd | 10 | 10.5 | 25.09 | 0.01116 | 0.04973 | 1 | 3 | 0.9 |
 | random_landmarks_sqrt | 10 | 5.333 | 4.893 | 0.3465 | 0.04973 | 1 | 3 | nan |
 
+## Larger Group-Constrained Adaptive
+
+| map | slip | method | n_states | n_basis | n_boundary | group_all_feasible | n_groups_feasible | group_total_violation | selection_time_sec | kernel_time_sec | smdp_solve_time_sec | planning_speedup | total_speedup | break_even_tasks | start_gap | first_hit_tail_bound_max |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| open_room_12 | 0.0 | endpoints | 144 | 24 | 2 | False | 1 | 155.5 | 0.0 | 0.02574 | 9.427e-05 | 609.3 | 2.224 | 1 | 3.552713678800501e-15 | 0.0 |
+| open_room_12 | 0.0 | group_constrained | 144 | 24 | 3 | True | 3 | 0.0 | 46.35 | 0.03248 | 0.001132 | 50.45 | 0.001231 | 829 | 3.552713678800501e-15 | 0.0 |
+| open_room_12 | 0.05 | endpoints | 144 | 24 | 2 | False | 0 | 233.2 | 0.0 | 0.033 | 0.0001743 | 814.8 | 4.281 | 1 | 0.07851 | 3.737e-07 |
+| open_room_12 | 0.05 | group_constrained | 144 | 24 | 4 | True | 3 | 0.0 | 106.1 | 0.04974 | 0.002978 | 39.69 | 0.001114 | 922 | 0.07851 | 9.787e-07 |
+| four_rooms_11 | 0.0 | endpoints | 104 | 29 | 2 | False | 1 | 155.5 | 0.0 | 0.0215 | 8.948e-05 | 449.4 | 1.863 | 1 | 5.329070518200751e-15 | 0.0 |
+| four_rooms_11 | 0.0 | group_constrained | 104 | 29 | 3 | True | 3 | 0.0 | 4.959 | 0.03197 | 0.0001941 | 232.2 | 0.009028 | 112 | 5.329070518200751e-15 | 0.0 |
+| four_rooms_11 | 0.05 | endpoints | 104 | 29 | 2 | False | 0 | 233.2 | 0.0 | 0.0284 | 9.346e-05 | 896.5 | 2.941 | 1 | 0.05768 | 7.41e-07 |
+| four_rooms_11 | 0.05 | group_constrained | 104 | 29 | 4 | True | 3 | 0.0 | 14.49 | 0.075 | 0.0007895 | 105 | 0.00569 | 178 | 0.05768 | 9.381e-07 |
+| maze_13 | 0.0 | endpoints | 71 | 33 | 2 | False | 1 | 155.5 | 0.0 | 0.0202 | 8.807e-05 | 412.9 | 1.793 | 1 | 7.105427357601002e-15 | 0.0 |
+| maze_13 | 0.0 | group_constrained | 71 | 33 | 5 | True | 3 | 0.0 | 11.03 | 0.05935 | 0.001989 | 24.65 | 0.004419 | 236 | 3.552713678800501e-15 | 0.0 |
+| maze_13 | 0.05 | endpoints | 71 | 33 | 2 | False | 0 | 233.2 | 0.0 | 0.02127 | 8.96e-05 | 735.2 | 3.085 | 1 | 1.548e-08 | 4.298e-07 |
+| maze_13 | 0.05 | group_constrained | 71 | 33 | 4 | True | 3 | 0.0 | 9.986 | 0.06452 | 0.002901 | 23.17 | 0.006685 | 157 | 4.297e-07 | 9.672e-07 |
+
 ## Solver Validity Aggregate
 
 | solver | beam_width | n_rows | boundary_match_rate | zero_total_violation_gap_rate | feasible_decision_match_rate | median_selection_time_sec | median_oracle_time_sec |
@@ -61,6 +79,7 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 - large-scale adaptive: `experiments/output/large_scale_compression_adaptive/large_scale_compression.csv`
 - core benchmark: `experiments/output/core_benchmark/core_benchmark.csv`
 - adaptive certification: `experiments/output/adaptive_green_certification/certification_summary.csv`
+- larger group-constrained adaptive: `experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv`
 - solver validity: `experiments/output/solver_validity/solver_validity.csv`
 - weighted spectral certificate: `experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv`
 - conditioned rational certificate: `experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv`

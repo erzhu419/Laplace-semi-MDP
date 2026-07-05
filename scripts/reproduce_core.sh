@@ -25,4 +25,10 @@ python3 experiments/run_solver_validity.py \
   --max-oracle-candidates 6 \
   --out-dir experiments/output/solver_validity
 
+python3 experiments/run_group_constrained_adaptive_table.py \
+  --map-specs open_room:12 four_rooms:11 maze:13 \
+  --slips 0.0 0.05 \
+  --methods endpoints group_constrained \
+  --out-dir experiments/output/group_constrained_adaptive_large
+
 python3 experiments/run_submission_main_table.py

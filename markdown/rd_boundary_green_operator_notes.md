@@ -1040,3 +1040,37 @@ Now:
 The remaining honest fallback case is `maze_13 endpoints`, which stays
 `curvature_exact_fallback` and has a break-even count greater than one. That is
 the row to use when discussing real interval curvature rather than exact ties.
+
+## Larger Group-Constrained Adaptive Table
+
+The P1 larger group-constrained adaptive table is now present:
+
+```text
+experiments/run_group_constrained_adaptive_table.py
+experiments/output/group_constrained_adaptive_large/summary.md
+```
+
+It runs adaptive first-hit Green graph kernels on:
+
+```text
+open_room_12, four_rooms_11, maze_13
+slip = 0.0 and 0.05
+methods = endpoints, group_constrained
+```
+
+Current summary:
+
+```text
+group_constrained:
+  feasible rows = 6 / 6
+  max group total violation = 0
+
+endpoints:
+  feasible rows = 0 / 6
+  max group total violation = 233.2
+```
+
+This is useful but also candid: group-constrained discovery solves the group
+feasibility objective on the larger suite, but its upfront selection time is
+large.  In the paper this should be framed as robustness/control evidence, not
+as the primary wall-clock speed result.

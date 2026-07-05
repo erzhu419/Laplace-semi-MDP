@@ -59,6 +59,7 @@ bash scripts/reproduce_core.sh
 - The large-scale adaptive table currently shows planning-only speedups in the thousands on long corridors. The submission table reports both conservative unique-top fallback and tie-aware timing; tie-aware certification separates corridor tie overhead from true curvature fallback.
 - The compact benchmark compares full VI, exact RD graph variants, group-constrained RD, eigenoptions, betweenness bottlenecks, random landmarks, and coverage landmarks under the same map/slip suite.
 - Solver-validity diagnostics compare operator-only and exact-refined beam search against small exhaustive oracles.
+- The larger group-constrained adaptive table evaluates `open_room_12`, `four_rooms_11`, and `maze_13` at slip `0` and `0.05`; group-constrained boundaries are feasible on the current suite, while endpoint-only boundaries are not.
 - Weighted spectral certificates are reported as sufficient appendix certificates; conditioned/rational audits expose the conditioning-vs-tightness tradeoff.
 
 Use `experiments/output/submission_main_table/summary.md` as the first reviewer-facing artifact rather than reading every historical output directory.

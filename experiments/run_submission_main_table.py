@@ -290,10 +290,40 @@ def build_certificate_rows(
     ]
 
 
+def build_group_adaptive_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for row in rows:
+        if row.get("error"):
+            continue
+        out.append(
+            {
+                "map": row.get("map", ""),
+                "slip": row.get("slip", ""),
+                "method": row.get("method", ""),
+                "n_states": row.get("n_states", ""),
+                "n_basis": row.get("n_basis", ""),
+                "n_boundary": row.get("n_boundary", ""),
+                "group_all_feasible": row.get("group_all_feasible", ""),
+                "n_groups_feasible": row.get("n_groups_feasible", ""),
+                "group_total_violation": finite_float(row.get("group_total_violation")),
+                "selection_time_sec": finite_float(row.get("selection_time_sec")),
+                "kernel_time_sec": finite_float(row.get("kernel_time_sec")),
+                "smdp_solve_time_sec": finite_float(row.get("smdp_solve_time_sec")),
+                "planning_speedup": finite_float(row.get("planning_speedup")),
+                "total_speedup": finite_float(row.get("total_speedup")),
+                "break_even_tasks": row.get("break_even_tasks", ""),
+                "start_gap": finite_float(row.get("start_gap")),
+                "first_hit_tail_bound_max": finite_float(row.get("first_hit_tail_bound_max")),
+            }
+        )
+    return out
+
+
 def write_report(
     out_path: Path,
     main_rows: Sequence[Mapping[str, object]],
     compact_rows: Sequence[Mapping[str, object]],
+    group_adaptive_rows: Sequence[Mapping[str, object]],
     solver_rows: Sequence[Mapping[str, object]],
     certificate_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
@@ -339,6 +369,25 @@ def write_report(
         "max_hidden_audit_distinct",
         "group_feasible_rate",
     ]
+    group_adaptive_columns = [
+        "map",
+        "slip",
+        "method",
+        "n_states",
+        "n_basis",
+        "n_boundary",
+        "group_all_feasible",
+        "n_groups_feasible",
+        "group_total_violation",
+        "selection_time_sec",
+        "kernel_time_sec",
+        "smdp_solve_time_sec",
+        "planning_speedup",
+        "total_speedup",
+        "break_even_tasks",
+        "start_gap",
+        "first_hit_tail_bound_max",
+    ]
     solver_columns = [
         "solver",
         "beam_width",
@@ -375,8 +424,11 @@ def write_report(
     )
     main_display = [{col: row.get(col, "") for col in main_columns} for row in main_rows]
     compact_display = [{col: row.get(col, "") for col in compact_columns} for row in compact_rows]
+    group_adaptive_display = [{col: row.get(col, "") for col in group_adaptive_columns} for row in group_adaptive_rows]
     solver_display = [{col: row.get(col, "") for col in solver_columns} for row in solver_rows]
     certificate_display = [{col: row.get(col, "") for col in certificate_columns} for row in certificate_rows]
+    group_rows = [row for row in group_adaptive_rows if row.get("method") == "group_constrained"]
+    group_feasible = sum(1 for row in group_rows if parse_bool(row.get("group_all_feasible")))
     lines = [
         "# Submission Main Table",
         "",
@@ -389,6 +441,7 @@ def write_report(
         f"- worst certified adaptive start-value gap in that table: `{worst_gap:.4g}`",
         f"- adaptive final certified decisions under unique-top fallback: `{final_certs.get('final_certified', '')}/{final_certs.get('rows', '')}`",
         f"- adaptive final certified decisions under tie-aware reporting: `{final_certs.get('tie_aware_final_certified', '')}/{final_certs.get('rows', '')}`",
+        f"- larger group-constrained adaptive feasible rows: `{group_feasible}/{len(group_rows)}`",
         "- exact Green is the reference operator; certified adaptive Green plus tie-aware top-set/epsilon certificates are the runtime implementation; fixed-K and weighted spectral certificates are ablations/appendix diagnostics.",
         "",
         "## Main Runtime Table",
@@ -398,6 +451,10 @@ def write_report(
         "## Compact Baseline Aggregate",
         "",
         markdown_table(compact_display, compact_columns) if compact_display else "_No compact benchmark rows found._",
+        "",
+        "## Larger Group-Constrained Adaptive",
+        "",
+        markdown_table(group_adaptive_display, group_adaptive_columns) if group_adaptive_display else "_No larger group-constrained adaptive rows found._",
         "",
         "## Solver Validity Aggregate",
         "",
@@ -412,6 +469,7 @@ def write_report(
         f"- large-scale adaptive: `{args.large_scale_csv}`",
         f"- core benchmark: `{args.core_csv}`",
         f"- adaptive certification: `{args.adaptive_cert_csv}`",
+        f"- larger group-constrained adaptive: `{args.group_adaptive_csv}`",
         f"- solver validity: `{args.solver_csv}`",
         f"- weighted spectral certificate: `{args.weighted_cert_csv}`",
         f"- conditioned rational certificate: `{args.conditioned_cert_csv}`",
@@ -424,6 +482,7 @@ def main() -> None:
     parser.add_argument("--large-scale-csv", type=Path, default=Path("experiments/output/large_scale_compression_adaptive/large_scale_compression.csv"))
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
     parser.add_argument("--adaptive-cert-csv", type=Path, default=Path("experiments/output/adaptive_green_certification/certification_summary.csv"))
+    parser.add_argument("--group-adaptive-csv", type=Path, default=Path("experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv"))
     parser.add_argument("--solver-csv", type=Path, default=Path("experiments/output/solver_validity/solver_validity.csv"))
     parser.add_argument("--weighted-cert-csv", type=Path, default=Path("experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv"))
     parser.add_argument("--conditioned-cert-csv", type=Path, default=Path("experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv"))
@@ -433,18 +492,21 @@ def main() -> None:
     large_rows = read_csv_rows(args.large_scale_csv)
     core_rows = read_csv_rows(args.core_csv)
     adaptive_rows = read_csv_rows(args.adaptive_cert_csv)
+    group_adaptive_raw = read_csv_rows(args.group_adaptive_csv)
     solver_rows_raw = read_csv_rows(args.solver_csv)
     weighted_rows = read_csv_rows(args.weighted_cert_csv)
     conditioned_rows = read_csv_rows(args.conditioned_cert_csv)
 
     main_rows = build_main_runtime_rows(large_rows, adaptive_rows)
     compact_rows = build_compact_baseline_rows(core_rows)
+    group_adaptive_rows = build_group_adaptive_rows(group_adaptive_raw)
     solver_rows = build_solver_rows(solver_rows_raw)
     certificate_rows = build_certificate_rows(adaptive_rows, weighted_rows, conditioned_rows)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_csv_all_fields(args.out_dir / "submission_runtime_table.csv", main_rows)
     write_csv_all_fields(args.out_dir / "compact_baseline_aggregate.csv", compact_rows)
+    write_csv_all_fields(args.out_dir / "group_constrained_adaptive_table.csv", group_adaptive_rows)
     write_csv_all_fields(args.out_dir / "solver_validity_aggregate.csv", solver_rows)
     write_csv_all_fields(args.out_dir / "certificate_appendix_summary.csv", certificate_rows)
     (args.out_dir / "submission_main_table.json").write_text(
@@ -452,6 +514,7 @@ def main() -> None:
             {
                 "runtime_table": main_rows,
                 "compact_baseline_aggregate": compact_rows,
+                "group_constrained_adaptive_table": group_adaptive_rows,
                 "solver_validity_aggregate": solver_rows,
                 "certificate_appendix_summary": certificate_rows,
             },
@@ -461,7 +524,7 @@ def main() -> None:
         + "\n",
         encoding="utf-8",
     )
-    write_report(args.out_dir / "summary.md", main_rows, compact_rows, solver_rows, certificate_rows, args)
+    write_report(args.out_dir / "summary.md", main_rows, compact_rows, group_adaptive_rows, solver_rows, certificate_rows, args)
 
 
 if __name__ == "__main__":

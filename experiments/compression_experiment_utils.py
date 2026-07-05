@@ -381,24 +381,32 @@ def build_compressed_model_measured(
     first_hit_mode: str = "exact",
     first_hit_truncation_steps: int = 32,
     first_hit_tail_tol: float = 0.0,
+    boundary_override: Sequence[int] | None = None,
+    constructor_override: Mapping[str, object] | None = None,
+    construction_time_override: float | None = None,
 ) -> Dict[str, object]:
     grid = GridWorld(rows)
     start_state = grid.symbol_states("S")[0]
     goal_state = grid.symbol_states("G")[0]
     actual_method = resolve_method_spec(method_spec, grid)
 
-    t0 = time.perf_counter()
-    boundary, constructor = construct_boundary(
-        method=actual_method,
-        map_name=map_label,
-        rows=rows,
-        grid=grid,
-        slip=slip,
-        gamma=gamma,
-        max_splits=max_splits,
-        seed=seed,
-    )
-    construction_time = time.perf_counter() - t0
+    if boundary_override is None:
+        t0 = time.perf_counter()
+        boundary, constructor = construct_boundary(
+            method=actual_method,
+            map_name=map_label,
+            rows=rows,
+            grid=grid,
+            slip=slip,
+            gamma=gamma,
+            max_splits=max_splits,
+            seed=seed,
+        )
+        construction_time = time.perf_counter() - t0
+    else:
+        boundary = list(boundary_override)
+        constructor = dict(constructor_override or {})
+        construction_time = float(construction_time_override or 0.0)
     boundary = sorted(set(boundary))
     boundary_to_pos = {state: pos for pos, state in enumerate(boundary)}
     if start_state not in boundary_to_pos or goal_state not in boundary_to_pos:

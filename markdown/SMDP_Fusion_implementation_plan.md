@@ -5613,3 +5613,69 @@ exact_tie_set_representative_optimal
 
 These sit beside the existing interval top-choice and top-set exact fallback
 theorems.
+
+## 34. Larger Group-Constrained Adaptive Table
+
+GPT answer 14 said this was P1 rather than the immediate blocker, but it is now
+implemented too.
+
+New script/output:
+
+```text
+experiments/run_group_constrained_adaptive_table.py
+experiments/output/group_constrained_adaptive_large/summary.md
+```
+
+Suite:
+
+```text
+maps:
+  open_room_12
+  four_rooms_11
+  maze_13
+
+slips:
+  0.0
+  0.05
+
+methods:
+  endpoints
+  group_constrained
+
+first-hit kernels:
+  adaptive Green, tail_tol = 1e-6
+```
+
+Current result:
+
+```text
+endpoint boundaries:
+  feasible rows = 0 / 6
+  best total speedup = 4.281x
+
+group-constrained boundaries:
+  feasible rows = 6 / 6
+  best planning speedup = 232.2x
+  best total speedup = 0.009028x
+```
+
+So this table supports a different claim from the speed table:
+
+```text
+group constraints buy feasibility / hidden-boundary control,
+not cheap one-shot discovery.
+```
+
+The discovery cost is still the bottleneck.  This strengthens the paper story
+because it separates three axes:
+
+```text
+planning compression:
+  adaptive graph kernels are fast once B is fixed
+
+certification:
+  tie-aware certificates remove artificial uniqueness fallback overhead
+
+group-constrained discovery:
+  gives robust feasible boundaries, but currently has expensive upfront search
+```
