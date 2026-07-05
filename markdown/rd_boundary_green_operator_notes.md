@@ -838,3 +838,75 @@ not:
 ```text
 pure adaptive Green certifies every top-1 decision by itself
 ```
+
+## Conditioned / Rational Weighted Certificate Audit
+
+Even though GPT answer 13 says this is not required for submission, I tried it
+as a strengthening of the weighted spectral layer.
+
+New diagnostic:
+
+```text
+experiments/run_conditioned_weighted_certificate.py
+experiments/output/conditioned_weighted_certificate/summary.md
+```
+
+It searches the Collatz certificate under explicit conditioning caps:
+
+```text
+P_II w <= q w
+cond(w) = max(w) / min(w) <= C
+```
+
+and then rationalizes \(P,w,q\) and verifies the rounded inequality exactly with
+Python `Fraction`. This is not a Lean import of the certificate, but it is an
+exact rational audit of the reported numerical artifact.
+
+Current result:
+
+```text
+found certificates rational-verified: 92 / 92
+```
+
+The tradeoff is now explicit:
+
+```text
+corridor_128:
+  no certificate at cond cap 100
+  cap 1e4 verifies but tail bound is about 810.7
+  cap 1e6 verifies and tail bound improves to about 275.4
+  unconditioned verifies and tail bound is about 124.5
+  actual tail is about 0.976
+```
+
+Open room and four rooms are much better conditioned:
+
+```text
+open_room_12:
+  cond cap 100 verifies; boundary tail K=128 <= 3.58e-4
+
+four_rooms_11:
+  cond cap 100 verifies; boundary tail K=128 <= 1.76e-5
+```
+
+This changes the claim slightly:
+
+```text
+Before:
+  weighted spectral certificate exists but may be ill-conditioned
+
+Now:
+  we can report a conditioning frontier and exact rational audits of the
+  rounded Collatz inequalities
+```
+
+It still does not become the main runtime certificate. Corridor shows why:
+rational verification certifies the inequality, not tightness. The main
+decision procedure should remain:
+
+```text
+frontier-tail score intervals + top-set exact fallback
+```
+
+while conditioned/rational weighted certificates live in the theorem/appendix
+layer as a stronger sufficient certificate and reproducibility audit.

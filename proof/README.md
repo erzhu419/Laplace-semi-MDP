@@ -61,6 +61,12 @@ What is formalized now:
   if interval bounds cannot separate top-1, exact evaluation on an ambiguous
   top set certifies a global optimum whenever the exact best in that set beats
   all outside interval upper bounds;
+- conditioned/rational weighted certificate audit:
+  `experiments/run_conditioned_weighted_certificate.py` searches for Collatz
+  certificates under explicit condition-number caps and verifies rounded
+  `(P,w,q)` inequalities with exact Python `Fraction` arithmetic.  The Lean
+  layer remains the conditional real theorem applied after such inequalities
+  are audited.
 - bits-curvature layer:
   the derivative of `bitsPhiDeriv` is `bitsPhiSecond`, a positive margin
   `delta <= 1 - h + eps` bounds `|bitsPhiSecond|`, and Mathlib Taylor gives the

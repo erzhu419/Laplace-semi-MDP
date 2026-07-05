@@ -5374,3 +5374,87 @@ the exact reference time by the ambiguous-set fraction because the diagnostic
 still computes exact reference rows for the table. The CSV/JSON also report the
 conservative full-exact fallback time. For final submission, if needed, this can
 be replaced by a true candidate-subset exact kernel evaluator.
+
+### 31.10 Conditioned and rational weighted certificates
+
+GPT answer 13 says conditioned/rational weighted certificates are not a
+submission blocker, but they are a useful strengthening. I implemented them as
+an experiment-side audit rather than changing the main runtime certificate.
+
+New entry point:
+
+```text
+experiments/run_conditioned_weighted_certificate.py
+```
+
+Current output:
+
+```text
+experiments/output/conditioned_weighted_certificate/summary.md
+```
+
+The script does two extra things beyond the earlier weighted spectral table:
+
+```text
+conditioned Collatz search:
+  search P_II w <= q w subject to cond(w) <= C
+
+rational audit:
+  round P, w, q to rationals and verify P_II w <= q w exactly using Fraction
+```
+
+The useful result is:
+
+```text
+all found certificates rational-verified:
+  92 / 92
+```
+
+Conditioning gives a clear tradeoff:
+
+```text
+corridor_128:
+  cond cap 100: no certificate found
+  cond cap 1e4: q <= 0.9635, tail K=128 <= 810.7
+  cond cap 1e6: q <= 0.9274, tail K=128 <= 275.4
+  unconditioned: q <= 0.8276, tail K=128 <= 124.5
+  actual tail K=128 <= 0.976
+
+open_room_12:
+  cond cap 100 already works and rational-verifies
+  boundary tail K=128 <= 3.58e-4
+
+four_rooms_11:
+  cond cap 100 already works and rational-verifies
+  boundary tail K=128 <= 1.76e-5
+
+maze_13:
+  residual basis works even at cond cap 100 with tiny tail
+  boundary basis at cond cap 100 is valid but loose; larger caps tighten it
+```
+
+So the status is better than before:
+
+```text
+weighted spectral certificate:
+  theoretically stronger than row q<1
+
+conditioned weighted certificate:
+  exposes the q-vs-conditioning Pareto tradeoff
+
+rational audit:
+  turns the floating Collatz candidate into a reproducible exact inequality
+  check for the reported rows
+```
+
+But it still should not replace the main implementation:
+
+```text
+frontier-tail + top-set exact fallback remains the main solver
+conditioned/rational weighted spectral certificate is an appendix/theorem audit
+```
+
+The reason is visible in corridor: even a rational-verified conditioned
+certificate can be very conservative compared with the actual tail. Its value
+is not tight selection; its value is a stronger sufficient convergence/safety
+certificate when raw row-substochasticity fails.
