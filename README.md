@@ -94,7 +94,10 @@ per-shard reservations (`--amortized-threads 16`, `--amortized-cpu 16`) because
 that workload did not saturate a whole 192-core node. Each shard writes
 application-level checkpoints (`progress.jsonl` plus an incrementally refreshed
 CSV/summary) after every map/method job; `--scheduler-ckpt-dir` can also declare
-those dirs to scheduler, but it is slower because submit scans remote paths. To
+those dirs to scheduler, but it is slower because submit scans remote paths.
+The fixed-`B` edge reward / goal-conditioned event extension can also be
+submitted as scheduler shards (`--suites edge_reward`, default
+`--edge-reward-shards 16`, `--edge-reward-threads 16`). To
 aggregate finished shard outputs:
 
 ```bash

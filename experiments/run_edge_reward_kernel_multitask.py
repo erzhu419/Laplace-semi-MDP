@@ -914,6 +914,7 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         f"methods = {list(args.methods)}",
         f"task_counts = {list(args.task_counts)}, max_tasks = {args.max_tasks}",
         f"additive_reward_kinds = {list(args.additive_reward_kinds)}",
+        f"shard = {args.shard_index}/{args.num_shards}",
         "",
         "This experiment keeps the decision boundary graph fixed and moves task variation into edge reward or event kernels.",
         "Additive rewards use exact discounted occupancy relabeling; terminal goals use exact query-time first-hit event kernels.",
@@ -982,30 +983,41 @@ def main() -> None:
     )
     parser.add_argument("--include-promote-baseline", action="store_true")
     parser.add_argument("--continue-on-error", action="store_true")
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/edge_reward_kernel_multitask"))
     args = parser.parse_args()
     if args.additive_reward_kind is not None:
         args.additive_reward_kinds = [args.additive_reward_kind]
 
     rows: List[Dict[str, object]] = []
-    for family, size, map_label, map_rows in parse_map_specs(args.map_specs):
-        for method in args.methods:
-            try:
-                rows.extend(run_map_method(family, size, map_label, map_rows, method, args))
-            except Exception as exc:
-                if not args.continue_on_error:
-                    raise
-                rows.append(
-                    {
-                        "map_family": family,
-                        "map_size": size,
-                        "map": map_label,
-                        "method_spec": method,
-                        "variant": "error",
-                        "task_type": "error",
-                        "error": repr(exc),
-                    }
-                )
+    jobs = [
+        (family, size, map_label, map_rows, method)
+        for family, size, map_label, map_rows in parse_map_specs(args.map_specs)
+        for method in args.methods
+    ]
+    if args.num_shards > 1:
+        if args.shard_index < 0 or args.shard_index >= args.num_shards:
+            raise ValueError("--shard-index must be in [0, --num-shards).")
+        jobs = [job for idx, job in enumerate(jobs) if idx % args.num_shards == args.shard_index]
+
+    for family, size, map_label, map_rows, method in jobs:
+        try:
+            rows.extend(run_map_method(family, size, map_label, map_rows, method, args))
+        except Exception as exc:
+            if not args.continue_on_error:
+                raise
+            rows.append(
+                {
+                    "map_family": family,
+                    "map_size": size,
+                    "map": map_label,
+                    "method_spec": method,
+                    "variant": "error",
+                    "task_type": "error",
+                    "error": repr(exc),
+                }
+            )
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_csv_all_fields(args.out_dir / "edge_reward_kernel_multitask.csv", rows)

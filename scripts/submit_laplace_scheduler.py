@@ -37,8 +37,9 @@ SUITE_PARTS = {
     "thread_random": "thread,random,summary",
     "large_scale": "large_scale,summary",
     "amortized": "amortized,summary",
+    "edge_reward": "edge_reward,summary",
     "operator": "operator,summary",
-    "full": "thread,random,operator,large_scale,amortized,summary",
+    "full": "thread,random,operator,large_scale,amortized,edge_reward,summary",
 }
 
 
@@ -95,7 +96,7 @@ def shell_cmd(
 
 def planned_suites(args: argparse.Namespace) -> List[str]:
     if args.suites == ["all"]:
-        return ["thread_random", "large_scale", "amortized", "operator"]
+        return ["thread_random", "large_scale", "amortized", "edge_reward", "operator"]
     return args.suites
 
 
@@ -103,6 +104,12 @@ def default_amortized_shards(profile: str) -> int:
     if profile == "smoke":
         return 1
     return 32
+
+
+def default_edge_reward_shards(profile: str) -> int:
+    if profile == "smoke":
+        return 1
+    return 16
 
 
 def task_specs(args: argparse.Namespace) -> List[Tuple[str, str, Dict[str, object]]]:
@@ -125,6 +132,28 @@ def task_specs(args: argparse.Namespace) -> List[Tuple[str, str, Dict[str, objec
                             {
                                 "LAPLACE_AMORTIZED_SHARD_INDEX": shard_index,
                                 "LAPLACE_AMORTIZED_NUM_SHARDS": shard_count,
+                            },
+                        )
+                    )
+            else:
+                specs.append((suite, suite, {}))
+        elif suite == "edge_reward":
+            shard_count = args.edge_reward_shards or default_edge_reward_shards(args.profile)
+            shard_start = max(0, args.edge_reward_shard_start)
+            shard_stop = shard_count if args.edge_reward_shard_stop < 0 else min(shard_count, args.edge_reward_shard_stop)
+            if shard_start >= shard_stop:
+                continue
+            if shard_count > 1:
+                width = max(2, len(str(shard_count - 1)))
+                for shard_index in range(shard_start, shard_stop):
+                    label = f"edge_reward_shard_{shard_index:0{width}d}_of_{shard_count:0{width}d}"
+                    specs.append(
+                        (
+                            label,
+                            "edge_reward",
+                            {
+                                "LAPLACE_EDGE_REWARD_SHARD_INDEX": shard_index,
+                                "LAPLACE_EDGE_REWARD_NUM_SHARDS": shard_count,
                             },
                         )
                     )
@@ -159,8 +188,15 @@ def submit(args: argparse.Namespace) -> List[str]:
         local_result_dir = ROOT / "experiments" / "output" / "scheduler_large_runs" / run_id / suite_label
         description = f"Laplace SMDP {args.profile} {suite_label} {run_id}"
         signature = f"Laplace-semi-MDP/{args.profile}/{run_id}/{suite_label}"
-        task_threads = args.amortized_threads if suite_kind == "amortized" else args.threads
-        task_cpu = args.amortized_cpu if suite_kind == "amortized" else args.cpu
+        if suite_kind == "amortized":
+            task_threads = args.amortized_threads
+            task_cpu = args.amortized_cpu
+        elif suite_kind == "edge_reward":
+            task_threads = args.edge_reward_threads
+            task_cpu = args.edge_reward_cpu
+        else:
+            task_threads = args.threads
+            task_cpu = args.cpu
         cmd = [
             sys.executable,
             str(args.scheduler),
@@ -228,7 +264,7 @@ def parse_args() -> argparse.Namespace:
         "--suites",
         nargs="+",
         default=["all"],
-        choices=["all", "thread_random", "large_scale", "amortized", "operator", "full"],
+        choices=["all", "thread_random", "large_scale", "amortized", "edge_reward", "operator", "full"],
     )
     parser.add_argument("--nodes", default=",".join(CPU_NODES))
     parser.add_argument("--threads", type=int, default=192)
@@ -236,6 +272,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--ram-mb", type=int, default=65536)
     parser.add_argument("--amortized-threads", type=int, default=16)
     parser.add_argument("--amortized-cpu", type=int, default=16)
+    parser.add_argument("--edge-reward-threads", type=int, default=16)
+    parser.add_argument("--edge-reward-cpu", type=int, default=16)
     parser.add_argument(
         "--scheduler-ckpt-dir",
         action="store_true",
@@ -249,6 +287,14 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--amortized-shard-start", type=int, default=0)
     parser.add_argument("--amortized-shard-stop", type=int, default=-1)
+    parser.add_argument(
+        "--edge-reward-shards",
+        type=int,
+        default=0,
+        help="Number of edge reward/event kernel map/method shards; 0 chooses a profile default.",
+    )
+    parser.add_argument("--edge-reward-shard-start", type=int, default=0)
+    parser.add_argument("--edge-reward-shard-stop", type=int, default=-1)
     parser.add_argument("--dispatch", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()

@@ -121,6 +121,33 @@ def summarize_amortized(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, obj
     return out
 
 
+def summarize_edge_reward(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    grouped: Dict[tuple[str, str], List[Mapping[str, str]]] = defaultdict(list)
+    for row in rows:
+        grouped[(str(row.get("variant", "")), str(row.get("task_count", "")))].append(row)
+    out: List[Dict[str, object]] = []
+    for (variant, task_count), group in sorted(grouped.items(), key=lambda item: (item[0][0], int(item[0][1] or 0))):
+        out.append(
+            {
+                "variant": variant,
+                "task_count": task_count,
+                "n_rows": len(group),
+                "median_amortized_speedup": median(
+                    finite_float(row.get("amortized_speedup_vs_full_vi")) for row in group
+                ),
+                "best_amortized_speedup": max(
+                    (finite_float(row.get("amortized_speedup_vs_full_vi")) for row in group),
+                    default=float("nan"),
+                ),
+                "median_break_even_tasks": median(finite_float(row.get("break_even_num_tasks")) for row in group),
+                "median_goal_interface": median(finite_float(row.get("goal_option_interface_size")) for row in group),
+                "median_goal_policies": median(finite_float(row.get("n_goal_policies")) for row in group),
+                "max_start_gap": max((finite_float(row.get("start_gap_max"), 0.0) for row in group), default=float("nan")),
+            }
+        )
+    return out
+
+
 def summarize_random(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
     for method, group in sorted(group_by(rows, "method").items()):
@@ -166,6 +193,7 @@ def write_report(
     amortized_rows: Sequence[Mapping[str, object]],
     random_rows: Sequence[Mapping[str, object]],
     thread_rows: Sequence[Mapping[str, object]],
+    edge_reward_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
 ) -> None:
     large_columns = [
@@ -209,12 +237,27 @@ def write_report(
         "best_speedup_vs_1_thread",
         "n_thread_settings",
     ]
+    edge_reward_columns = [
+        "variant",
+        "task_count",
+        "n_rows",
+        "median_amortized_speedup",
+        "best_amortized_speedup",
+        "median_break_even_tasks",
+        "median_goal_interface",
+        "median_goal_policies",
+        "max_start_gap",
+    ]
     best_amortized = max(
         (finite_float(row.get("best_amortized_speedup")) for row in amortized_rows),
         default=float("nan"),
     )
     best_large_total = max(
         (finite_float(row.get("best_total_speedup")) for row in large_rows),
+        default=float("nan"),
+    )
+    best_edge_reward = max(
+        (finite_float(row.get("best_amortized_speedup")) for row in edge_reward_rows),
         default=float("nan"),
     )
     lines = [
@@ -226,6 +269,7 @@ def write_report(
         "",
         f"- best large-scale total speedup: `{best_large_total:.4g}x`",
         f"- best amortized multi-task speedup: `{best_amortized:.4g}x`",
+        f"- best edge-reward/terminal extension speedup: `{best_edge_reward:.4g}x`",
         "",
         "## Thread Scaling",
         "",
@@ -239,6 +283,10 @@ def write_report(
         "",
         markdown_table(amortized_rows, amortized_columns) if amortized_rows else "_No amortized rows._",
         "",
+        "## Edge Reward And Terminal Extension",
+        "",
+        markdown_table(edge_reward_rows, edge_reward_columns) if edge_reward_rows else "_No edge-reward rows._",
+        "",
         "## Random Maze Robustness",
         "",
         markdown_table(random_rows, random_columns) if random_rows else "_No random-maze rows._",
@@ -247,6 +295,7 @@ def write_report(
         "",
         f"- large scale: `{args.large_scale_csv}`",
         f"- amortized: `{args.amortized_csv}`",
+        f"- edge reward: `{args.edge_reward_csv}`",
         f"- random maze: `{args.random_maze_csv}`",
         f"- thread scaling: `{args.thread_scaling_csv}`",
     ]
@@ -266,6 +315,11 @@ def main() -> None:
         default=Path("experiments/output/node_large_runs/latest/amortized_multitask/amortized_multitask.csv"),
     )
     parser.add_argument(
+        "--edge-reward-csv",
+        type=Path,
+        default=Path("experiments/output/node_large_runs/latest/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv"),
+    )
+    parser.add_argument(
         "--random-maze-csv",
         type=Path,
         default=Path("experiments/output/node_large_runs/latest/random_maze_generalization/random_maze_generalization.csv"),
@@ -280,12 +334,14 @@ def main() -> None:
 
     large_rows = summarize_large_scale(read_csv_rows(args.large_scale_csv))
     amortized_rows = summarize_amortized(read_csv_rows(args.amortized_csv))
+    edge_reward_rows = summarize_edge_reward(read_csv_rows(args.edge_reward_csv))
     random_rows = summarize_random(read_csv_rows(args.random_maze_csv))
     thread_rows = summarize_threads(read_csv_rows(args.thread_scaling_csv))
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_csv_all_fields(args.out_dir / "large_scale_summary.csv", large_rows)
     write_csv_all_fields(args.out_dir / "amortized_summary.csv", amortized_rows)
+    write_csv_all_fields(args.out_dir / "edge_reward_summary.csv", edge_reward_rows)
     write_csv_all_fields(args.out_dir / "random_maze_summary.csv", random_rows)
     write_csv_all_fields(args.out_dir / "thread_scaling_summary.csv", thread_rows)
     (args.out_dir / "node_large_paper_summary.json").write_text(
@@ -293,6 +349,7 @@ def main() -> None:
             {
                 "large_scale": large_rows,
                 "amortized": amortized_rows,
+                "edge_reward": edge_reward_rows,
                 "random_maze": random_rows,
                 "thread_scaling": thread_rows,
             },
@@ -302,7 +359,7 @@ def main() -> None:
         + "\n",
         encoding="utf-8",
     )
-    write_report(args.out_dir / "summary.md", large_rows, amortized_rows, random_rows, thread_rows, args)
+    write_report(args.out_dir / "summary.md", large_rows, amortized_rows, random_rows, thread_rows, edge_reward_rows, args)
 
 
 if __name__ == "__main__":

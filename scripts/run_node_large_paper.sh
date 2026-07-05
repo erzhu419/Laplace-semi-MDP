@@ -49,6 +49,10 @@ case "$PROFILE" in
     AMORTIZED_MAP_SPECS=(corridor:64 open_room:10 maze:13)
     AMORTIZED_COUNTS=(1 5 10)
     AMORTIZED_MAX_TASKS=10
+    EDGE_REWARD_MAP_SPECS=(corridor:64 open_room:10 maze:13)
+    EDGE_REWARD_METHODS=(endpoints turn_articulation)
+    EDGE_REWARD_COUNTS=(1 5 10)
+    EDGE_REWARD_MAX_TASKS=10
     ;;
   large)
     THREAD_GRID=(1 8 16 32 64 96 128 192)
@@ -61,6 +65,10 @@ case "$PROFILE" in
     AMORTIZED_MAP_SPECS=(corridor:128,256 open_room:16,24 four_rooms:15,21 maze:17,21)
     AMORTIZED_COUNTS=(1 5 10 25 50 100)
     AMORTIZED_MAX_TASKS=100
+    EDGE_REWARD_MAP_SPECS=(corridor:128,256 open_room:16,24 four_rooms:15,21 maze:17,21)
+    EDGE_REWARD_METHODS=(endpoints turn_articulation)
+    EDGE_REWARD_COUNTS=(1 5 10 25 50 100)
+    EDGE_REWARD_MAX_TASKS=100
     ;;
   xl)
     THREAD_GRID=(1 16 32 64 96 128 192)
@@ -73,6 +81,10 @@ case "$PROFILE" in
     AMORTIZED_MAP_SPECS=(corridor:256,512 open_room:24,32 four_rooms:21,31 maze:21,31)
     AMORTIZED_COUNTS=(1 5 10 25 50 100)
     AMORTIZED_MAX_TASKS=100
+    EDGE_REWARD_MAP_SPECS=(corridor:256,512 open_room:24,32 four_rooms:21,31 maze:21,31)
+    EDGE_REWARD_METHODS=(endpoints turn_articulation)
+    EDGE_REWARD_COUNTS=(1 5 10 25 50 100)
+    EDGE_REWARD_MAX_TASKS=100
     ;;
   *)
     echo "Unknown profile: $PROFILE" >&2
@@ -135,10 +147,23 @@ if has_part amortized; then
     --out-dir "$OUT_ROOT/amortized_multitask"
 fi
 
+if has_part edge_reward; then
+  "$PYTHON_CMD" experiments/run_edge_reward_kernel_multitask.py \
+    --map-specs "${EDGE_REWARD_MAP_SPECS[@]}" \
+    --methods "${EDGE_REWARD_METHODS[@]}" \
+    --task-counts "${EDGE_REWARD_COUNTS[@]}" \
+    --max-tasks "$EDGE_REWARD_MAX_TASKS" \
+    --shard-index "${LAPLACE_EDGE_REWARD_SHARD_INDEX:-0}" \
+    --num-shards "${LAPLACE_EDGE_REWARD_NUM_SHARDS:-1}" \
+    --continue-on-error \
+    --out-dir "$OUT_ROOT/edge_reward_kernel_multitask"
+fi
+
 if has_part summary; then
   "$PYTHON_CMD" experiments/run_node_large_summary.py \
     --large-scale-csv "$OUT_ROOT/large_scale_compression/large_scale_compression.csv" \
     --amortized-csv "$OUT_ROOT/amortized_multitask/amortized_multitask.csv" \
+    --edge-reward-csv "$OUT_ROOT/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv" \
     --random-maze-csv "$OUT_ROOT/random_maze_generalization/random_maze_generalization.csv" \
     --thread-scaling-csv "$OUT_ROOT/linear_solver_thread_scaling/linear_solver_thread_scaling.csv" \
     --out-dir "$OUT_ROOT/summary"

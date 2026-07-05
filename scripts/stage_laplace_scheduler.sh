@@ -36,7 +36,7 @@ rsync -az --delete -e "$RSYNC_RSH" \
   --exclude='experiments/output/' \
   "$ROOT"/ "$REMOTE_HOST:$REMOTE_ROOT"/
 
-"${SSH[@]}" "cd '$REMOTE_ROOT' && bash -n scripts/setup_node_env.sh scripts/run_node_large_paper.sh && '$REMOTE_PYTHON' -m py_compile scripts/submit_laplace_scheduler.py experiments/run_node_large_summary.py experiments/run_amortized_multitask.py experiments/aggregate_amortized_shards.py"
+"${SSH[@]}" "cd '$REMOTE_ROOT' && bash -n scripts/setup_node_env.sh scripts/run_node_large_paper.sh && '$REMOTE_PYTHON' -m py_compile scripts/submit_laplace_scheduler.py experiments/run_node_large_summary.py experiments/run_amortized_multitask.py experiments/run_edge_reward_kernel_multitask.py experiments/aggregate_amortized_shards.py"
 
 if [ "${LAPLACE_STAGE_SETUP:-1}" = "1" ]; then
   "${SSH[@]}" "cd '$REMOTE_ROOT' && PYTHON_BIN='$REMOTE_PYTHON' LAPLACE_USE_SYSTEM_PYTHON=1 bash scripts/setup_node_env.sh"
