@@ -594,3 +594,92 @@ This is a good point to ask GPT for a theory/framing critique after pushing.
 The question should focus on whether the current frontier-tail certificate is
 strong enough for the main paper claim, or whether it should be replaced by the
 fully weighted spectral certificate before submission.
+
+## Adaptive Green Score Certificate
+
+GPT's follow-up critique says the fully weighted spectral certificate is not a
+submission blocker as long as the claim is score-certified rather than
+arbitrary-weight spectral-certified. The right hierarchy is:
+
+```text
+Exact Green:
+  reference operator and small-scale oracle
+
+Adaptive Green:
+  main tail-certified Neumann-prefix implementation
+
+Fixed-K Green:
+  ablation
+```
+
+The implementation now has the missing score-level certificate:
+
+```text
+experiments/run_adaptive_green_certification.py
+```
+
+For each candidate split \(x\), it turns adaptive first-hit tail bounds into a
+finite-difference bits-RD score interval:
+
+```text
+S_exact(x) in [S_hat(x) - B_x, S_hat(x) + B_x]
+```
+
+using entrywise first-hit intervals and monotone interval arithmetic for:
+
+\[
+\phi(h)-\phi(h-K_x).
+\]
+
+The top-1 decision is accepted only when:
+
+\[
+\hat S_1 - B_1 > \hat S_2 + B_2.
+\]
+
+Otherwise the row is explicitly marked:
+
+```text
+needs_refinement_or_exact_fallback
+```
+
+Current table:
+
+```text
+experiments/output/adaptive_green_certification/summary.md
+```
+
+Summary:
+
+```text
+exact top-1 matches:        8 / 8
+interval-certified top-1:   4 / 8
+```
+
+The accepted cases are `open_room_12` and `four_rooms_11` for both
+\(\epsilon=10^{-3}\) and \(10^{-6}\). `corridor_128` agrees with exact but has a
+zero strict margin due to symmetry. `maze_13` agrees with exact but remains
+uncertified because the bits distortion interval is conservative near hidden
+mass one.
+
+This gives the intended anytime algorithm:
+
+```text
+1. run adaptive Green at an initial tail tolerance
+2. accept if the score intervals separate top-1 from runner-up
+3. otherwise lower epsilon / increase max horizon
+4. if still ambiguous, exact-fallback only on the ambiguous top set
+```
+
+The resulting paper claim should be:
+
+```text
+adaptive Green is decision-certified whenever it commits without fallback
+```
+
+not:
+
+```text
+adaptive Green is spectrally certified for every possible downstream weighted
+objective
+```

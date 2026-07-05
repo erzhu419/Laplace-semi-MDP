@@ -5104,3 +5104,103 @@ Does the frontier-tail certificate plus Lean Neumann theorem justify presenting
 adaptive Green as the main implementation, with exact Green as the reference
 operator and fixed-K as an ablation?
 ```
+
+### 31.7 Adaptive Green score certification
+
+GPT's answer says the submission claim does not need a fully weighted spectral
+certificate if we phrase the implementation as:
+
+```text
+Exact Green:
+  reference operator / oracle
+
+Adaptive Green:
+  tail-certified Neumann-prefix implementation
+
+Fixed-K Green:
+  ablation
+```
+
+The missing practical layer was not another global spectral norm. It was a
+downstream score interval:
+
+```text
+K_e(x) in [Khat_e(x), Khat_e(x) + T_e(x)]
+
+accept adaptive top-1 iff
+  Shat_top - B_top > Shat_runner + B_runner
+```
+
+I added this check in:
+
+```text
+experiments/run_adaptive_green_certification.py
+```
+
+The script evaluates every non-boundary state in the candidate universe, builds
+finite-difference bits-RD score intervals from the adaptive first-hit tail
+certificate, and marks each row as either:
+
+```text
+accept
+needs_refinement_or_exact_fallback
+```
+
+Current output:
+
+```text
+experiments/output/adaptive_green_certification/summary.md
+```
+
+On the current endpoint suite:
+
+```text
+exact top-1 matches:        8 / 8
+interval-certified top-1:   4 / 8
+```
+
+The accepted rows are the clean cases:
+
+```text
+open_room_12:
+  eps=1e-3 and eps=1e-6 both certify the same top split as exact
+  speedup vs exact in this score-cert run is about 19x to 27x
+
+four_rooms_11:
+  eps=1e-3 and eps=1e-6 both certify the same top split as exact
+  speedup vs exact is about 12x to 15x
+```
+
+The uncertified rows are informative rather than failures:
+
+```text
+corridor_128:
+  adaptive and exact agree, but the top margin is zero because the best split
+  is tied by symmetry, so no interval method can certify a strict top-1
+
+maze_13:
+  adaptive and exact agree, but the bits distortion is near the high-curvature
+  regime, so the conservative interval stays too wide; the anytime algorithm
+  should refine or exact-fallback on the ambiguous top set
+```
+
+This gives a safer main-paper implementation claim:
+
+```text
+Adaptive Green is decision-certified whenever the score intervals separate.
+When they do not separate, the solver refines the tolerance/horizon or falls
+back to exact Green on the ambiguous top set.
+```
+
+So the proof/experiment hierarchy is now:
+
+```text
+Lean Neumann theorem:
+  justifies the tail decomposition and epsilon certificate
+
+adaptive Green benchmark:
+  shows fixed-K failure is solved with large kernel speedups
+
+score certification table:
+  shows when the adaptive implementation preserves the exact-Green RD decision
+```

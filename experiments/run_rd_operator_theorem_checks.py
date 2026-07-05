@@ -165,6 +165,9 @@ def evaluate_recipe_boundary(
     boundary: Sequence[int],
     gamma: float,
     slip: float,
+    first_hit_mode: str = "exact",
+    first_hit_truncation_steps: int = 32,
+    first_hit_tail_tol: float = 0.0,
 ) -> Tuple[Dict[str, object], List[Dict[str, object]]]:
     return evaluate_boundary(
         map_name=map_name,
@@ -195,6 +198,9 @@ def evaluate_recipe_boundary(
         candidate_kind=str(recipe["candidate_kind"]),
         candidate_top_fraction=float(recipe["candidate_top_fraction"]),
         proposal_boundary=context["proposal_boundary"],  # type: ignore[arg-type]
+        first_hit_mode=first_hit_mode,
+        first_hit_truncation_steps=first_hit_truncation_steps,
+        first_hit_tail_tol=first_hit_tail_tol,
     )
 
 
