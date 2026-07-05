@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 
 PROFILE="${1:-large}"
 STAMP="${LAPLACE_RUN_STAMP:-$(date +%Y%m%d_%H%M%S)}"
-THREADS="${LAPLACE_NUM_THREADS:-64}"
+THREADS="${LAPLACE_NUM_THREADS:-$(nproc)}"
 OUT_ROOT="${LAPLACE_NODE_OUT_ROOT:-experiments/output/node_large_runs/$STAMP}"
 VENV="${LAPLACE_VENV:-$PWD/.venv-laplace}"
 

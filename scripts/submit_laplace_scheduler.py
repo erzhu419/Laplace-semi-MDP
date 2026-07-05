@@ -176,8 +176,8 @@ def parse_args() -> argparse.Namespace:
         choices=["all", "thread_random", "large_scale", "amortized", "operator", "full"],
     )
     parser.add_argument("--nodes", default=",".join(CPU_NODES))
-    parser.add_argument("--cpu", type=int, default=64)
-    parser.add_argument("--ram-mb", type=int, default=32768)
+    parser.add_argument("--cpu", type=int, default=192)
+    parser.add_argument("--ram-mb", type=int, default=65536)
     parser.add_argument("--dispatch", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()

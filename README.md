@@ -83,6 +83,10 @@ are synced back under `experiments/output/scheduler_large_runs/`:
 python3 scripts/submit_laplace_scheduler.py --profile large --dispatch
 ```
 
+The scheduler wrapper defaults to `--cpu 192` on `node001`-`node006`; that
+value is exported as `LAPLACE_NUM_THREADS`, `OMP_NUM_THREADS`,
+`OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS`, and `NUMEXPR_NUM_THREADS`.
+
 For a cheap scheduler preflight:
 
 ```bash
