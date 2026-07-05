@@ -5860,34 +5860,47 @@ Current larger-table summary:
 ```text
 group_constrained / operator:
   feasible rows = 6 / 6
-  median selection time ≈ 10.7s
-  median total speedup ≈ 0.0064x
+  median selection time ≈ 10.4s
+  best total speedup ≈ 0.0082x
 
 group_constrained_incremental / insertion_score:
-  feasible rows = 5 / 6
-  median selection time ≈ 3.25s
-  median total speedup ≈ 0.0196x
-  median probe Green time drops from ≈ 3.13s to ≈ 0.354s
+  feasible rows = 6 / 6
+  median selection time ≈ 5.75s
+  best total speedup ≈ 0.0275x
+  median probe Green time is now comparable to operator because it also
+  computes production occupancy weights; candidate score time remains tiny.
 ```
 
 Interpretation:
 
 ```text
 The incremental backend is now a real solver path, not just a diagnostic.
-It gives the expected cost reduction, but it is not yet the robust default:
-deterministic open_room_12 stops with one group violation. This likely means
-the current exact insertion score is optimizing the fixed-policy residual
-semantics while the robust operator/beam objective still benefits from its
-old edge/validity/occupancy conventions.
+The deterministic open_room_12 miss was a semantics mismatch, not a graph
+quality failure: the insertion trace used edge-uniform accounting after a
+split, while the production operator used occupancy-or-uniform active-edge
+weights. The backend now honors those weights when evaluating beam nodes.
 ```
 
-So the next useful step is not more profiling. It is a semantic alignment pass:
+The semantic diff artifact is:
 
 ```text
-compare operator vs insertion_score on the failing open_room_12 slip=0 row
-decompose differences into:
-  active-edge validity set
-  residual terminal universe
-  occupancy weighting vs uniform fallback
-  beam tie handling / max_splits
+experiments/run_group_incremental_semantic_diff.py
+experiments/output/group_incremental_semantic_diff/summary.md
 ```
+
+It shows:
+
+```text
+operator top-1 at step 0: state 1, exact feasible after graph rewiring
+insertion_score top-1 at step 0: state 72, exact feasible after graph rewiring
+
+For boundary [0, 72, 143]:
+  weighted topology bits ≈ 9.716
+  uniform topology bits ≈ 116.6
+```
+
+So active-edge validity and terminal universe were not the main bug. The key
+semantic mismatch was occupancy weighting versus uniform fallback. The remaining
+scientific issue is whether to make the occupancy-weighted insertion backend the
+main runtime path, or keep it as an ablation until a larger scale suite confirms
+the added occupancy-weight computation amortizes well.

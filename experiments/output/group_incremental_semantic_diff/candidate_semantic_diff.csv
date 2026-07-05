@@ -1,0 +1,3 @@
+map,slip,backend,rank,candidate_state,trial_boundary,estimated_violation_after,exact_total_violation_after,estimate_minus_exact_violation,estimated_violation_reduction,estimated_groups_improved,exact_all_groups_feasible,exact_n_groups_feasible,exact_group_risks,exact_group_violations
+open_room_12,0.0,operator,1,1,"[0, 1, 143]",116.58945928855368,0.0,116.58945928855368,0.0,0,True,3,"{'topology': 0.0, 'value': 0.0, 'stochastic': 0.0}","{'topology': 0.0, 'value': 0.0, 'stochastic': 0.0}"
+open_room_12,0.0,insertion_score,1,72,"[0, 72, 143]",77.72630619236767,0.0,77.72630619236767,38.86315309618601,1,True,3,"{'topology': 9.715788274046137, 'value': 0.0, 'stochastic': 0.0}","{'topology': 0.0, 'value': 0.0, 'stochastic': 0.0}"

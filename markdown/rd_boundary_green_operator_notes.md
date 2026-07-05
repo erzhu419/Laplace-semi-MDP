@@ -1222,25 +1222,34 @@ Current result:
 ```text
 operator backend:
   feasible = 6 / 6
-  median selection time ≈ 10.7s
+  median selection time ≈ 10.4s
 
 incremental insertion_score backend:
-  feasible = 5 / 6
-  median selection time ≈ 3.25s
-  median total-speedup improves from ≈ 0.0064x to ≈ 0.0196x
+  feasible = 6 / 6
+  median selection time ≈ 5.75s
+  best total-speedup improves from ≈ 0.0082x to ≈ 0.0275x
 ```
 
-The one miss is `open_room_12, slip=0.0`, where the incremental backend stops
-with one group violation. This is not a proof failure: the insertion update was
-already checked against direct child recomputation. It is a solver semantics
-alignment issue between:
+The previous `open_room_12, slip=0.0` miss is fixed. The semantic diff showed it
+was not a proof failure and not a bad graph; it was a mismatch between:
 
 ```text
 exact fixed-policy residual insertion score
-old operator backend's edge validity / occupancy / fallback conventions
+old insertion trace's edge-uniform weighting
+production operator's occupancy-or-uniform active-edge weighting
 ```
 
-The robust paper-facing row should still use the operator backend for now, while
-the incremental row is the right ablation showing that the parent-to-child Green
-update can become the main runtime path after the open-room alignment issue is
-fixed.
+The new diagnostic is:
+
+```text
+experiments/run_group_incremental_semantic_diff.py
+experiments/output/group_incremental_semantic_diff/summary.md
+```
+
+For boundary `[0, 72, 143]`, topology probes have weighted hidden bits ≈ 9.716
+but uniform hidden bits ≈ 116.6. After making `insertion_score` honor the same
+occupancy-or-uniform active-edge weights as the production operator, the
+incremental beam row becomes feasible on all current larger-table cases. The
+remaining runtime question is now engineering rather than semantics: can we
+cache or incrementally update the occupancy weights so the speed advantage holds
+at larger scale?

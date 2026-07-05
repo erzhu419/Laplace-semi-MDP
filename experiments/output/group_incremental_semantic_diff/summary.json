@@ -1,0 +1,325 @@
+{
+  "map": "open_room_12",
+  "slip": 0.0,
+  "basis": [
+    0,
+    1,
+    2,
+    6,
+    11,
+    13,
+    17,
+    18,
+    22,
+    38,
+    57,
+    65,
+    72,
+    73,
+    77,
+    78,
+    88,
+    104,
+    111,
+    121,
+    130,
+    132,
+    138,
+    143
+  ],
+  "initial_boundary": [
+    0,
+    143
+  ],
+  "budgets": {
+    "topology": 19.43157654809228,
+    "value": 19.43157654809228,
+    "stochastic": 0.0
+  },
+  "backend_summaries": [
+    {
+      "backend": "operator",
+      "step_time_sec": 14.640326209017076,
+      "current_group_risks": {
+        "topology": 77.72630619236912,
+        "value": 77.72630619236912,
+        "stochastic": 0.0
+      },
+      "current_group_violations": {
+        "topology": 58.29472964427684,
+        "value": 58.29472964427684,
+        "stochastic": 0.0
+      },
+      "current_total_violation": 116.58945928855368,
+      "top_candidate": 1,
+      "top_estimated_violation_after": 116.58945928855368,
+      "top_estimated_violation_reduction": 0.0
+    },
+    {
+      "backend": "insertion_score",
+      "step_time_sec": 2.6098422069917433,
+      "current_group_risks": {
+        "topology": 77.72630619236912,
+        "value": 77.72630619236912,
+        "stochastic": 0.0
+      },
+      "current_group_violations": {
+        "topology": 58.29472964427684,
+        "value": 58.29472964427684,
+        "stochastic": 0.0
+      },
+      "current_total_violation": 116.58945928855368,
+      "top_candidate": 72,
+      "top_estimated_violation_after": 77.72630619236767,
+      "top_estimated_violation_reduction": 38.86315309618601
+    }
+  ],
+  "candidate_rows": [
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "backend": "operator",
+      "rank": 1,
+      "candidate_state": 1,
+      "trial_boundary": [
+        0,
+        1,
+        143
+      ],
+      "estimated_violation_after": 116.58945928855368,
+      "exact_total_violation_after": 0.0,
+      "estimate_minus_exact_violation": 116.58945928855368,
+      "estimated_violation_reduction": 0.0,
+      "estimated_groups_improved": 0,
+      "exact_all_groups_feasible": true,
+      "exact_n_groups_feasible": 3,
+      "exact_group_risks": {
+        "topology": 0.0,
+        "value": 0.0,
+        "stochastic": 0.0
+      },
+      "exact_group_violations": {
+        "topology": 0.0,
+        "value": 0.0,
+        "stochastic": 0.0
+      }
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "backend": "insertion_score",
+      "rank": 1,
+      "candidate_state": 72,
+      "trial_boundary": [
+        0,
+        72,
+        143
+      ],
+      "estimated_violation_after": 77.72630619236767,
+      "exact_total_violation_after": 0.0,
+      "estimate_minus_exact_violation": 77.72630619236767,
+      "estimated_violation_reduction": 38.86315309618601,
+      "estimated_groups_improved": 1,
+      "exact_all_groups_feasible": true,
+      "exact_n_groups_feasible": 3,
+      "exact_group_risks": {
+        "topology": 9.715788274046137,
+        "value": 0.0,
+        "stochastic": 0.0
+      },
+      "exact_group_violations": {
+        "topology": 0.0,
+        "value": 0.0,
+        "stochastic": 0.0
+      }
+    }
+  ],
+  "edge_weight_rows": [
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        143
+      ],
+      "probe": "bottleneck",
+      "n_boundary": 2,
+      "n_edge_rows": 2,
+      "n_valid_edges": 0,
+      "n_active_edges_weighted": 2,
+      "n_active_edges_uniform": 2,
+      "valid_policy_occupancy_total": 0,
+      "weighted_hidden_bits": 77.72630619236912,
+      "uniform_hidden_bits": 77.72630619236912,
+      "uniform_minus_weighted_bits": 0.0,
+      "n_edges_valid_from_row": 0,
+      "value_gap_max": NaN
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        143
+      ],
+      "probe": "junction",
+      "n_boundary": 2,
+      "n_edge_rows": 2,
+      "n_valid_edges": 0,
+      "n_active_edges_weighted": 2,
+      "n_active_edges_uniform": 2,
+      "valid_policy_occupancy_total": 0,
+      "weighted_hidden_bits": 77.72630619236912,
+      "uniform_hidden_bits": 77.72630619236912,
+      "uniform_minus_weighted_bits": 0.0,
+      "n_edges_valid_from_row": 0,
+      "value_gap_max": NaN
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        143
+      ],
+      "probe": "value_gradient",
+      "n_boundary": 2,
+      "n_edge_rows": 2,
+      "n_valid_edges": 0,
+      "n_active_edges_weighted": 2,
+      "n_active_edges_uniform": 2,
+      "valid_policy_occupancy_total": 0,
+      "weighted_hidden_bits": 77.72630619236912,
+      "uniform_hidden_bits": 77.72630619236912,
+      "uniform_minus_weighted_bits": 0.0,
+      "n_edges_valid_from_row": 0,
+      "value_gap_max": NaN
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        1,
+        143
+      ],
+      "probe": "bottleneck",
+      "n_boundary": 3,
+      "n_edge_rows": 6,
+      "n_valid_edges": 2,
+      "n_active_edges_weighted": 1,
+      "n_active_edges_uniform": 2,
+      "valid_policy_occupancy_total": 0.24999999999999992,
+      "weighted_hidden_bits": -3.6070582432937927e-13,
+      "uniform_hidden_bits": -2.885646594635035e-12,
+      "uniform_minus_weighted_bits": -2.524940770305656e-12,
+      "n_edges_valid_from_row": 2,
+      "value_gap_max": 17.58268375140237
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        1,
+        143
+      ],
+      "probe": "junction",
+      "n_boundary": 3,
+      "n_edge_rows": 6,
+      "n_valid_edges": 2,
+      "n_active_edges_weighted": 1,
+      "n_active_edges_uniform": 2,
+      "valid_policy_occupancy_total": 0.24999999999999992,
+      "weighted_hidden_bits": -3.6070582432937927e-13,
+      "uniform_hidden_bits": -2.885646594635035e-12,
+      "uniform_minus_weighted_bits": -2.524940770305656e-12,
+      "n_edges_valid_from_row": 2,
+      "value_gap_max": 17.58268375140237
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        1,
+        143
+      ],
+      "probe": "value_gradient",
+      "n_boundary": 3,
+      "n_edge_rows": 6,
+      "n_valid_edges": 2,
+      "n_active_edges_weighted": 1,
+      "n_active_edges_uniform": 2,
+      "valid_policy_occupancy_total": 0.24999999999999992,
+      "weighted_hidden_bits": -3.6070582432937927e-13,
+      "uniform_hidden_bits": -2.885646594635035e-12,
+      "uniform_minus_weighted_bits": -2.524940770305656e-12,
+      "n_edges_valid_from_row": 2,
+      "value_gap_max": 17.58268375140237
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        72,
+        143
+      ],
+      "probe": "bottleneck",
+      "n_boundary": 3,
+      "n_edge_rows": 6,
+      "n_valid_edges": 3,
+      "n_active_edges_weighted": 1,
+      "n_active_edges_uniform": 3,
+      "valid_policy_occupancy_total": 0.24999999999999992,
+      "weighted_hidden_bits": 9.715788274046137,
+      "uniform_hidden_bits": 116.58945928855368,
+      "uniform_minus_weighted_bits": 106.87367101450755,
+      "n_edges_valid_from_row": 3,
+      "value_gap_max": 20.4751217816436
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        72,
+        143
+      ],
+      "probe": "junction",
+      "n_boundary": 3,
+      "n_edge_rows": 6,
+      "n_valid_edges": 3,
+      "n_active_edges_weighted": 1,
+      "n_active_edges_uniform": 3,
+      "valid_policy_occupancy_total": 0.24999999999999992,
+      "weighted_hidden_bits": 9.715788274046137,
+      "uniform_hidden_bits": 116.58945928855368,
+      "uniform_minus_weighted_bits": 106.87367101450755,
+      "n_edges_valid_from_row": 3,
+      "value_gap_max": 20.4751217816436
+    },
+    {
+      "map": "open_room_12",
+      "slip": 0.0,
+      "boundary": [
+        0,
+        72,
+        143
+      ],
+      "probe": "value_gradient",
+      "n_boundary": 3,
+      "n_edge_rows": 6,
+      "n_valid_edges": 3,
+      "n_active_edges_weighted": 1,
+      "n_active_edges_uniform": 3,
+      "valid_policy_occupancy_total": 0.24999999999999992,
+      "weighted_hidden_bits": -3.6070582432937927e-13,
+      "uniform_hidden_bits": -4.328469891952552e-12,
+      "uniform_minus_weighted_bits": -3.967764067623173e-12,
+      "n_edges_valid_from_row": 3,
+      "value_gap_max": 20.4751217816436
+    }
+  ]
+}

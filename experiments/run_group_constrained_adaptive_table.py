@@ -223,8 +223,9 @@ def run_method(
             args=args,
             delta_backend=delta_backend,
         )
-        group_eval = group_eval_from_trace(constructor.get("selection_trace", []))  # type: ignore[arg-type]
-        if group_eval is None or args.include_test_probes:
+        trace_group_eval = group_eval_from_trace(constructor.get("selection_trace", []))  # type: ignore[arg-type]
+        group_eval = trace_group_eval
+        if group_eval is None or args.include_test_probes or delta_backend != "operator":
             group_eval = evaluate_group_boundary(
                 map_label=map_label,
                 rows=rows,
@@ -236,6 +237,21 @@ def run_method(
                 budgets=budgets,
                 args=args,
             )
+        if trace_group_eval is not None:
+            trace_feasible = bool(trace_group_eval["all_groups_feasible"])
+            exact_feasible = bool(group_eval["all_groups_feasible"])
+            if delta_backend != "operator" and exact_feasible and not trace_feasible:
+                prior_stop = str(constructor.get("constructor_stop_reason", "none"))
+                constructor = {
+                    **constructor,
+                    "constructor_stop_reason": f"{prior_stop}_exact_feasible",
+                }
+            constructor = {
+                **constructor,
+                "trace_group_total_violation": trace_group_eval["total_violation"],
+                "trace_group_max_violation": trace_group_eval["max_violation"],
+                "trace_group_all_feasible": trace_group_eval["all_groups_feasible"],
+            }
     else:
         raise ValueError(f"Unknown method: {method}")
     selection_profile = constructor.get("selection_profile", {})
@@ -288,6 +304,9 @@ def run_method(
         "n_groups_feasible": int(group_eval["n_groups_feasible"]),
         "group_total_violation": float(group_eval["total_violation"]),
         "group_max_violation": float(group_eval["max_violation"]),
+        "trace_group_all_feasible": constructor.get("trace_group_all_feasible", ""),
+        "trace_group_total_violation": constructor.get("trace_group_total_violation", ""),
+        "trace_group_max_violation": constructor.get("trace_group_max_violation", ""),
         "group_test_bits_mean": float(group_eval["test_bits_mean"]),
         "group_test_bits_cvar": float(group_eval["test_bits_cvar"]),
         "selection_time_sec": float(model["construction_time_sec"]),
@@ -361,6 +380,7 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "n_groups_feasible",
         "group_total_violation",
         "group_max_violation",
+        "trace_group_total_violation",
         "group_test_bits_cvar",
         "selection_time_sec",
         "delta_backend",

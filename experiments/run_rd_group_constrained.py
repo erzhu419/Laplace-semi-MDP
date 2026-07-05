@@ -31,7 +31,13 @@ from run_rd_multiprobe_basis import (
     tail_cvar,
     write_csv,
 )
-from run_rd_operator_theorem_checks import finite_float, operator_marginal_rows, phi_bits
+from run_rd_operator_theorem_checks import (
+    active_edges,
+    evaluate_recipe_boundary,
+    finite_float,
+    operator_marginal_rows,
+    phi_bits,
+)
 
 
 def _round_key(value: float) -> float:
@@ -242,6 +248,7 @@ def probe_delta_table_insertion_score(
     probe: str,
     gamma: float,
     slip: float,
+    edge_weight: str,
     probe_top_fraction: float,
 ) -> ProbeDeltaRecord:
     started = time.perf_counter()
@@ -264,9 +271,28 @@ def probe_delta_table_insertion_score(
     distances = shortest_path_distance_matrix(grid)
     hidden_threshold = 1e-6
     local_horizon = 999.0
+    active_weight_by_edge: Dict[Tuple[int, int], float] | None = None
+    if edge_weight != "uniform":
+        weight_start = time.perf_counter()
+        _weight_row, weight_edges = evaluate_recipe_boundary(
+            map_name=map_name,
+            context=context,
+            recipe=recipe,
+            boundary=boundary,
+            gamma=gamma,
+            slip=slip,
+        )
+        active_weight_by_edge = {
+            (int(edge_row["src_state"]), int(edge_row["target_state"])): float(weight)
+            for edge_row, weight in active_edges(weight_edges, edge_weight=edge_weight)
+            if float(weight) > 1e-12
+        }
+        weight_eval_time = time.perf_counter() - weight_start
+    else:
+        weight_eval_time = 0.0
 
     edge_records: List[Dict[str, object]] = []
-    green_time = 0.0
+    green_time = weight_eval_time
     score_time = 0.0
     for target_state in boundary:
         policy = shortest_path_policy_to_target(grid, int(target_state), slip=slip)
@@ -319,21 +345,29 @@ def probe_delta_table_insertion_score(
             score_time += time.perf_counter() - score_start
             edge_records.append(
                 {
+                    "edge_key": (int(src_state), int(target_state)),
                     "edge_valid": edge_valid,
                     "before_bits": before_bits,
                     "candidate_after_bits": candidate_after_bits,
                 }
             )
 
-    valid_records = [row for row in edge_records if bool(row["edge_valid"])]
-    active_records = valid_records if valid_records else edge_records
-    before_bits_total = float(sum(finite_float(row["before_bits"]) for row in active_records))
+    if active_weight_by_edge is None:
+        valid_records = [row for row in edge_records if bool(row["edge_valid"])]
+        active_records = [(row, 1.0) for row in (valid_records if valid_records else edge_records)]
+    else:
+        active_records = [
+            (row, float(active_weight_by_edge[tuple(row["edge_key"])]))  # type: ignore[arg-type]
+            for row in edge_records
+            if tuple(row["edge_key"]) in active_weight_by_edge
+        ]
+    before_bits_total = float(sum(weight * finite_float(row["before_bits"]) for row, weight in active_records))
     deltas_by_state: Dict[int, float] = {}
     for candidate in candidate_states:
         delta = 0.0
-        for row in active_records:
+        for row, weight in active_records:
             after_bits = row["candidate_after_bits"][int(candidate)]  # type: ignore[index]
-            delta += finite_float(row["before_bits"]) - finite_float(after_bits)
+            delta += weight * (finite_float(row["before_bits"]) - finite_float(after_bits))
         deltas_by_state[int(candidate)] = max(0.0, float(delta))
 
     return ProbeDeltaRecord(
@@ -403,6 +437,7 @@ def probe_delta_table(
                     probe=probe,
                     gamma=gamma,
                     slip=slip,
+                    edge_weight=edge_weight,
                     probe_top_fraction=probe_top_fraction,
                 )
             else:

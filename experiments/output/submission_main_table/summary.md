@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-05T17:31:09
+Generated: 2026-07-05T19:00:41
 
 This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.
 
@@ -42,24 +42,24 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 
 | map | slip | method | n_states | n_basis | n_boundary | group_all_feasible | n_groups_feasible | group_total_violation | selection_time_sec | delta_backend | probe_green_kernel_time_sec | probe_operator_delta_time_sec | candidate_score_time_sec | probe_cache_hit_rate | kernel_time_sec | smdp_solve_time_sec | planning_speedup | total_speedup | break_even_tasks | start_gap | first_hit_tail_bound_max |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| open_room_12 | 0.0 | endpoints | 144 | 24 | 2 | False | 1 | 155.5 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02543 | 9.164e-05 | 619.3 | 2.224 | 1 | 3.552713678800501e-15 | 0.0 |
-| open_room_12 | 0.0 | group_constrained | 144 | 24 | 3 | True | 3 | 0.0 | 13.86 | operator | 10.04 | 2.098 | 0.001538 | 0.0 | 0.03241 | 0.001157 | 48.55 | 0.004045 | 253 | 3.552713678800501e-15 | 0.0 |
-| open_room_12 | 0.0 | group_constrained_incremental | 144 | 24 | 3 | False | 2 | 97.16 | 89.48 | insertion_score | 77.39 | 0.5036 | 0.008679 | 0.0 | 0.03115 | 0.0002865 | 197 | 0.0006307 | 1594 | 3.552713678800501e-15 | 0.0 |
-| open_room_12 | 0.05 | endpoints | 144 | 24 | 2 | False | 0 | 233.2 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02852 | 8.923e-05 | 1314 | 4.097 | 1 | 0.07851 | 3.737e-07 |
-| open_room_12 | 0.05 | group_constrained | 144 | 24 | 4 | True | 3 | 0.0 | 52.32 | operator | 39.2 | 6.703 | 0.003474 | 0.0 | 0.04994 | 0.003014 | 39.93 | 0.002297 | 447 | 0.07851 | 9.787e-07 |
-| open_room_12 | 0.05 | group_constrained_incremental | 144 | 24 | 4 | True | 3 | 0.0 | 15.42 | insertion_score | 9.577 | 0.07434 | 0.002712 | 0.0 | 0.05041 | 0.002881 | 41.15 | 0.007661 | 134 | 0.07851 | 9.787e-07 |
-| four_rooms_11 | 0.0 | endpoints | 104 | 29 | 2 | False | 1 | 155.5 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02128 | 0.0002071 | 177.3 | 1.709 | 1 | 5.329070518200751e-15 | 0.0 |
-| four_rooms_11 | 0.0 | group_constrained | 104 | 29 | 3 | True | 3 | 0.0 | 3.951 | operator | 1.545 | 1.195 | 0.001372 | 0.0 | 0.03157 | 0.0001921 | 248.3 | 0.01197 | 84 | 5.329070518200751e-15 | 0.0 |
-| four_rooms_11 | 0.0 | group_constrained_incremental | 104 | 29 | 3 | True | 3 | 0.0 | 1.606 | insertion_score | 0.5907 | 0.0162 | 0.001078 | 0.0 | 0.03073 | 0.0001935 | 194.5 | 0.023 | 44 | 5.329070518200751e-15 | 0.0 |
-| four_rooms_11 | 0.05 | endpoints | 104 | 29 | 2 | False | 0 | 233.2 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02756 | 0.0001309 | 621.1 | 2.937 | 1 | 0.05768 | 7.41e-07 |
-| four_rooms_11 | 0.05 | group_constrained | 104 | 29 | 4 | True | 3 | 0.0 | 12.45 | operator | 3.628 | 4.031 | 0.003625 | 0.0 | 0.07691 | 0.0007959 | 104.4 | 0.00663 | 153 | 0.05768 | 9.381e-07 |
-| four_rooms_11 | 0.05 | group_constrained_incremental | 104 | 29 | 5 | True | 3 | 0.0 | 4.893 | insertion_score | 0.1183 | 0.1037 | 0.00356 | 0.0 | 0.1256 | 0.004452 | 18.3 | 0.01622 | 66 | 0.05768 | 9.265e-07 |
-| maze_13 | 0.0 | endpoints | 71 | 33 | 2 | False | 1 | 155.5 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.01516 | 8.558e-05 | 405 | 2.273 | 1 | 7.105427357601002e-15 | 0.0 |
-| maze_13 | 0.0 | group_constrained | 71 | 33 | 5 | True | 3 | 0.0 | 8.938 | operator | 2.624 | 3.315 | 0.009708 | 0.0 | 0.04463 | 0.001859 | 30.23 | 0.006254 | 166 | 3.552713678800501e-15 | 0.0 |
-| maze_13 | 0.0 | group_constrained_incremental | 71 | 33 | 3 | True | 3 | 0.0 | 0.7091 | insertion_score | 0.01033 | 0.01077 | 0.001111 | 0.0 | 0.02362 | 0.001343 | 26.14 | 0.04783 | 22 | 7.105427357601002e-15 | 0.0 |
-| maze_13 | 0.05 | endpoints | 71 | 33 | 2 | False | 0 | 233.2 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02037 | 8.574e-05 | 746.1 | 3.127 | 1 | 1.548e-08 | 4.298e-07 |
-| maze_13 | 0.05 | group_constrained | 71 | 33 | 4 | True | 3 | 0.0 | 7.596 | operator | 2.049 | 2.572 | 0.003122 | 0.0 | 0.05591 | 0.00266 | 24.23 | 0.00842 | 124 | 4.297e-07 | 9.672e-07 |
-| maze_13 | 0.05 | group_constrained_incremental | 71 | 33 | 3 | True | 3 | 0.0 | 1.129 | insertion_score | 0.01025 | 0.01183 | 0.001164 | 0.0 | 0.03529 | 0.001912 | 33.81 | 0.05543 | 19 | 2.733e-07 | 7.73e-07 |
+| open_room_12 | 0.0 | endpoints | 144 | 24 | 2 | False | 1 | 155.5 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02357 | 8.308e-05 | 641.8 | 2.255 | 1 | 3.552713678800501e-15 | 0.0 |
+| open_room_12 | 0.0 | group_constrained | 144 | 24 | 3 | True | 3 | 0.0 | 14.35 | operator | 10.89 | 1.895 | 0.001164 | 0.0 | 0.02961 | 0.00109 | 48.02 | 0.003639 | 281 | 3.552713678800501e-15 | 0.0 |
+| open_room_12 | 0.0 | group_constrained_incremental | 144 | 24 | 3 | True | 3 | 0.0 | 17 | insertion_score | 15.2 | 0.01701 | 0.00271 | 0.0 | 0.02912 | 0.0002589 | 208.5 | 0.003168 | 318 | 3.552713678800501e-15 | 0.0 |
+| open_room_12 | 0.05 | endpoints | 144 | 24 | 2 | False | 0 | 233.2 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02601 | 8.159e-05 | 1357 | 4.244 | 1 | 0.07851 | 3.737e-07 |
+| open_room_12 | 0.05 | group_constrained | 144 | 24 | 4 | True | 3 | 0.0 | 50.84 | operator | 38.58 | 6.238 | 0.005254 | 0.0 | 0.048 | 0.003029 | 37.35 | 0.002223 | 463 | 0.07851 | 9.787e-07 |
+| open_room_12 | 0.05 | group_constrained_incremental | 144 | 24 | 4 | True | 3 | 0.0 | 58.53 | insertion_score | 53.22 | 0.05828 | 0.002583 | 0.0 | 0.04492 | 0.00281 | 41.56 | 0.001994 | 514 | 0.07851 | 9.787e-07 |
+| four_rooms_11 | 0.0 | endpoints | 104 | 29 | 2 | False | 1 | 155.5 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.01885 | 7.748e-05 | 450.4 | 1.844 | 1 | 5.329070518200751e-15 | 0.0 |
+| four_rooms_11 | 0.0 | group_constrained | 104 | 29 | 3 | True | 3 | 0.0 | 5.13 | operator | 2.752 | 1.272 | 0.001342 | 0.0 | 0.02757 | 0.0002249 | 188.3 | 0.00821 | 123 | 5.329070518200751e-15 | 0.0 |
+| four_rooms_11 | 0.0 | group_constrained_incremental | 104 | 29 | 3 | True | 3 | 0.0 | 2.839 | insertion_score | 1.883 | 0.01378 | 0.0009636 | 0.0 | 0.028 | 0.0002163 | 174.7 | 0.01318 | 77 | 5.329070518200751e-15 | 0.0 |
+| four_rooms_11 | 0.05 | endpoints | 104 | 29 | 2 | False | 0 | 233.2 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02498 | 0.0001217 | 644.8 | 3.127 | 1 | 0.05768 | 7.41e-07 |
+| four_rooms_11 | 0.05 | group_constrained | 104 | 29 | 4 | True | 3 | 0.0 | 11.87 | operator | 3.372 | 4.12 | 0.003636 | 0.0 | 0.06729 | 0.0007788 | 100.8 | 0.006573 | 154 | 0.05768 | 9.381e-07 |
+| four_rooms_11 | 0.05 | group_constrained_incremental | 104 | 29 | 5 | True | 3 | 0.0 | 8.662 | insertion_score | 4.335 | 0.09484 | 0.002955 | 0.0 | 0.1133 | 0.00397 | 19.43 | 0.008786 | 120 | 0.05768 | 9.265e-07 |
+| maze_13 | 0.0 | endpoints | 71 | 33 | 2 | False | 1 | 155.5 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.01371 | 9.089e-05 | 362.3 | 2.386 | 1 | 7.105427357601002e-15 | 0.0 |
+| maze_13 | 0.0 | group_constrained | 71 | 33 | 5 | True | 3 | 0.0 | 8.977 | operator | 2.43 | 3.802 | 0.004571 | 0.0 | 0.04028 | 0.001841 | 24.34 | 0.004968 | 210 | 3.552713678800501e-15 | 0.0 |
+| maze_13 | 0.0 | group_constrained_incremental | 71 | 33 | 3 | True | 3 | 0.0 | 1.362 | insertion_score | 0.7139 | 0.01007 | 0.001005 | 0.0 | 0.02235 | 0.001116 | 30.07 | 0.02422 | 43 | 7.105427357601002e-15 | 0.0 |
+| maze_13 | 0.05 | endpoints | 71 | 33 | 2 | False | 0 | 233.2 | 0.0 |  | 0.0 | 0.0 | 0.0 | 0.0 | 0.02031 | 8.963e-05 | 698.1 | 3.067 | 1 | 1.548e-08 | 4.298e-07 |
+| maze_13 | 0.05 | group_constrained | 71 | 33 | 4 | True | 3 | 0.0 | 7.946 | operator | 1.914 | 3.203 | 0.003252 | 0.0 | 0.05081 | 0.002287 | 26.1 | 0.007464 | 140 | 4.297e-07 | 9.672e-07 |
+| maze_13 | 0.05 | group_constrained_incremental | 71 | 33 | 3 | True | 3 | 0.0 | 2.198 | insertion_score | 1.032 | 0.01215 | 0.001149 | 0.0 | 0.03082 | 0.001568 | 39.13 | 0.02752 | 38 | 2.733e-07 | 7.73e-07 |
 
 ## Solver Validity Aggregate
 
@@ -108,5 +108,6 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 - solver validity: `experiments/output/solver_validity/solver_validity.csv`
 - discovery profile/cache: `experiments/output/discovery_profile_cache/discovery_profile_cache.csv`
 - incremental Green update: `experiments/output/incremental_green_update/incremental_green_update_aggregate.csv`
+- incremental group semantic diff: `experiments/output/group_incremental_semantic_diff/summary.md`
 - weighted spectral certificate: `experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv`
 - conditioned rational certificate: `experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv`

@@ -28,8 +28,11 @@ python3 experiments/run_solver_validity.py \
 python3 experiments/run_group_constrained_adaptive_table.py \
   --map-specs open_room:12 four_rooms:11 maze:13 \
   --slips 0.0 0.05 \
-  --methods endpoints group_constrained \
+  --methods endpoints group_constrained group_constrained_incremental \
   --out-dir experiments/output/group_constrained_adaptive_large
+
+python3 experiments/run_group_incremental_semantic_diff.py \
+  --out-dir experiments/output/group_incremental_semantic_diff
 
 python3 experiments/run_discovery_profile_cache.py \
   --map-specs open_room:7 four_rooms:7 maze:9 \

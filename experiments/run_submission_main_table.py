@@ -564,6 +564,7 @@ def write_report(
         f"- solver validity: `{args.solver_csv}`",
         f"- discovery profile/cache: `{args.discovery_profile_csv}`",
         f"- incremental Green update: `{args.incremental_green_csv}`",
+        f"- incremental group semantic diff: `{args.incremental_semantic_summary}`",
         f"- weighted spectral certificate: `{args.weighted_cert_csv}`",
         f"- conditioned rational certificate: `{args.conditioned_cert_csv}`",
     ]
@@ -579,6 +580,7 @@ def main() -> None:
     parser.add_argument("--solver-csv", type=Path, default=Path("experiments/output/solver_validity/solver_validity.csv"))
     parser.add_argument("--discovery-profile-csv", type=Path, default=Path("experiments/output/discovery_profile_cache/discovery_profile_cache.csv"))
     parser.add_argument("--incremental-green-csv", type=Path, default=Path("experiments/output/incremental_green_update/incremental_green_update_aggregate.csv"))
+    parser.add_argument("--incremental-semantic-summary", type=Path, default=Path("experiments/output/group_incremental_semantic_diff/summary.md"))
     parser.add_argument("--weighted-cert-csv", type=Path, default=Path("experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv"))
     parser.add_argument("--conditioned-cert-csv", type=Path, default=Path("experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv"))
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/submission_main_table"))
