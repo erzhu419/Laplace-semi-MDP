@@ -9,7 +9,7 @@ import shlex
 import subprocess
 import sys
 import time
-from typing import Iterable, List, Sequence, Tuple
+from typing import Dict, Iterable, List, Sequence, Tuple
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,10 +64,12 @@ def stage_args() -> List[str]:
 def shell_cmd(
     profile: str,
     suite: str,
+    run_label: str,
     run_id: str,
     threads: int,
     remote_result_dir: Path,
     remote_python: Path,
+    extra_env: Dict[str, object] | None = None,
 ) -> str:
     parts = SUITE_PARTS[suite]
     setup = [
@@ -82,10 +84,12 @@ def shell_cmd(
         f"export PYTHON_BIN={shlex.quote(str(remote_python))}",
         "export LAPLACE_USE_SYSTEM_PYTHON=1",
         f"export LAPLACE_RUN_PARTS={shlex.quote(parts)}",
-        f"export LAPLACE_RUN_STAMP={shlex.quote(run_id + '_' + suite)}",
+        f"export LAPLACE_RUN_STAMP={shlex.quote(run_id + '_' + run_label)}",
         f"export LAPLACE_NODE_OUT_ROOT={shlex.quote(str(remote_result_dir))}",
-        f"bash scripts/run_node_large_paper.sh {shlex.quote(profile)}",
     ]
+    for key, value in (extra_env or {}).items():
+        setup.append(f"export {key}={shlex.quote(str(value))}")
+    setup.append(f"bash scripts/run_node_large_paper.sh {shlex.quote(profile)}")
     return "bash -lc " + shlex.quote("; ".join(setup))
 
 
@@ -95,18 +99,50 @@ def planned_suites(args: argparse.Namespace) -> List[str]:
     return args.suites
 
 
+def default_amortized_shards(profile: str) -> int:
+    if profile == "smoke":
+        return 1
+    return 32
+
+
+def task_specs(args: argparse.Namespace) -> List[Tuple[str, str, Dict[str, object]]]:
+    specs: List[Tuple[str, str, Dict[str, object]]] = []
+    for suite in planned_suites(args):
+        if suite == "amortized":
+            shard_count = args.amortized_shards or default_amortized_shards(args.profile)
+            if shard_count > 1:
+                width = max(2, len(str(shard_count - 1)))
+                for shard_index in range(shard_count):
+                    label = f"amortized_shard_{shard_index:0{width}d}_of_{shard_count:0{width}d}"
+                    specs.append(
+                        (
+                            label,
+                            "amortized",
+                            {
+                                "LAPLACE_AMORTIZED_SHARD_INDEX": shard_index,
+                                "LAPLACE_AMORTIZED_NUM_SHARDS": shard_count,
+                            },
+                        )
+                    )
+            else:
+                specs.append((suite, suite, {}))
+        else:
+            specs.append((suite, suite, {}))
+    return specs
+
+
 def submit(args: argparse.Namespace) -> List[str]:
     nodes = parse_csv(args.nodes)
     if not nodes:
         raise ValueError("At least one scheduler node is required.")
-    suites = planned_suites(args)
+    specs = task_specs(args)
     run_id = args.run_id or time.strftime("%Y%m%d_%H%M%S")
     task_ids: List[str] = []
 
-    for idx, suite in enumerate(suites):
-        if suite not in SUITE_PARTS:
+    for idx, (suite_label, suite_kind, extra_env) in enumerate(specs):
+        if suite_kind not in SUITE_PARTS:
             known = ", ".join(sorted(SUITE_PARTS))
-            raise ValueError(f"Unknown suite {suite!r}. Known: all, {known}")
+            raise ValueError(f"Unknown suite {suite_kind!r}. Known: all, {known}")
         node = nodes[idx % len(nodes)]
         remote_result_dir = (
             args.remote_root
@@ -114,11 +150,11 @@ def submit(args: argparse.Namespace) -> List[str]:
             / "output"
             / "scheduler_large_runs"
             / run_id
-            / suite
+            / suite_label
         )
-        local_result_dir = ROOT / "experiments" / "output" / "scheduler_large_runs" / run_id / suite
-        description = f"Laplace SMDP {args.profile} {suite} {run_id}"
-        signature = f"Laplace-semi-MDP/{args.profile}/{run_id}/{suite}"
+        local_result_dir = ROOT / "experiments" / "output" / "scheduler_large_runs" / run_id / suite_label
+        description = f"Laplace SMDP {args.profile} {suite_label} {run_id}"
+        signature = f"Laplace-semi-MDP/{args.profile}/{run_id}/{suite_label}"
         cmd = [
             sys.executable,
             str(args.scheduler),
@@ -126,7 +162,16 @@ def submit(args: argparse.Namespace) -> List[str]:
             "--description",
             description,
             "--cmd",
-            shell_cmd(args.profile, suite, run_id, args.threads, remote_result_dir, args.remote_python),
+            shell_cmd(
+                args.profile,
+                suite_kind,
+                suite_label,
+                run_id,
+                args.threads,
+                remote_result_dir,
+                args.remote_python,
+                extra_env,
+            ),
             "--cwd",
             str(ROOT),
             "--signature",
@@ -179,6 +224,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threads", type=int, default=192)
     parser.add_argument("--cpu", type=int, default=128)
     parser.add_argument("--ram-mb", type=int, default=65536)
+    parser.add_argument(
+        "--amortized-shards",
+        type=int,
+        default=0,
+        help="Number of amortized map/method shards; 0 chooses a profile default.",
+    )
     parser.add_argument("--dispatch", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()

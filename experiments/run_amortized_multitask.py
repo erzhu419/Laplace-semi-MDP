@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import time
 from datetime import datetime
@@ -277,6 +278,49 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def read_existing_rows(path: Path) -> List[Dict[str, object]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as handle:
+        return [dict(row) for row in csv.DictReader(handle)]
+
+
+def completed_jobs(rows: Sequence[Mapping[str, object]]) -> set[Tuple[str, str]]:
+    return {
+        (str(row.get("map", "")), str(row.get("method_spec", "")))
+        for row in rows
+        if row.get("map") and row.get("method_spec") and not row.get("error")
+    }
+
+
+def write_outputs(rows: Sequence[Mapping[str, object]], args: argparse.Namespace) -> None:
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    write_csv_all_fields(args.out_dir / "amortized_multitask.csv", rows)
+    (args.out_dir / "amortized_multitask.json").write_text(
+        json.dumps(rows, indent=2, default=json_default) + "\n",
+        encoding="utf-8",
+    )
+    write_report(rows, args.out_dir / "summary.md", args)
+
+
+def progress_path(args: argparse.Namespace) -> Path:
+    return args.progress_log or (args.out_dir / "progress.jsonl")
+
+
+def log_progress(args: argparse.Namespace, event: str, **payload: object) -> None:
+    record = {
+        "time": datetime.now().isoformat(timespec="seconds"),
+        "event": event,
+        **payload,
+    }
+    text = json.dumps(record, sort_keys=True, default=json_default)
+    print("AMORTIZED_PROGRESS " + text, flush=True)
+    path = progress_path(args)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(text + "\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Measure amortized graph-SMDP cost across many reward/goal tasks.")
     parser.add_argument("--map-specs", nargs="+", default=["corridor:64", "open_room:10", "maze:13"])
@@ -292,6 +336,12 @@ def main() -> None:
     parser.add_argument("--slip", type=float, default=0.05)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-splits", type=int, default=18)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--resume", dest="resume", action="store_true", default=True)
+    parser.add_argument("--no-resume", dest="resume", action="store_false")
+    parser.add_argument("--continue-on-error", action="store_true")
+    parser.add_argument("--progress-log", type=Path, default=None)
     parser.add_argument(
         "--out-dir",
         type=Path,
@@ -299,18 +349,104 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    rows: List[Dict[str, object]] = []
-    for family, size, map_label, map_rows in parse_map_specs(args.map_specs):
-        for method in args.methods:
-            rows.extend(run_method(family, size, map_label, map_rows, method, args))
+    if args.num_shards < 1:
+        raise ValueError("--num-shards must be >= 1")
+    if args.shard_index < 0 or args.shard_index >= args.num_shards:
+        raise ValueError("--shard-index must satisfy 0 <= shard-index < num-shards")
 
-    args.out_dir.mkdir(parents=True, exist_ok=True)
-    write_csv_all_fields(args.out_dir / "amortized_multitask.csv", rows)
-    (args.out_dir / "amortized_multitask.json").write_text(
-        json.dumps(rows, indent=2, default=json_default) + "\n",
-        encoding="utf-8",
+    jobs = [
+        (family, size, map_label, map_rows, method)
+        for family, size, map_label, map_rows in parse_map_specs(args.map_specs)
+        for method in args.methods
+    ]
+    selected_jobs = [
+        (job_index, *job)
+        for job_index, job in enumerate(jobs)
+        if job_index % args.num_shards == args.shard_index
+    ]
+
+    rows: List[Dict[str, object]] = (
+        read_existing_rows(args.out_dir / "amortized_multitask.csv") if args.resume else []
     )
-    write_report(rows, args.out_dir / "summary.md", args)
+    done = completed_jobs(rows)
+    log_progress(
+        args,
+        "start",
+        shard_index=args.shard_index,
+        num_shards=args.num_shards,
+        selected_jobs=len(selected_jobs),
+        total_jobs=len(jobs),
+        resumed_completed_jobs=len(done),
+    )
+
+    completed_now = 0
+    for progress_index, (job_index, family, size, map_label, map_rows, method) in enumerate(selected_jobs, start=1):
+        key = (map_label, method)
+        if args.resume and key in done:
+            log_progress(
+                args,
+                "skip_completed",
+                progress_index=progress_index,
+                selected_jobs=len(selected_jobs),
+                job_index=job_index,
+                map=map_label,
+                method_spec=method,
+            )
+            continue
+
+        start_time = time.perf_counter()
+        log_progress(
+            args,
+            "job_start",
+            progress_index=progress_index,
+            selected_jobs=len(selected_jobs),
+            job_index=job_index,
+            map=map_label,
+            method_spec=method,
+        )
+        try:
+            method_rows = run_method(family, size, map_label, map_rows, method, args)
+        except Exception as exc:
+            log_progress(
+                args,
+                "job_error",
+                progress_index=progress_index,
+                selected_jobs=len(selected_jobs),
+                job_index=job_index,
+                map=map_label,
+                method_spec=method,
+                elapsed_sec=time.perf_counter() - start_time,
+                error=repr(exc),
+            )
+            if not args.continue_on_error:
+                raise
+            continue
+
+        rows.extend(method_rows)
+        done.add(key)
+        completed_now += 1
+        write_outputs(rows, args)
+        log_progress(
+            args,
+            "job_done",
+            progress_index=progress_index,
+            selected_jobs=len(selected_jobs),
+            job_index=job_index,
+            map=map_label,
+            method_spec=method,
+            elapsed_sec=time.perf_counter() - start_time,
+            rows_written=len(rows),
+        )
+
+    write_outputs(rows, args)
+    log_progress(
+        args,
+        "done",
+        shard_index=args.shard_index,
+        num_shards=args.num_shards,
+        completed_now=completed_now,
+        total_rows=len(rows),
+    )
 
 
 if __name__ == "__main__":

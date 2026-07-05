@@ -88,7 +88,14 @@ The scheduler wrapper defaults to full-node BLAS/OpenMP threading
 (`--cpu 128`) so transient load-average accounting does not keep otherwise
 idle `node001`-`node006` jobs queued. The `--threads` value is exported as
 `LAPLACE_NUM_THREADS`, `OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`,
-`MKL_NUM_THREADS`, and `NUMEXPR_NUM_THREADS`.
+`MKL_NUM_THREADS`, and `NUMEXPR_NUM_THREADS`. Large/xl amortized runs are split
+into map/method shards by default; each shard writes `progress.jsonl` plus an
+incrementally refreshed CSV/summary after every map/method job. To aggregate
+finished shard outputs:
+
+```bash
+python3 experiments/aggregate_amortized_shards.py --run-root experiments/output/scheduler_large_runs/<run_id>
+```
 
 For a cheap scheduler preflight:
 

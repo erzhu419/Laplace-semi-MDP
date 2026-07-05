@@ -128,6 +128,10 @@ if has_part amortized; then
     --task-counts "${AMORTIZED_COUNTS[@]}" \
     --max-tasks "$AMORTIZED_MAX_TASKS" \
     --goal-source all_states \
+    --shard-index "${LAPLACE_AMORTIZED_SHARD_INDEX:-0}" \
+    --num-shards "${LAPLACE_AMORTIZED_NUM_SHARDS:-1}" \
+    --resume \
+    --continue-on-error \
     --out-dir "$OUT_ROOT/amortized_multitask"
 fi
 
