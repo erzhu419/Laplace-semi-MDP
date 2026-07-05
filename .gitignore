@@ -5,5 +5,9 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .venv/
+.venv-laplace/
 venv/
 proof/.lake/
+node_logs/
+experiments/output/node_large_runs/
+experiments/output/scheduler_large_runs/

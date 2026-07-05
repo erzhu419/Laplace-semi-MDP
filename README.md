@@ -69,6 +69,30 @@ To choose a thread count on a CPU node, run:
 python3 experiments/run_linear_solver_thread_scaling.py --threads 1 2 4 8 16 32 64
 ```
 
+For large CPU-node paper runs, use the existing scheduler wrapper. First stage
+the repo through the configured jump host to the shared scheduler workdir:
+
+```bash
+bash scripts/stage_laplace_scheduler.sh
+```
+
+Then submit scheduler tasks pinned to `node001`-`node006`; result directories
+are synced back under `experiments/output/scheduler_large_runs/`:
+
+```bash
+python3 scripts/submit_laplace_scheduler.py --profile large --dispatch
+```
+
+For a cheap scheduler preflight:
+
+```bash
+python3 scripts/submit_laplace_scheduler.py --profile smoke --suites full --nodes node001 --dispatch
+```
+
+The underlying node runner is `scripts/run_node_large_paper.sh`; it runs
+random-maze robustness, large-scale compression, multi-task amortization, thread
+scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
+
 ## Current Artifact Status
 
 - Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.

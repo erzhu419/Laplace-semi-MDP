@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+PROFILE="${1:-large}"
+STAMP="${LAPLACE_RUN_STAMP:-$(date +%Y%m%d_%H%M%S)}"
+THREADS="${LAPLACE_NUM_THREADS:-64}"
+OUT_ROOT="${LAPLACE_NODE_OUT_ROOT:-experiments/output/node_large_runs/$STAMP}"
+VENV="${LAPLACE_VENV:-$PWD/.venv-laplace}"
+
+export LAPLACE_NUM_THREADS="$THREADS"
+export OMP_NUM_THREADS="$THREADS"
+export OPENBLAS_NUM_THREADS="$THREADS"
+export MKL_NUM_THREADS="$THREADS"
+export NUMEXPR_NUM_THREADS="$THREADS"
+export VECLIB_MAXIMUM_THREADS="$THREADS"
+export BLIS_NUM_THREADS="$THREADS"
+
+if [ "${LAPLACE_SETUP:-1}" = "1" ]; then
+  bash scripts/setup_node_env.sh
+fi
+
+PYTHON_CMD="${PYTHON_BIN:-python3}"
+if [ "${LAPLACE_USE_SYSTEM_PYTHON:-0}" != "1" ] && [ -d "$VENV" ]; then
+  source "$VENV/bin/activate"
+  PYTHON_CMD="python"
+fi
+
+mkdir -p "$OUT_ROOT"
+RUN_PARTS="${LAPLACE_RUN_PARTS:-thread,random,operator,large_scale,amortized,summary}"
+
+has_part() {
+  case ",$RUN_PARTS," in
+    *",$1,"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+case "$PROFILE" in
+  smoke)
+    THREAD_GRID=(1 2 4)
+    THREAD_SIZES=(96)
+    RANDOM_SIZES=(9)
+    RANDOM_SEEDS=(0)
+    RANDOM_METHODS=(endpoints group_constrained_incremental)
+    LARGE_MAP_SPECS=(corridor:64 open_room:12 maze:13)
+    LARGE_METHODS=(endpoints graph_rd_surrogate_joint betweenness_sqrt)
+    AMORTIZED_MAP_SPECS=(corridor:64 open_room:10 maze:13)
+    AMORTIZED_COUNTS=(1 5 10)
+    AMORTIZED_MAX_TASKS=10
+    ;;
+  large)
+    THREAD_GRID=(1 8 16 32 64 96 128 192)
+    THREAD_SIZES=(192 384 768)
+    RANDOM_SIZES=(9 11 13 15)
+    RANDOM_SEEDS=(0 1 2 3 4 5 6 7)
+    RANDOM_METHODS=(endpoints group_constrained_incremental)
+    LARGE_MAP_SPECS=(corridor:128,256,512 open_room:16,24 four_rooms:15,21 maze:17,21)
+    LARGE_METHODS=(endpoints turn_articulation graph_rd_surrogate_joint betweenness_sqrt coverage_sqrt)
+    AMORTIZED_MAP_SPECS=(corridor:128,256 open_room:16,24 four_rooms:15,21 maze:17,21)
+    AMORTIZED_COUNTS=(1 5 10 25 50 100)
+    AMORTIZED_MAX_TASKS=100
+    ;;
+  xl)
+    THREAD_GRID=(1 16 32 64 96 128 192)
+    THREAD_SIZES=(384 768 1024)
+    RANDOM_SIZES=(11 13 15 17 19)
+    RANDOM_SEEDS=(0 1 2 3 4 5 6 7 8 9 10 11)
+    RANDOM_METHODS=(endpoints group_constrained_incremental)
+    LARGE_MAP_SPECS=(corridor:256,512,1024 open_room:24,32 four_rooms:21,31 maze:21,31)
+    LARGE_METHODS=(endpoints turn_articulation graph_rd_surrogate_joint betweenness_sqrt coverage_sqrt)
+    AMORTIZED_MAP_SPECS=(corridor:256,512 open_room:24,32 four_rooms:21,31 maze:21,31)
+    AMORTIZED_COUNTS=(1 5 10 25 50 100)
+    AMORTIZED_MAX_TASKS=100
+    ;;
+  *)
+    echo "Unknown profile: $PROFILE" >&2
+    exit 2
+    ;;
+esac
+
+if has_part thread && [ "${LAPLACE_SKIP_THREAD_SCALING:-0}" != "1" ]; then
+  "$PYTHON_CMD" experiments/run_linear_solver_thread_scaling.py \
+    --threads "${THREAD_GRID[@]}" \
+    --sizes "${THREAD_SIZES[@]}" \
+    --rhs 8 \
+    --reps "${LAPLACE_THREAD_REPS:-3}" \
+    --out-dir "$OUT_ROOT/linear_solver_thread_scaling"
+fi
+
+if has_part random; then
+  "$PYTHON_CMD" experiments/run_random_maze_generalization.py \
+    --sizes "${RANDOM_SIZES[@]}" \
+    --maze-seeds "${RANDOM_SEEDS[@]}" \
+    --slips 0.0 0.05 \
+    --methods "${RANDOM_METHODS[@]}" \
+    --continue-on-error \
+    --out-dir "$OUT_ROOT/random_maze_generalization"
+fi
+
+if has_part operator && [ "${LAPLACE_INCLUDE_OPERATOR_SUBSET:-1}" = "1" ]; then
+  "$PYTHON_CMD" experiments/run_random_maze_generalization.py \
+    --sizes 9 11 \
+    --maze-seeds 0 1 \
+    --slips 0.05 \
+    --methods group_constrained_operator \
+    --continue-on-error \
+    --out-dir "$OUT_ROOT/random_maze_operator_subset"
+fi
+
+if has_part large_scale; then
+  "$PYTHON_CMD" experiments/run_large_scale_compression.py \
+    --map-specs "${LARGE_MAP_SPECS[@]}" \
+    --methods "${LARGE_METHODS[@]}" \
+    --slip 0.05 \
+    --first-hit-mode adaptive \
+    --first-hit-truncation-steps 1024 \
+    --first-hit-tail-tol 1e-6 \
+    --continue-on-error \
+    --out-dir "$OUT_ROOT/large_scale_compression"
+fi
+
+if has_part amortized; then
+  "$PYTHON_CMD" experiments/run_amortized_multitask.py \
+    --map-specs "${AMORTIZED_MAP_SPECS[@]}" \
+    --methods endpoints betweenness_sqrt graph_rd_surrogate_joint turn_articulation \
+    --task-counts "${AMORTIZED_COUNTS[@]}" \
+    --max-tasks "$AMORTIZED_MAX_TASKS" \
+    --goal-source all_states \
+    --out-dir "$OUT_ROOT/amortized_multitask"
+fi
+
+if has_part summary; then
+  "$PYTHON_CMD" experiments/run_node_large_summary.py \
+    --large-scale-csv "$OUT_ROOT/large_scale_compression/large_scale_compression.csv" \
+    --amortized-csv "$OUT_ROOT/amortized_multitask/amortized_multitask.csv" \
+    --random-maze-csv "$OUT_ROOT/random_maze_generalization/random_maze_generalization.csv" \
+    --thread-scaling-csv "$OUT_ROOT/linear_solver_thread_scaling/linear_solver_thread_scaling.csv" \
+    --out-dir "$OUT_ROOT/summary"
+fi
+
+echo "Node large paper run complete: $OUT_ROOT"
+echo "DONE"
