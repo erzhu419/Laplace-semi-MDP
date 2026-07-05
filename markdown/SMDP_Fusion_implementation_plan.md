@@ -2506,3 +2506,1794 @@ hard constraints:
 所以我们的目标不是普通 MDL，而是 constrained MDL / rate-distortion：
   在 hidden-cross/residual 约束下找最短 graph-option code。
 ```
+
+## 22. GPT_answer_6 后的 constrained rate-distortion 构造器
+
+GPT_answer_6 把目标重新定成：
+
+```text
+hard admissibility constraints
++ rate-distortion distortion terms
+```
+
+这次我把它落到 `run_first_boundary_targeted.py` 里：
+
+```text
+rate R:
+  boundary code
+  optional edge code
+  option-pair code
+  target-policy TV / region code
+
+distortion D_struct:
+  occupancy_struct_hidden_distinct
+  或 distinct / bits 版本
+
+constructor:
+  如果 D_struct, D_model, D_value, start_gap 超预算：
+    选 violation reduction 最大的 split
+  如果没超预算：
+    选 R + lambda_s D_struct + ... 下降的 split
+
+diagnostic:
+  lambda_s* = added_rate_bits / structural_distortion_reduction
+```
+
+新增参数：
+
+```text
+--residual-split-policy rd
+--rd-struct-kind occupancy_distinct
+--rd-struct-budget <epsilon_s>
+--rd-lambda-struct <lambda_s>
+--rd-model-budget / --rd-value-budget / --rd-start-gap-budget
+```
+
+同时在 baseline comparison 里新增：
+
+```text
+learned_rd_struct_budget1
+learned_rd_struct_budget2
+learned_rd_struct_budget6
+```
+
+这些 recipe 用：
+
+```text
+B_hard proposal source:
+  candidate_kind = articulation_only
+
+B_probe / distortion lens:
+  residual_kind = turn_articulation
+  proposal_kind = residual
+```
+
+也就是 hard/probe 被真正拆开了。
+
+### 22.1 Budget constructor 结果
+
+命令：
+
+```bash
+python3 experiments/run_first_boundary_targeted.py \
+  --maps open_room four_rooms maze \
+  --slips 0.0 0.05 \
+  --candidate-kind articulation_only \
+  --proposal-kind residual \
+  --residual-kind turn_articulation \
+  --residual-split-policy rd \
+  --rd-struct-budget 2.0 \
+  --rd-top-k 8 \
+  --exact-mdl-option-pair-bit-cost 0.25 \
+  --soft-kind combined \
+  --soft-split-policy never \
+  --max-splits 16 \
+  --out-dir experiments/output/rate_distortion_struct_budget2_probe
+```
+
+核心结果：
+
+```text
+open_room:
+  B=2, D_occ ~= 1.00 / 0.94
+  under budget, no split
+
+four_rooms:
+  B=4
+  hard articulation split handles admissibility
+
+maze deterministic:
+  B=3
+  D_occ: 11 -> 0
+  accepted split: residual_rate_distortion
+
+maze slip=0.05:
+  B=3
+  D_occ: 11.07 -> 10.84
+  still violates budget, but one-step split has no further D_occ gain
+```
+
+这比 strict MDL 更符合我们要的语义：
+
+```text
+open room 不因为 probe saliency 被过拆；
+four_rooms 的 hard bottleneck 仍然必须拆；
+deterministic maze 的 topology split 能被接受。
+```
+
+但 stochastic maze 暴露了新问题：
+
+```text
+occupancy aggregation + one-step split 会出现 distortion plateau。
+```
+
+也就是说，单个 split 在 stochastic slip 下只是把 hidden-cross 从第一段 option 转移到后续 option，
+总 occupancy hidden distortion 没明显下降。
+
+### 22.2 Lagrangian / break-even lambda
+
+命令：
+
+```bash
+python3 experiments/run_first_boundary_targeted.py \
+  --maps open_room four_rooms maze \
+  --slips 0.0 0.05 \
+  --candidate-kind articulation_only \
+  --proposal-kind residual \
+  --residual-kind turn_articulation \
+  --residual-split-policy rd \
+  --rd-lambda-struct 5.0 \
+  --rd-top-k 8 \
+  --exact-mdl-option-pair-bit-cost 0.25 \
+  --soft-kind combined \
+  --soft-split-policy never \
+  --max-splits 16 \
+  --out-dir experiments/output/rate_distortion_struct_lambda5
+```
+
+结果：
+
+```text
+open_room deterministic:
+  lambda_s* ~= 10.84
+  lambda_s=5 rejects split
+
+open_room slip=0.05:
+  lambda_s* ~= 12.36
+  lambda_s=5 rejects split
+
+maze deterministic:
+  lambda_s* ~= 3.59
+  lambda_s=5 accepts split
+
+maze slip=0.05:
+  lambda_s* ~= 172.5
+  lambda_s=5 rejects split
+```
+
+这给了一个很干净的解释：
+
+```text
+lambda_s 是“愿意为降低 1 单位 occupancy structural distortion 支付多少 rate bits”。
+
+deterministic maze 的 topology split 很便宜；
+open room 的 split 不值；
+stochastic maze 当前这个单步 split 在 occupancy 指标下极贵。
+```
+
+### 22.3 和固定图的比较
+
+输出：
+
+```text
+experiments/output/rate_distortion_graph_comparison/summary.md
+```
+
+几个代表点：
+
+```text
+open_room:
+  endpoints / learned_rd: B=2, DL ~= 18
+  turn_articulation: B=4, DL ~= 44-46
+  eigen/coverage12: B=12, DL ~= 264-279
+
+four_rooms:
+  endpoints: B=2, D_occ ~= 3
+  learned_rd: B=4, D_occ ~= 0, DL ~= 66-68
+  turn_articulation: B=10, DL ~= 229
+
+maze deterministic:
+  endpoints: B=2, D_occ ~= 11, DL ~= 73
+  learned_rd: B=3, D_occ ~= 0, DL ~= 118
+  turn_articulation: B=30, DL ~= 2046
+```
+
+所以 current best story 是：
+
+```text
+learned_rd sits between endpoints and dense option-discovery graphs:
+  more topology-exposing than endpoints,
+  much smaller than fixed turn/eigen/coverage graphs.
+```
+
+### 22.4 下一步
+
+现在不急着再问 GPT。先把 stochastic maze 的 plateau 查清楚：
+
+```text
+假设 A:
+  occupancy_distortion 太依赖当前 shortest-path abstract policy，
+  split 后 hidden mass 被转移到下一段 option。
+
+假设 B:
+  one-step greedy 不够，需要 multi-split lookahead 或 batch split。
+
+假设 C:
+  stochastic setting 应该用 audit / CVaR / max distortion 作辅助 budget，
+  不能只用 single-task occupancy distortion。
+```
+
+下一步实验应该加：
+
+```text
+1. RD candidate diagnostics:
+   对每个 candidate 输出 rate_delta, D_delta, lambda*
+
+2. batch-k RD split:
+   一次加入 top-k candidate，检查 stochastic maze 的 D_occ 是否真正下降
+
+3. audit budget:
+   用 struct_hidden_distinct_max 或 CVaR 防止 occupancy plateau 掩盖 hidden boundary
+```
+
+## 23. Stochastic maze plateau 诊断
+
+这一步把三个东西接进代码：
+
+```text
+1. rd_candidates.csv / rd_candidates.json
+   每个 RD candidate 都输出：
+     base_struct, candidate_struct, struct_delta
+     base_violation, candidate_violation, violation_gain
+     rate_delta, lambda*
+
+2. --rd-batch-k
+   在 single candidate 后，额外评估 top-k prefix batch split。
+
+3. audit / CVaR distortion
+   新增 rd_struct_kind:
+     audit_prob_max / audit_prob_cvar95
+     audit_distinct_max / audit_distinct_cvar95
+     audit_distinct_bits_max / audit_distinct_bits_cvar95
+```
+
+### 23.1 Occupancy RD + batch-k
+
+命令：
+
+```bash
+python3 experiments/run_first_boundary_targeted.py \
+  --maps maze \
+  --slips 0.05 \
+  --candidate-kind articulation_only \
+  --proposal-kind residual \
+  --residual-kind turn_articulation \
+  --residual-split-policy rd \
+  --rd-struct-budget 2.0 \
+  --rd-batch-k 4 \
+  --rd-top-k 8 \
+  --exact-mdl-option-pair-bit-cost 0.25 \
+  --soft-kind combined \
+  --soft-split-policy never \
+  --max-splits 16 \
+  --out-dir experiments/output/rate_distortion_batch4_budget2_maze_slip005
+```
+
+结果：
+
+```text
+step 0:
+  B=2
+  D_occ = 11.0687
+  best single split: (1,5)
+  D_occ -> 10.8446
+  lambda* ~= 172.5
+
+step 1:
+  B=3
+  top single candidates:
+    D_occ delta = 0
+  top batch candidates:
+    D_occ delta = 0
+  stop
+```
+
+所以 stochastic maze plateau 不是简单的 one-step greedy 问题。
+
+```text
+batch-k on the current occupancy distortion still cannot reduce D_occ.
+```
+
+这说明当前 abstract optimal policy 的 occupancy 把剩余 hidden structure 放到了“不被当前策略实际使用”的边里。
+
+### 23.2 Audit/CVaR RD
+
+命令：
+
+```bash
+python3 experiments/run_first_boundary_targeted.py \
+  --maps maze \
+  --slips 0.05 \
+  --candidate-kind articulation_only \
+  --proposal-kind residual \
+  --residual-kind turn_articulation \
+  --residual-split-policy rd \
+  --rd-struct-kind audit_distinct_cvar95 \
+  --rd-struct-budget 2.0 \
+  --rd-batch-k 4 \
+  --rd-top-k 8 \
+  --exact-mdl-option-pair-bit-cost 0.25 \
+  --soft-kind combined \
+  --soft-split-policy never \
+  --max-splits 16 \
+  --out-dir experiments/output/rate_distortion_audit_cvar2_batch4_maze_slip005
+```
+
+结果：
+
+```text
+step 0:
+  B=2
+  audit CVaR = 12.97
+  batch split 4 states -> audit CVaR = 7.93
+
+step 1:
+  B=6
+  batch split 4 states -> audit CVaR = 4.60
+
+step 2:
+  B=10
+  batch split 3 states -> audit CVaR = 2.23
+
+step 3:
+  B=13
+  single split -> audit CVaR = 1.98
+
+final:
+  B=14
+  audit CVaR ~= 1.98
+  D_occ still ~= 10.84
+```
+
+这个结果非常关键：
+
+```text
+occupancy distortion:
+  认为 B=3 之后没有继续收益
+
+audit/CVaR distortion:
+  继续发现隐藏边界，直到 B=14
+```
+
+所以 plateau 的原因更像是 aggregation choice，而不是 residual candidate 不够或 greedy 搜索太弱。
+
+### 23.3 Plateau comparison
+
+输出：
+
+```text
+experiments/output/rate_distortion_plateau_comparison_maze_slip005/summary.md
+```
+
+核心表：
+
+```text
+fixed_endpoints:
+  B=2
+  D_occ=11.07
+  D_cvar=12.97
+  DL=71.66
+
+learned_rd_struct_budget2:
+  B=3
+  D_occ=10.84
+  D_cvar=12.00
+  DL=113.11
+
+learned_rd_batch4_budget2:
+  B=3
+  D_occ=10.84
+  D_cvar=12.00
+  DL=113.11
+
+learned_rd_audit_cvar2:
+  B=14
+  D_occ=10.84
+  D_cvar=1.98
+  DL=686.84
+
+fixed_turn_articulation:
+  B=30
+  D_occ=0
+  D_cvar=0
+  DL=2242.51
+```
+
+解释：
+
+```text
+RD-occupancy:
+  找到当前 task policy 实际用到的 topology split，但对 stochastic hidden library risk 不敏感。
+
+RD-audit:
+  能压低 hidden library risk，但会显著增加 graph/option rate。
+
+fixed turn_articulation:
+  是上界式 dense solution，几乎完全暴露结构，但代价太大。
+```
+
+### 23.4 当前结论
+
+现在我们应该把 structural distortion 明确分成两层：
+
+```text
+D_occ:
+  当前任务实际使用的 abstract policy 隐藏了多少结构。
+
+D_audit:
+  option library 里最坏尾部边隐藏了多少结构。
+```
+
+主优化不应该只用其中一个：
+
+```text
+minimize R
+subject to:
+  D_occ <= epsilon_occ
+  CVaR_0.95(D_edge) <= epsilon_audit
+```
+
+这比单纯问 “hidden-cross 是 hard 还是 soft” 更准确：
+
+```text
+hard:
+  B_hard hidden-cross
+
+soft occupancy:
+  当前任务策略实际用到的 hidden-cross
+
+soft audit:
+  library tail-risk hidden-cross
+```
+
+下一步应该做 Pareto frontier：
+
+```text
+x-axis:
+  rate / DL
+
+y-axis:
+  D_occ and D_audit
+
+points:
+  endpoints
+  learned_occ_RD
+  learned_audit_RD
+  learned_joint_RD
+  fixed_turn_articulation
+```
+
+如果要问 GPT，最值得问的是：
+
+```text
+在 stochastic maze 中，D_occ 不降但 D_audit 能降，
+主论文 claim 应该把 D_audit 放成第二个 budget，
+还是把 task distribution 从 single start-goal 扩成 uniform task-pair occupancy？
+```
+
+但我建议先实现 joint budget / Pareto table，再问 GPT，信息会更实。
+
+## 24. Joint budget 与 Pareto frontier
+
+这一步把 RD 构造器从单一 structural distortion 扩成 joint budget。
+
+新增参数：
+
+```text
+--rd-struct-kind / --rd-struct-budget
+--rd-audit-kind / --rd-audit-budget
+--rd-lambda-struct / --rd-lambda-audit
+```
+
+典型用法：
+
+```text
+primary struct:
+  occupancy_distinct
+
+audit struct:
+  audit_distinct_cvar95
+```
+
+也就是：
+
+```text
+minimize R
+subject to:
+  D_occ <= epsilon_occ
+  D_audit <= epsilon_audit
+```
+
+同时新增：
+
+```text
+experiments/run_rd_pareto_frontier.py
+```
+
+它从 graph baseline comparison 里抽 non-dominated frontier，默认目标是：
+
+```text
+description_length_proxy
+occupancy_struct_hidden_distinct
+struct_hidden_distinct_cvar95
+```
+
+### 24.1 Joint budget on stochastic maze
+
+命令：
+
+```bash
+python3 experiments/run_first_boundary_targeted.py \
+  --maps maze \
+  --slips 0.05 \
+  --candidate-kind articulation_only \
+  --proposal-kind residual \
+  --residual-kind turn_articulation \
+  --residual-split-policy rd \
+  --rd-struct-kind occupancy_distinct \
+  --rd-struct-budget 2.0 \
+  --rd-audit-kind audit_distinct_cvar95 \
+  --rd-audit-budget 2.0 \
+  --rd-batch-k 4 \
+  --rd-top-k 8 \
+  --exact-mdl-option-pair-bit-cost 0.25 \
+  --soft-kind combined \
+  --soft-split-policy never \
+  --max-splits 16 \
+  --out-dir experiments/output/rate_distortion_joint_occ2_audit2_maze_slip005
+```
+
+结果：
+
+```text
+final:
+  B=18
+  D_occ ~= 0.017
+  D_audit ~= 1.02
+  DL ~= 1182
+```
+
+trace 解释：
+
+```text
+step 0:
+  B=2
+  D_occ=11.07
+  D_audit=12.97
+  batch split 4 states
+
+step 1:
+  B=6
+  D_occ=10.86
+  D_audit=7.93
+  batch split 4 states
+
+step 2:
+  B=10
+  D_occ=10.86
+  D_audit=4.60
+  batch split 4 states
+  important:
+    this batch finally collapses D_occ to ~0.017
+
+step 3:
+  B=14
+  D_occ=0.017
+  D_audit=4.53
+  batch split 4 states
+
+step 4:
+  B=18
+  D_occ=0.017
+  D_audit=1.02
+  both budgets satisfied
+```
+
+这修正了上一轮的结论：
+
+```text
+single D_occ:
+  greedy/batch 看起来 plateau
+
+single D_audit:
+  能降低 audit，但不主动解决 D_occ
+
+joint D_occ + D_audit:
+  audit-driven splits 能打开后续结构，
+  然后 D_occ 也会大幅下降。
+```
+
+所以 stochastic maze 不是“D_occ 永远不可降”，而是：
+
+```text
+D_occ 的短视 greedy signal 不足；
+D_audit 提供了必要的 exploration / library-risk pressure。
+```
+
+### 24.2 Pareto comparison
+
+命令：
+
+```bash
+python3 experiments/run_graph_baseline_comparison.py \
+  --maps maze \
+  --slips 0.05 \
+  --fixed-methods fixed_endpoints fixed_turn_articulation \
+  --learned-methods \
+    learned_rd_struct_budget2 \
+    learned_rd_audit_cvar2 \
+    learned_rd_joint_occ2_audit2 \
+  --out-dir experiments/output/rate_distortion_joint_comparison_maze_slip005
+
+python3 experiments/run_rd_pareto_frontier.py \
+  --input experiments/output/rate_distortion_joint_comparison_maze_slip005/comparison.csv \
+  --out-dir experiments/output/rate_distortion_joint_pareto_maze_slip005
+```
+
+结果：
+
+```text
+fixed_endpoints:
+  B=2
+  D_occ=11.07
+  D_audit=12.97
+  DL=71.66
+
+learned_rd_struct_budget2:
+  B=3
+  D_occ=10.84
+  D_audit=12.00
+  DL=113.11
+
+learned_rd_audit_cvar2:
+  B=14
+  D_occ=10.84
+  D_audit=1.98
+  DL=686.84
+
+learned_rd_joint_occ2_audit2:
+  B=18
+  D_occ=0.017
+  D_audit=1.02
+  DL=1181.91
+
+fixed_turn_articulation:
+  B=30
+  D_occ=0
+  D_audit=0
+  DL=2242.51
+```
+
+Pareto frontier 上全部保留，因为它们代表不同 trade-off：
+
+```text
+endpoints:
+  cheapest, high distortion
+
+occupancy-only RD:
+  tiny graph improvement, still high library risk
+
+audit-only RD:
+  reduces library risk, not task occupancy
+
+joint RD:
+  satisfies both budgets at about half dense-turn DL
+
+dense turn:
+  zero distortion upper bound, very expensive
+```
+
+当前最强 claim 变成：
+
+```text
+我们不是用 Laplacian 找一个保持 MDP 不变的最小 graph；
+我们是在 graph-option abstraction 空间里做 constrained rate-distortion。
+
+D_occ 负责当前任务策略实际隐藏的结构；
+D_audit 负责 option library 的尾部 hidden-cross risk。
+
+二者联合约束时，stochastic maze 能得到比 dense turn 小很多、
+但同时满足任务和结构风险预算的 graph。
+```
+
+### 24.3 下一步
+
+下一步可以开始做正式 Pareto sweep：
+
+```text
+epsilon_occ in {0, 1, 2, 6, 12}
+epsilon_audit in {0, 1, 2, 4, 8, 13}
+```
+
+并输出：
+
+```text
+frontier over:
+  R
+  D_occ
+  D_audit
+  value_gap
+```
+
+这时就值得 push，然后问 GPT：
+
+```text
+joint D_occ + D_audit 的解释是否足够稳？
+D_audit 应该是 CVaR library risk，还是 uniform task-pair occupancy 的替代品？
+```
+
+## 25. Option Algorithm Baseline Adapter
+
+这一步开始把“和 option 算法比较”落到同一个实验表里。
+
+新增脚本：
+
+```text
+experiments/run_option_algorithm_comparison.py
+```
+
+它先做最便宜的 tabular baseline：
+
+```text
+Laplacian eigenoptions:
+  用低频 Laplacian/PVF extrema 选 option termination/subgoal
+
+betweenness bottleneck options:
+  用 graph betweenness 选 bottleneck termination/subgoal
+
+random landmarks:
+  随机 landmark termination/subgoal
+
+coverage landmarks:
+  shortest-path farthest-point topological landmarks
+
+ours:
+  graph_rd_joint，也就是 joint D_occ / D_audit 约束下学出的 graph
+```
+
+为了公平地放到同一个 SMDP 评估框架里，所有 baseline 都先用同一种 adapter：
+
+```text
+termination/subgoal set B
+  -> shortest-path-to-subgoal primitive option policy
+  -> first-boundary termination on B
+  -> exact first-hit SMDP kernel
+  -> SMDP value iteration
+  -> original-env rollout evaluation
+```
+
+所以现在比较的是：
+
+```text
+baseline option algorithm 在原始环境中构造 option policy/termination；
+再转成 rollout/evaluation 可执行的 SMDP graph options；
+最后和我们的 extracted graph + first-boundary options 同表比较。
+```
+
+### 25.1 重要修正
+
+顺手修了一个会影响 D_occ 的实现问题：
+
+```text
+policy_boundary_occupancy 之前把 smdp_value_iteration 返回的 dict
+当 sequence enumerate，导致 occupancy 主要只压在 start edge 上。
+
+现在它按 boundary position 正确读取 policy_smdp[pos]。
+```
+
+因此从这一节开始，`occupancy_struct_hidden_distinct` 更接近真正的 closed-loop graph-policy occupancy。
+旧的 joint RD 数值需要按新代码重跑后再作为正式结果引用。
+
+另一个工程修正：
+
+```text
+GridWorld.index_maps 加 lru_cache
+```
+
+这把 option baseline 和 RD candidate evaluation 的运行时间明显降下来。
+
+### 25.2 Maze slip=0.05 初始结果
+
+命令：
+
+```bash
+python3 experiments/run_option_algorithm_comparison.py \
+  --maps maze \
+  --slips 0.05 \
+  --methods endpoints eigenoptions_12 betweenness_12 random_landmarks_12 coverage_12 graph_rd_joint turn_articulation \
+  --max-splits 18 \
+  --n-rollouts 100 \
+  --out-dir experiments/output/option_algorithm_comparison_maze_slip005
+```
+
+关键结果：
+
+```text
+endpoints:
+  B=2, D_occ=11.07, D_audit_CVaR=12.97, rollout hidden=11.11, DL=71.66
+
+eigenoptions_12:
+  B=12, D_occ=10.07, D_audit_CVaR=6.00, rollout hidden=10.05, DL=693.06
+
+betweenness_12:
+  B=12, D_occ=7.14, D_audit_CVaR=6.13, rollout hidden=7.22, DL=611.41
+
+random_landmarks_12:
+  B=12, D_occ=10.05, D_audit_CVaR=6.93, rollout hidden=10.09, DL=676.87
+
+coverage_12:
+  B=12, D_occ=11.04, D_audit_CVaR=4.02, rollout hidden=11.07, DL=731.68
+
+graph_rd_joint:
+  B=24, D_occ=2.00, D_audit_CVaR=1.31, rollout hidden=2.04, DL=1585.23
+
+turn_articulation:
+  B=30, D_occ=0, D_audit_CVaR=0, rollout hidden=0, DL=2242.51
+```
+
+所有方法在这个 shortest-path control task 上 rollout success rate 都是 1，
+primitive step mean 也都约 38.3 到 38.9，所以 value/success 指标暂时分不开。
+真正拉开差异的是 hidden boundary structure：
+
+```text
+Laplacian eigenoptions / random landmarks / coverage landmarks
+  大多能降低 tail risk，但 closed-loop D_occ 仍接近 endpoints。
+
+betweenness bottleneck
+  比 Laplacian/coverage 更像 bottleneck baseline，D_occ 降到 7.14。
+
+graph_rd_joint
+  在 B=24 时把 D_occ 和 rollout hidden crossing 压到约 2，
+  更接近 dense turn_articulation，但 description length 仍明显低于 dense graph。
+```
+
+### 25.3 当前还缺的比较
+
+现在还不是完整 Option-Critic 对比，只是 tabular option-discovery baseline adapter。
+
+还缺：
+
+```text
+1. sample-efficiency curve:
+   现在 training_samples = 0，因为这些 baseline 都是 oracle/tabular 构造。
+   真正训练型 baseline 需要 Option-Critic 或 subgoal-option learning loop。
+
+2. kernel estimation noise:
+   现在 SMDP kernel 用 exact first-hit reduction。
+   下一步可以加 rollout-estimated kernel，并比较 kernel_rollouts 增加时 planning gap 如何下降。
+
+3. budget sweep:
+   graph_rd_joint 现在只跑了一个预算点。
+   需要和 eigenoptions_k / betweenness_k / random_k / coverage_k 在 k={4,8,12,16,24} 上画 frontier。
+```
+
+## 26. Option Baseline Frontier + Kernel Estimation Noise
+
+这一轮把上一节的两个缺口补上：
+
+```text
+1. k={4,8,12,16,24} 的 option baseline frontier
+2. rollout-estimated SMDP kernel noise curve
+```
+
+新增脚本：
+
+```text
+experiments/run_option_baseline_frontier.py
+experiments/run_smdp_kernel_noise_curve.py
+```
+
+### 26.1 k-sweep frontier
+
+命令：
+
+```bash
+python3 experiments/run_option_baseline_frontier.py \
+  --maps maze \
+  --slips 0.05 \
+  --k-values 4 8 12 16 24 \
+  --n-rollouts 100 \
+  --max-splits 18 \
+  --out-dir experiments/output/option_baseline_frontier_maze_slip005
+```
+
+输出：
+
+```text
+experiments/output/option_baseline_frontier_maze_slip005/frontier_all.csv
+experiments/output/option_baseline_frontier_maze_slip005/frontier_pareto.csv
+experiments/output/option_baseline_frontier_maze_slip005/summary.md
+```
+
+主要 frontier：
+
+```text
+endpoints:
+  B=2,  DL=71.66,   D_occ=11.07, CVaR=12.97, rollout hidden=11.11
+
+betweenness_8:
+  B=8,  DL=377.22,  D_occ=9.10,  CVaR=8.30, rollout hidden=9.12
+
+betweenness_12:
+  B=12, DL=611.41,  D_occ=7.14,  CVaR=6.13, rollout hidden=7.22
+
+betweenness_24:
+  B=24, DL=1480.96, D_occ=5.17,  CVaR=3.85, rollout hidden=5.10
+
+graph_rd_joint:
+  B=24, DL=1585.23, D_occ=2.00,  CVaR=1.31, rollout hidden=2.04
+
+turn_articulation:
+  B=30, DL=2242.51, D_occ=0,     CVaR=0,    rollout hidden=0
+```
+
+对 baseline 的判断：
+
+```text
+betweenness 是目前最强的传统 option-subgoal baseline。
+Laplacian eigenoptions 主要降低 tail CVaR，不太降低 closed-loop D_occ。
+coverage 也更像 tail-risk baseline，对当前任务 occupancy hiding 帮助有限。
+random landmarks 偶尔会撞到有用位置，但不稳定且不可解释。
+```
+
+最重要的比较：
+
+```text
+betweenness_24:
+  DL=1480.96, D_occ=5.17, CVaR=3.85
+
+graph_rd_joint:
+  DL=1585.23, D_occ=2.00, CVaR=1.31
+```
+
+也就是说，在相同 B=24 下，joint RD graph 只比 betweenness 多一点 rate，
+但把 closed-loop hidden structure 和 tail audit risk 都压低很多。
+这比只和 dense turn graph 比更有说服力。
+
+### 26.2 rollout-estimated SMDP kernel noise
+
+命令：
+
+```bash
+python3 experiments/run_smdp_kernel_noise_curve.py \
+  --maps maze \
+  --slips 0.05 \
+  --methods betweenness_12 graph_rd_joint \
+  --sample-sizes 1 2 5 10 20 50 \
+  --replicates 3 \
+  --n-eval-rollouts 100 \
+  --max-splits 18 \
+  --out-dir experiments/output/smdp_kernel_noise_maze_slip005
+```
+
+输出：
+
+```text
+experiments/output/smdp_kernel_noise_maze_slip005/kernel_noise_raw.csv
+experiments/output/smdp_kernel_noise_maze_slip005/kernel_noise_aggregate.csv
+experiments/output/smdp_kernel_noise_maze_slip005/summary.md
+```
+
+这个实验流程是：
+
+```text
+固定 graph B 和 primitive option policies
+  -> 每条 option edge 用 N 次 original-env rollout 估计 SMDP kernel
+  -> 在 estimated kernel 上做 SMDP planning
+  -> 把得到的 abstract policy 放回 exact SMDP 和 original env rollout 评估
+```
+
+关键结果：
+
+```text
+betweenness_12:
+  N=1:  policy loss=2.71, model start error=0.59, kernel gamma L1=0.0466
+  N=50: policy loss=0.011, model start error=0.26, kernel gamma L1=0.0158
+  rollout hidden 大约一直在 7.0
+
+graph_rd_joint:
+  N=1:  policy loss=0.031, model start error=0.81, kernel gamma L1=0.0107
+  N=50: policy loss=0.038, model start error=0.44, kernel gamma L1=0.0031
+  rollout hidden 从约 2.0 降到接近 0
+```
+
+解释：
+
+```text
+kernel error 随 N 增加稳定下降；
+estimated model 的 value 本身仍有偏差，但 policy loss 很小。
+
+所以这个任务上，更应该汇报：
+  exact-model value of learned abstract policy
+而不是只汇报：
+  value predicted by noisy estimated kernel
+```
+
+`policy_disagreement` 在 graph_rd_joint 上反而很高，不一定是坏事：
+
+```text
+graph_rd_joint 的 B 比较密，很多局部 option 近似等价；
+estimated kernel 的 tie-breaking 会变，但 exact policy value loss 仍小。
+```
+
+### 26.3 更新后的主张
+
+现在可以更明确地区分三件事：
+
+```text
+1. Option discovery baseline frontier:
+   Laplacian/coverage/betweenness/random 是否自然找到足够好的 graph。
+
+2. Our graph objective:
+   joint D_occ + D_audit 是否能在相似 rate 下得到更低 hidden structure risk。
+
+3. Kernel estimation robustness:
+   这个 graph-SMDP 方法是否只能依赖 exact oracle kernel。
+```
+
+当前证据支持：
+
+```text
+joint RD graph 不是简单复现 Laplacian eigenoptions 或 betweenness bottleneck；
+它优化的是 graph-option abstraction 的 hidden-structure distortion，
+因此在相同 landmark budget 附近明显降低 D_occ 和 D_audit。
+
+即使用 rollout-estimated kernels，
+规划得到的 abstract policy 在 exact SMDP 下仍保持很小 policy loss。
+```
+
+## 27. Computational Compression Experiments
+
+这一轮把主线从“option baseline 性能比较”切回真正的动机：
+
+```text
+full MDP:
+  reward/value information 通过 local Bellman backup 从 reward state 逐格广播到所有 states
+
+compressed graph SMDP:
+  非关键区域被积分成 edge kernel
+  value 只需要在关键 vertex / boundary state 上传播
+```
+
+新增三个脚本：
+
+```text
+experiments/compression_experiment_utils.py
+experiments/run_compression_scaling.py
+experiments/run_reward_propagation_curve.py
+experiments/run_amortized_multitask.py
+```
+
+### 27.1 Compression scaling
+
+命令：
+
+```bash
+python3 experiments/run_compression_scaling.py \
+  --map-specs corridor:16,32,64 open_room:6,10 four_rooms:7,11 maze:9,13 \
+  --methods endpoints betweenness_sqrt eigenoptions_sqrt turn_articulation \
+  --out-dir experiments/output/compression_scaling
+```
+
+输出：
+
+```text
+experiments/output/compression_scaling/compression_scaling.csv
+experiments/output/compression_scaling/summary.md
+```
+
+关键现象：
+
+```text
+corridor_64 endpoints / turn_articulation:
+  |S|=64, |B|=2
+  state compression=32x
+  memory compression=380x
+  full VI backups=24320
+  SMDP edge backups=4
+  planning speedup >1000x
+  start gap ~0
+
+maze_13 endpoints:
+  |S|=71, |B|=2
+  state compression=35.5x
+  planning speedup ~487x
+  start gap ~0
+  but D_occ=6
+
+maze_13 turn_articulation:
+  |S|=71, |B|=18
+  state compression=3.94x
+  planning speedup ~1.77x
+  D_occ=0
+```
+
+这正好说明：
+
+```text
+endpoints graph 可以极端压缩且保持 task value，
+但它把结构藏进 option edge；
+
+dense turn graph 不隐藏结构，
+但压缩率下降；
+
+我们的 RD objective 应该站在二者中间：
+  在 value gap 受控时，最小化 rate；
+  同时约束 D_occ / D_audit，避免 one-edge solution。
+```
+
+需要注意的 caveat：
+
+```text
+single-task exact kernel construction can dominate total wall time
+```
+
+比如 four_rooms_11 / maze_13 上，kernel_time 往往比 full VI 更贵。
+所以论文里不能只报 single-task total wall time；
+必须把它拆成：
+
+```text
+upfront graph/kernel cost
+planning-only propagation cost
+amortized multi-task cost
+```
+
+### 27.2 Reward propagation curve
+
+命令：
+
+```bash
+python3 experiments/run_reward_propagation_curve.py \
+  --map-specs corridor:64 maze:13 \
+  --methods endpoints betweenness_sqrt turn_articulation \
+  --record-points 1 2 3 5 8 13 21 34 55 89 144 233 \
+  --out-dir experiments/output/reward_propagation_curve
+```
+
+输出：
+
+```text
+experiments/output/reward_propagation_curve/reward_propagation_curve.csv
+experiments/output/reward_propagation_curve/summary.md
+```
+
+最终点：
+
+```text
+corridor_64:
+  full VI:
+    95 iterations, 24320 local backups
+
+  endpoints graph:
+    2 iterations, 4 edge backups
+
+  betweenness_8 graph:
+    51 iterations, 2856 edge backups
+
+maze_13:
+  full VI:
+    53 iterations, 15052 local backups
+
+  endpoints graph:
+    2 iterations, 4 edge backups, D_occ=6
+
+  betweenness_9 graph:
+    19 iterations, 1368 edge backups, D_occ=5
+
+  turn_articulation graph:
+    18 iterations, 5508 edge backups, D_occ=0
+```
+
+这条实验直接支持“reward propagation compression”：
+
+```text
+full VI 的传播半径依赖 primitive transition graph；
+compressed SMDP 的传播半径依赖 abstract graph edge。
+```
+
+但是也暴露了核心 trade-off：
+
+```text
+最少 edge backups 不等于最合理 abstraction。
+endpoints 用 4 个 edge backups 就完成传播，
+但 maze 中 D_occ=6，说明结构被藏进 option。
+```
+
+所以后续图应该画两种曲线：
+
+```text
+x-axis = planning backup count
+y-axis = start value error
+marker/color = D_occ or D_audit
+```
+
+否则 endpoints 会“看起来完胜”，但其实是退化压缩。
+
+### 27.3 Amortized multi-task
+
+命令：
+
+```bash
+python3 experiments/run_amortized_multitask.py \
+  --map-specs corridor:64 maze:13 \
+  --methods endpoints betweenness_sqrt turn_articulation \
+  --task-counts 1 5 10 25 50 \
+  --max-tasks 50 \
+  --goal-source boundary \
+  --out-dir experiments/output/amortized_multitask
+```
+
+输出：
+
+```text
+experiments/output/amortized_multitask/amortized_multitask.csv
+experiments/output/amortized_multitask/summary.md
+```
+
+这里 `goal_source=boundary` 很重要：
+
+```text
+测试的是同一个 abstract graph 上的多 terminal/reward task；
+如果 reward state 任意落在非边界 interior，
+就必须把 reward state 加入 B，或者定义 edge-level reward projection。
+```
+
+结果：
+
+```text
+corridor_64 endpoints:
+  task_count=1 就 amortized speedup=8.5x
+  因为 B=2，kernel 很便宜
+
+corridor_64 betweenness_8:
+  task_count=1 speedup <1
+  task_count=5 speedup=2.64x
+  task_count=7 speedup=3.22x
+  break-even estimate ~1.4 tasks
+
+maze_13 betweenness_9:
+  task_count=1 speedup <1
+  task_count=5 speedup=1.88x
+  task_count=8 speedup=2.51x
+  break-even estimate ~2.2 tasks
+
+maze_13 turn_articulation:
+  task_count=10 speedup=0.93x
+  task_count=17 speedup=1.12x
+  break-even estimate ~12 tasks
+```
+
+这个结果很适合论文叙事：
+
+```text
+exact graph kernels have an upfront cost；
+planning over the graph is much cheaper；
+the method is most compelling when the abstraction is reused across tasks.
+```
+
+同时也给了审稿人想看的诚实边界：
+
+```text
+如果只做 single-task exact construction，未必比 full VI 快；
+如果 tasks 的 rewards/goals 不落在 B 上，必须付额外 rate 把它们加入 B。
+```
+
+### 27.4 当前主张改写
+
+现在应该把 paper 的 central claim 改成：
+
+```text
+We learn a rate-distortion graph abstraction for Bellman propagation.
+
+The abstraction compresses non-critical state regions into SMDP edge kernels,
+so planning propagates value over boundary vertices rather than primitive states.
+
+The compression is constrained by value error and hidden-structure distortion,
+preventing degenerate one-edge options that preserve task return while hiding
+the Markov structure needed for reusable control.
+```
+
+中文直觉：
+
+```text
+这不是在找“更强的 option policy”；
+而是在找“Bellman 信息传播的最小充分图”。
+```
+
+## 28. Graph RD in Compression Tables + Tradeoff Plot
+
+这一轮把 `graph_rd_joint` 正式接进三组计算压缩实验，
+并生成 `backup_count vs value_error` 的可视化。
+
+新增脚本：
+
+```text
+experiments/plot_reward_propagation_tradeoff.py
+```
+
+新增输出：
+
+```text
+experiments/output/compression_scaling_with_graphrd/
+experiments/output/reward_propagation_curve_with_graphrd/
+experiments/output/amortized_multitask_with_graphrd/
+experiments/output/reward_propagation_tradeoff_plots/
+```
+
+### 28.1 Compression scaling with graph RD
+
+命令：
+
+```bash
+python3 experiments/run_compression_scaling.py \
+  --map-specs corridor:64 open_room:10 maze:13 \
+  --methods endpoints betweenness_sqrt graph_rd_joint turn_articulation \
+  --max-splits 18 \
+  --out-dir experiments/output/compression_scaling_with_graphrd
+```
+
+关键结果：
+
+```text
+maze_13:
+  full VI backups = 15052
+
+  endpoints:
+    B=2,  planning backups=4,    D_occ=6
+
+  betweenness_9:
+    B=9,  planning backups=1368, D_occ=5
+
+  graph_rd_joint:
+    B=8,  planning backups=1008, D_occ≈0
+
+  turn_articulation:
+    B=18, planning backups=5508, D_occ=0
+```
+
+这个结果非常好：在 `maze_13` 上，
+`graph_rd_joint` 比 betweenness 少一点 B、少一点 planning backups，
+同时把 D_occ 从 5 降到约 0；
+又比 dense turn graph 少很多 B 和 edge backups。
+
+但它也暴露一个必须诚实报告的问题：
+
+```text
+graph_rd_joint construction_time on maze_13 ≈ 21.5s
+```
+
+这是当前 brute-force exact RD candidate evaluation 的 upfront cost，
+不是 graph SMDP planning 本身的成本。论文里要把它写成：
+
+```text
+unoptimized exact-discovery cost
+```
+
+并且单独和 amortized reuse 区分。
+
+### 28.2 Reward propagation tradeoff plot
+
+命令：
+
+```bash
+python3 experiments/run_reward_propagation_curve.py \
+  --map-specs corridor:64 maze:13 \
+  --methods endpoints betweenness_sqrt graph_rd_joint turn_articulation \
+  --record-points 1 2 3 5 8 13 21 34 55 89 144 233 \
+  --max-splits 18 \
+  --out-dir experiments/output/reward_propagation_curve_with_graphrd
+
+python3 experiments/plot_reward_propagation_tradeoff.py \
+  --input-csv experiments/output/reward_propagation_curve_with_graphrd/reward_propagation_curve.csv \
+  --out-dir experiments/output/reward_propagation_tradeoff_plots
+```
+
+生成：
+
+```text
+backup_vs_value_error_colored_by_docc.png
+backup_vs_value_error_colored_by_audit_cvar.png
+```
+
+图的解释方式：
+
+```text
+x-axis:
+  planning backup count
+
+y-axis:
+  start value error
+
+color:
+  D_occ 或 audit CVaR
+```
+
+在 `maze_13` 上，endpoint 的点最左下，
+说明它用极少 edge backups 保持 task value；
+但颜色显示 D_occ=6，是退化压缩。
+
+`graph_rd_joint` 也很快到低 value error，
+但颜色接近 0，说明它没有把关键结构藏进 option edge。
+
+这张图正好表达论文主张：
+
+```text
+不是所有 compression 都可接受；
+我们要的是 value-preserving 且 structure-preserving 的 compression。
+```
+
+### 28.3 Amortized multitask with graph RD
+
+命令：
+
+```bash
+python3 experiments/run_amortized_multitask.py \
+  --map-specs corridor:64 maze:13 \
+  --methods endpoints betweenness_sqrt graph_rd_joint turn_articulation \
+  --task-counts 1 5 10 25 50 \
+  --max-tasks 50 \
+  --goal-source boundary \
+  --max-splits 18 \
+  --out-dir experiments/output/amortized_multitask_with_graphrd
+```
+
+`maze_13` 结果：
+
+```text
+betweenness_9:
+  upfront≈0.12s
+  task_count=5 speedup≈1.97x
+  break-even≈2.1 tasks
+
+turn_articulation:
+  upfront≈0.38s
+  task_count=17 speedup≈1.15x
+  break-even≈11 tasks
+
+graph_rd_joint:
+  upfront≈21.4s
+  task_count=7 speedup≈0.026x
+  break-even≈300 tasks
+```
+
+这不是坏结果，而是清楚地分出了两个问题：
+
+```text
+1. Once the graph is built:
+   graph_rd_joint has excellent compressed planning behavior.
+
+2. Building the graph with current exact brute-force RD:
+   too expensive unless reused many times or optimized.
+```
+
+所以现在下一步的工程/论文方向很明确：
+
+```text
+make RD discovery cheaper
+```
+
+可能路径：
+
+```text
+candidate pruning:
+  只评估 high residual / bottleneck / value-gradient states
+
+incremental kernel update:
+  split 一个 state 后，不要重建所有 first-boundary kernels
+
+learned surrogate:
+  用 cheap local features 预测 RD gain，再只 exact-evaluate top candidates
+
+parallel candidate evaluation:
+  当前每个 split candidate 是 embarrassingly parallel
+```
+
+### 28.4 更新后的 claim
+
+现在可以把主张写得更锋利：
+
+```text
+The learned RD graph is not primarily a faster discovery algorithm yet.
+
+It is evidence that the right object is a compressed Bellman-propagation graph:
+few vertices and edge backups, low value error, and low hidden-structure distortion.
+
+The remaining systems problem is to reduce the upfront discovery/kernel cost.
+```
+
+## 29. Cheap RD Surrogate as an Explicit Operator Prototype
+
+这一轮开始做“从 working exact RD 反推显式算子”的第一步。
+
+动机：
+
+```text
+exact RD split:
+  对 top-k candidate state 逐个加入 B
+  每个 candidate 都重建 first-boundary kernels + SMDP planning
+  成本很高
+
+surrogate/operator split:
+  不重跑 candidate evaluation
+  只看当前 graph 下每条 edge 暴露出的 hidden-boundary score
+  直接给每个 candidate state 一个显式分数
+```
+
+新增 residual split policy：
+
+```text
+--residual-split-policy rd_surrogate
+```
+
+新增 recipe：
+
+```text
+learned_rd_surrogate_joint_occ2_audit2
+```
+
+并且压缩实验现在可以用：
+
+```text
+graph_rd_surrogate_joint
+```
+
+### 29.1 Surrogate operator 形式
+
+当前 surrogate 的核心是：
+
+```text
+score(x)
+  = occupancy-weighted hidden structure resolved by making x a vertex
+  + audit-tail hidden structure resolved by making x a vertex
+  - approximate rate cost
+```
+
+更具体地，对当前 graph 中每条 valid edge `e`，已有：
+
+```text
+policy occupancy:
+  rho(e)
+
+candidate distinct first-hit score:
+  h_e(x)
+
+edge audit exposure:
+  a(e)
+```
+
+于是候选点 `x` 的两个主要分量是：
+
+```text
+D_occ surrogate:
+  sum_e rho(e) h_e(x)
+
+D_audit surrogate:
+  sum_{e in tail} h_e(x)
+```
+
+其中 `tail` 是当前 edge hidden-distinct exposure 的 top 5% tail。
+
+这就是一个很像 graph operator 的东西：
+
+```text
+它不是先试每个 split 再看结果；
+它直接从当前 reduced graph 的 residual exposure field
+给每个 state 生成一个 saliency / split score。
+```
+
+这可以作为之后推导“RD-Laplacian-like operator”的雏形。
+
+### 29.2 Exact RD vs surrogate RD
+
+命令：
+
+```bash
+python3 experiments/run_compression_scaling.py \
+  --map-specs corridor:64 maze:13 \
+  --methods endpoints betweenness_sqrt graph_rd_joint graph_rd_surrogate_joint turn_articulation \
+  --max-splits 18 \
+  --out-dir experiments/output/rd_surrogate_compression_comparison
+```
+
+结果：
+
+```text
+maze_13 exact graph_rd_joint:
+  B=8
+  planning backups=1008
+  D_occ≈9.47e-08
+  audit CVaR≈9.47e-08
+  construction_time≈21.33s
+
+maze_13 graph_rd_surrogate_joint:
+  B=8
+  planning backups=1008
+  D_occ≈9.47e-08
+  audit CVaR≈9.47e-08
+  construction_time≈1.54s
+```
+
+也就是说，在这个代表性 maze 上：
+
+```text
+surrogate 找到了和 exact RD 一样的 graph quality，
+但 discovery cost 降低约 14x。
+```
+
+这非常重要，因为它说明 exact RD 的 split decision 里，
+至少有一大部分可以被当前 residual exposure field 直接解释。
+
+### 29.3 Amortized effect
+
+命令：
+
+```bash
+python3 experiments/run_amortized_multitask.py \
+  --map-specs maze:13 \
+  --methods graph_rd_joint graph_rd_surrogate_joint betweenness_sqrt turn_articulation \
+  --task-counts 1 5 10 25 50 \
+  --max-tasks 50 \
+  --goal-source boundary \
+  --max-splits 18 \
+  --out-dir experiments/output/rd_surrogate_amortized_comparison
+```
+
+结果：
+
+```text
+exact graph_rd_joint:
+  upfront≈21.73s
+  break-even≈300-470 tasks
+
+graph_rd_surrogate_joint:
+  upfront≈1.65s
+  break-even≈20-28 tasks
+
+betweenness_9:
+  upfront≈0.12s
+  break-even≈2.1 tasks
+
+turn_articulation:
+  upfront≈0.39s
+  break-even≈11 tasks
+```
+
+surrogate 还没有比 handcrafted betweenness 便宜，
+但它已经把 exact RD 的最大弱点从“几百个 task 才摊平”
+降到“二十几个 task 量级”。
+
+更重要的是，surrogate 仍保留了 RD graph 的结构质量：
+
+```text
+betweenness_9:
+  D_occ≈5
+
+graph_rd_surrogate_joint:
+  D_occ≈0
+```
+
+### 29.4 下一步数学化目标
+
+现在可以把“像 Laplacian operator 一样的表达式”具体化为：
+
+```text
+给定当前 boundary graph B 和 option-induced first-hit kernels，
+定义一个 residual exposure operator L_RD 或 S_RD：
+
+S_RD(x)
+  = alpha * sum_e rho_pi(e) h_e(x)
+  + beta  * CVaR_tail_e h_e(x)
+  - lambda * RateDelta(x)
+
+选择 top eigen/saliency/extrema state 作为下一批 boundary vertices。
+```
+
+这里：
+
+```text
+rho_pi(e):
+  当前 abstract policy 在 boundary edge 上的 occupancy
+
+h_e(x):
+  option e 在到达 visible boundary 前 first-hit x 的概率/信息量
+
+CVaR_tail:
+  用来惩罚 option library 中隐藏结构风险最高的边
+
+RateDelta(x):
+  加一个 vertex 后的编码成本近似
+```
+
+这还不是最后的可证明 operator，
+但已经是一个明确的数学对象，而不是纯启发式 search。
+
+接下来最值得做：
+
+```text
+1. 记录 exact RD selected state 和 surrogate top state 的 rank agreement；
+2. 在更多 maps/sizes 上比较 exact vs surrogate 的 graph quality；
+3. 推导 S_RD(x) 是 constrained rate-distortion objective 的一阶贪心近似；
+4. 问 GPT 反驳这个 operator 形式是否有理论漏洞。
+```
+
+如果要问 GPT，先 push 当前状态。
+
+### 29.5 Agreement with exact RD
+
+又补了一个直接验证 surrogate 是否真的在模仿 exact RD 的实验：
+
+```text
+experiments/run_rd_surrogate_agreement.py
+```
+
+命令：
+
+```bash
+python3 experiments/run_rd_surrogate_agreement.py \
+  --map-specs maze:13 \
+  --max-splits 18 \
+  --out-dir experiments/output/rd_surrogate_agreement
+```
+
+结果：
+
+```text
+maze_13:
+  exact_time≈19.83s
+  surrogate_time≈1.50s
+  speedup≈13.2x
+
+  exact_steps=6
+  surrogate_steps=6
+  first_match_rate=1.0
+  mean exact-selected rank in surrogate list=3.75
+  max exact-selected rank in surrogate list=6
+```
+
+逐步看：
+
+```text
+step 0: exact selects 57, surrogate selects 57
+step 1: exact selects 13, surrogate selects 13
+step 2: exact selects 17, surrogate selects 17
+step 3: exact selects 53, surrogate selects 53
+step 4: exact selects 3,  surrogate selects 3
+step 5: exact selects 5,  surrogate selects 5
+```
+
+这非常支持当前方向：
+
+```text
+exact RD split 不是黑箱 magic；
+在这个 maze 上，它选的 state 可以由显式 residual exposure operator 复现。
+```
+
+因此现在可以把下一轮理论问题问得很具体：
+
+```text
+Can S_RD(x) be derived as the first-order greedy approximation
+to a constrained rate-distortion objective over boundary sets?
+
+What assumptions are needed for h_e(x), rho_pi(e), and CVaR_tail terms
+to behave like an operator rather than a heuristic score?
+```

@@ -1,0 +1,3948 @@
+[
+  {
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      6
+    ],
+    "candidate_state": 6,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 10.0,
+    "candidate_rate_bits": 20.844394119358462,
+    "rate_delta": 10.844394119358462,
+    "base_objective": 10.0,
+    "candidate_objective": 20.844394119358462,
+    "gain": -10.844394119358462,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 1.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 1.0,
+    "base_model": 0.9838719320700477,
+    "candidate_model": 0.0,
+    "model_delta": 0.9838719320700477,
+    "base_value": 0.0,
+    "candidate_value": 4.440892098500626e-16,
+    "value_delta": -4.440892098500626e-16,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 10.844394119358462,
+    "selected": false
+  },
+  {
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      28
+    ],
+    "candidate_state": 28,
+    "candidate_coords": [
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 10.0,
+    "candidate_rate_bits": 21.744394119358464,
+    "rate_delta": 11.744394119358464,
+    "base_objective": 10.0,
+    "candidate_objective": 21.744394119358464,
+    "gain": -11.744394119358464,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 1.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 1.0,
+    "base_model": 0.9838719320700477,
+    "candidate_model": 0.0,
+    "model_delta": 0.9838719320700477,
+    "base_value": 0.0,
+    "candidate_value": 8.881784197001252e-16,
+    "value_delta": -8.881784197001252e-16,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 11.744394119358464,
+    "selected": false
+  },
+  {
+    "map": "open_room",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      6,
+      28
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 10.0,
+    "candidate_rate_bits": 32.214319120800766,
+    "rate_delta": 22.214319120800766,
+    "base_objective": 10.0,
+    "candidate_objective": 32.214319120800766,
+    "gain": -22.214319120800766,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 1.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 1.0,
+    "base_model": 0.9838719320700477,
+    "candidate_model": 0.0,
+    "model_delta": 0.9838719320700477,
+    "base_value": 0.0,
+    "candidate_value": 8.881784197001252e-16,
+    "value_delta": -8.881784197001252e-16,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 22.214319120800766,
+    "selected": false
+  },
+  {
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      6
+    ],
+    "candidate_state": 6,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 9.68,
+    "candidate_rate_bits": 20.377727452691797,
+    "rate_delta": 10.697727452691797,
+    "base_objective": 9.68,
+    "candidate_objective": 20.377727452691797,
+    "gain": -10.697727452691797,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.935836467677969,
+    "candidate_struct": 0.9358364614538938,
+    "struct_delta": 6.224075255190087e-09,
+    "base_model": 0.9134444674604748,
+    "candidate_model": 0.9134444668661016,
+    "model_delta": 5.943732173108174e-10,
+    "base_value": 0.07879917849422391,
+    "candidate_value": 0.07879917849422391,
+    "value_delta": 0.0,
+    "base_start_gap": 0.07879917849422391,
+    "candidate_start_gap": 0.07879917849422391,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 1718765762.636185,
+    "selected": false
+  },
+  {
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      28
+    ],
+    "candidate_state": 28,
+    "candidate_coords": [
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 9.68,
+    "candidate_rate_bits": 21.25106078602513,
+    "rate_delta": 11.571060786025129,
+    "base_objective": 9.68,
+    "candidate_objective": 21.25106078602513,
+    "gain": -11.571060786025129,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.935836467677969,
+    "candidate_struct": 4.3417287375003915e-10,
+    "struct_delta": 0.9358364672437961,
+    "base_model": 0.9134444674604748,
+    "candidate_model": 0.10015693516401229,
+    "model_delta": 0.8132875322964626,
+    "base_value": 0.07879917849422391,
+    "candidate_value": 0.0787991784942168,
+    "value_delta": 7.105427357601002e-15,
+    "base_start_gap": 0.07879917849422391,
+    "candidate_start_gap": 0.0787991784942168,
+    "start_gap_delta": 7.105427357601002e-15,
+    "struct_break_even_lambda": 12.364404670085094,
+    "selected": false
+  },
+  {
+    "map": "open_room",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      6,
+      28
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 9.68,
+    "candidate_rate_bits": 31.574319120800766,
+    "rate_delta": 21.894319120800766,
+    "base_objective": 9.68,
+    "candidate_objective": 31.574319120800766,
+    "gain": -21.894319120800766,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.935836467677969,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.935836467677969,
+    "base_model": 0.9134444674604748,
+    "candidate_model": 0.10015693546948196,
+    "model_delta": 0.8132875319909929,
+    "base_value": 0.07879917849422391,
+    "candidate_value": 0.0787991784942168,
+    "value_delta": 7.105427357601002e-15,
+    "base_start_gap": 0.07879917849422391,
+    "candidate_start_gap": 0.0787991784942168,
+    "start_gap_delta": 7.105427357601002e-15,
+    "struct_break_even_lambda": 23.39545409586969,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      46
+    ],
+    "candidate_state": 46,
+    "candidate_coords": [
+      [
+        5,
+        7
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 57.49198976761516,
+    "rate_delta": 19.277279923499925,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      4
+    ],
+    "candidate_state": 4,
+    "candidate_coords": [
+      [
+        1,
+        5
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 56.59198976761515,
+    "rate_delta": 18.37727992349992,
+    "base_objective": NaN,
+    "candidate_objective": 56.59198976761515,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": -2.2204460492503132e-17,
+    "base_value": Infinity,
+    "candidate_value": 24.580804229059396,
+    "value_delta": Infinity,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": 21.761209247915374,
+    "start_gap_delta": Infinity,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      5
+    ],
+    "candidate_state": 5,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 56.59198976761515,
+    "rate_delta": 18.37727992349992,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      9
+    ],
+    "candidate_state": 9,
+    "candidate_coords": [
+      [
+        1,
+        11
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 56.59198976761515,
+    "rate_delta": 18.37727992349992,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      24
+    ],
+    "candidate_state": 24,
+    "candidate_coords": [
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 59.09198976761515,
+    "rate_delta": 20.87727992349992,
+    "base_objective": NaN,
+    "candidate_objective": 59.09198976761515,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": Infinity,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": Infinity,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      41
+    ],
+    "candidate_state": 41,
+    "candidate_coords": [
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 57.49198976761516,
+    "rate_delta": 19.277279923499925,
+    "base_objective": NaN,
+    "candidate_objective": 57.49198976761516,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": 21.76120924791536,
+    "value_delta": Infinity,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": 21.76120924791536,
+    "start_gap_delta": Infinity,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      45
+    ],
+    "candidate_state": 45,
+    "candidate_coords": [
+      [
+        5,
+        5
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 57.49198976761516,
+    "rate_delta": 19.277279923499925,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 3,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      4,
+      46
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 75.94657861929277,
+    "rate_delta": 37.73186877517753,
+    "base_objective": NaN,
+    "candidate_objective": 75.94657861929277,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": -2.2204460492503132e-17,
+    "base_value": Infinity,
+    "candidate_value": 24.580804229059396,
+    "value_delta": Infinity,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": 21.761209247915374,
+    "start_gap_delta": Infinity,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 3,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      4,
+      5,
+      46
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 92.3440717636822,
+    "rate_delta": 54.12936191956696,
+    "base_objective": NaN,
+    "candidate_objective": 92.3440717636822,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": -2.2204460492503132e-17,
+    "base_value": Infinity,
+    "candidate_value": 24.580804229059396,
+    "value_delta": Infinity,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": 21.761209247915374,
+    "start_gap_delta": Infinity,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 3,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      4,
+      5,
+      9,
+      46
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        11
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "base_rate_bits": 38.214709844115234,
+    "candidate_rate_bits": 107.99895926584568,
+    "rate_delta": 69.78424942173045,
+    "base_objective": NaN,
+    "candidate_objective": 107.99895926584568,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": -2.2204460492503132e-17,
+    "base_value": Infinity,
+    "candidate_value": 24.580804229059396,
+    "value_delta": Infinity,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": 21.761209247915374,
+    "start_gap_delta": Infinity,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      4
+    ],
+    "candidate_state": 4,
+    "candidate_coords": [
+      [
+        1,
+        5
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 74.154261196514,
+    "rate_delta": 17.86962635095645,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 74.154261196514,
+    "gain": -17.86962635095645,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": -2.2204460492503132e-17,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      46
+    ],
+    "candidate_state": 46,
+    "candidate_coords": [
+      [
+        5,
+        7
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 75.054261196514,
+    "rate_delta": 18.769626350956457,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 75.054261196514,
+    "gain": -18.769626350956457,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      5
+    ],
+    "candidate_state": 5,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 74.154261196514,
+    "rate_delta": 17.86962635095645,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 74.154261196514,
+    "gain": -17.86962635095645,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      9
+    ],
+    "candidate_state": 9,
+    "candidate_coords": [
+      [
+        1,
+        11
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 74.154261196514,
+    "rate_delta": 17.86962635095645,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 74.154261196514,
+    "gain": -17.86962635095645,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      41
+    ],
+    "candidate_state": 41,
+    "candidate_coords": [
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 75.054261196514,
+    "rate_delta": 18.769626350956457,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 75.054261196514,
+    "gain": -18.769626350956457,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      45
+    ],
+    "candidate_state": 45,
+    "candidate_coords": [
+      [
+        5,
+        5
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 75.054261196514,
+    "rate_delta": 18.769626350956457,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 75.054261196514,
+    "gain": -18.769626350956457,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 4,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      5,
+      9
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        11
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 92.30664184306691,
+    "rate_delta": 36.022006997509365,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 92.30664184306691,
+    "gain": -36.022006997509365,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 4,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      4,
+      5,
+      9
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        11
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 108.46967624890073,
+    "rate_delta": 52.18504140334318,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 108.46967624890073,
+    "gain": -52.18504140334318,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": -2.2204460492503132e-17,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.0,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 4,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      4,
+      5,
+      9,
+      46
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        11
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "base_rate_bits": 56.28463484555755,
+    "candidate_rate_bits": 124.77342838376182,
+    "rate_delta": 68.48879353820428,
+    "base_objective": 56.28463484555755,
+    "candidate_objective": 124.77342838376182,
+    "gain": -68.48879353820428,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": 1.7763568394002505e-15,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": 0.0,
+    "base_start_gap": 1.7763568394002505e-15,
+    "candidate_start_gap": 1.7763568394002505e-15,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      41
+    ],
+    "candidate_state": 41,
+    "candidate_coords": [
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 55.798656434281824,
+    "rate_delta": 18.863946590166584,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      4
+    ],
+    "candidate_state": 4,
+    "candidate_coords": [
+      [
+        1,
+        5
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 54.925323100948496,
+    "rate_delta": 17.990613256833257,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      45
+    ],
+    "candidate_state": 45,
+    "candidate_coords": [
+      [
+        5,
+        5
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 55.798656434281824,
+    "rate_delta": 18.863946590166584,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      5
+    ],
+    "candidate_state": 5,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 54.925323100948496,
+    "rate_delta": 17.990613256833257,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      9
+    ],
+    "candidate_state": 9,
+    "candidate_coords": [
+      [
+        1,
+        11
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 54.925323100948496,
+    "rate_delta": 17.990613256833257,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      26
+    ],
+    "candidate_state": 26,
+    "candidate_coords": [
+      [
+        3,
+        7
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 57.33198976761516,
+    "rate_delta": 20.397279923499923,
+    "base_objective": NaN,
+    "candidate_objective": 57.33198976761516,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.00032406743807065087,
+    "struct_delta": -0.00032406743807065087,
+    "base_model": 0.0,
+    "candidate_model": 0.10144775077261481,
+    "model_delta": -0.10144775077261481,
+    "base_value": Infinity,
+    "candidate_value": 0.11523431806980433,
+    "value_delta": Infinity,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": 0.11523431806980433,
+    "start_gap_delta": Infinity,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      46
+    ],
+    "candidate_state": 46,
+    "candidate_coords": [
+      [
+        5,
+        7
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 55.798656434281824,
+    "rate_delta": 18.863946590166584,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 3,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      4,
+      41
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 73.86657861929278,
+    "rate_delta": 36.93186877517754,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 3,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      4,
+      41,
+      45
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        5
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 90.75073843034887,
+    "rate_delta": 53.816028586233635,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 3,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      4,
+      5,
+      41,
+      45
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        5
+      ]
+    ],
+    "base_rate_bits": 36.93470984411524,
+    "candidate_rate_bits": 106.01895926584567,
+    "rate_delta": 69.08424942173042,
+    "base_objective": NaN,
+    "candidate_objective": NaN,
+    "gain": NaN,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 0.0,
+    "candidate_model": 0.0,
+    "model_delta": 0.0,
+    "base_value": Infinity,
+    "candidate_value": Infinity,
+    "value_delta": NaN,
+    "base_start_gap": Infinity,
+    "candidate_start_gap": Infinity,
+    "start_gap_delta": NaN,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      46
+    ],
+    "candidate_state": 46,
+    "candidate_coords": [
+      [
+        5,
+        7
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 72.88092786318069,
+    "rate_delta": 18.35629301762313,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 72.88092786318069,
+    "gain": -18.35629301762313,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 0.00032406743807065087,
+    "struct_delta": 0.0,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.10144775077261481,
+    "model_delta": 0.0,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.11523431809556506,
+    "value_delta": -2.5760726884982432e-11,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.11523431809556506,
+    "start_gap_delta": -2.5760726884982432e-11,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      4
+    ],
+    "candidate_state": 4,
+    "candidate_coords": [
+      [
+        1,
+        5
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 72.00759452984735,
+    "rate_delta": 17.482959684289796,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 72.00759452984735,
+    "gain": -17.482959684289796,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 0.0003136168443345103,
+    "struct_delta": 1.0450593736140558e-05,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.10145614245307259,
+    "model_delta": -8.391680457783823e-06,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.11523431809556506,
+    "value_delta": -2.5760726884982432e-11,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.11523431809556506,
+    "start_gap_delta": -2.5760726884982432e-11,
+    "struct_break_even_lambda": 1672915.4463090168,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      5
+    ],
+    "candidate_state": 5,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 72.00759452984735,
+    "rate_delta": 17.482959684289796,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 72.00759452984735,
+    "gain": -17.482959684289796,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 0.00032406743807065087,
+    "struct_delta": 0.0,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.10144775077261473,
+    "model_delta": 8.326672684688674e-17,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.11523431809557394,
+    "value_delta": -2.5769608669179433e-11,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.11523431809557394,
+    "start_gap_delta": -2.5769608669179433e-11,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      45
+    ],
+    "candidate_state": 45,
+    "candidate_coords": [
+      [
+        5,
+        5
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 72.88092786318069,
+    "rate_delta": 18.35629301762313,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 72.88092786318069,
+    "gain": -18.35629301762313,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 0.0003137208450934887,
+    "struct_delta": 1.0346592977162163e-05,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.10145604804680694,
+    "model_delta": -8.297274192131665e-06,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.11523431809556861,
+    "value_delta": -2.5764279598661233e-11,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.11523431809556861,
+    "start_gap_delta": -2.5764279598661233e-11,
+    "struct_break_even_lambda": 1774138.8936571318,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      41
+    ],
+    "candidate_state": 41,
+    "candidate_coords": [
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 72.88092786318069,
+    "rate_delta": 18.35629301762313,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 72.88092786318069,
+    "gain": -18.35629301762313,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 2.0790871390376244e-05,
+    "struct_delta": 0.00030327656668027465,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.10174389609648496,
+    "model_delta": -0.0002961453238701506,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.1152343180697919,
+    "value_delta": 1.2434497875801753e-14,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.1152343180697919,
+    "start_gap_delta": 1.2434497875801753e-14,
+    "struct_break_even_lambda": 60526.57882062814,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 4,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      9
+    ],
+    "candidate_state": 9,
+    "candidate_coords": [
+      [
+        1,
+        11
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 72.00759452984735,
+    "rate_delta": 17.482959684289796,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 72.00759452984735,
+    "gain": -17.482959684289796,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 0.00032406743807065087,
+    "struct_delta": 0.0,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.10144775077261473,
+    "model_delta": 8.326672684688674e-17,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.11523431806980611,
+    "value_delta": -1.7763568394002505e-15,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.11523431806980611,
+    "start_gap_delta": -1.7763568394002505e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 4,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      4,
+      9
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        11
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 89.77330850973358,
+    "rate_delta": 35.248673664176025,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 89.77330850973358,
+    "gain": -35.248673664176025,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 0.0003136168443345103,
+    "struct_delta": 1.0450593736140558e-05,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.10145614245307259,
+    "model_delta": -8.391680457783823e-06,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.11523431809556328,
+    "value_delta": -2.5758950528143032e-11,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.11523431809556328,
+    "start_gap_delta": -2.5758950528143032e-11,
+    "struct_break_even_lambda": 3372887.1826945106,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 4,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      4,
+      5,
+      9
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        11
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 105.54967624890071,
+    "rate_delta": 51.02504140334315,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 105.54967624890071,
+    "gain": -51.02504140334315,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 0.0003136168443345103,
+    "struct_delta": 1.0450593736140558e-05,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.1014561424530727,
+    "model_delta": -8.391680457894846e-06,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.11523431809531459,
+    "value_delta": -2.5510260570626997e-11,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.11523431809531459,
+    "start_gap_delta": -2.5510260570626997e-11,
+    "struct_break_even_lambda": 4882501.6732673105,
+    "selected": false
+  },
+  {
+    "map": "four_rooms",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 4,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      4,
+      5,
+      9,
+      41
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        11
+      ],
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 54.52463484555756,
+    "candidate_rate_bits": 121.4400950504285,
+    "rate_delta": 66.91546020487094,
+    "base_objective": 54.52463484555756,
+    "candidate_objective": 121.4400950504285,
+    "gain": -66.91546020487094,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.00032406743807065087,
+    "candidate_struct": 1.0343415482867904e-05,
+    "struct_delta": 0.00031372402258778297,
+    "base_model": 0.10144775077261481,
+    "candidate_model": 0.10175228769130518,
+    "model_delta": -0.0003045369186903679,
+    "base_value": 0.11523431806980433,
+    "candidate_value": 0.11523431809531459,
+    "value_delta": -2.5510260570626997e-11,
+    "base_start_gap": 0.11523431806980433,
+    "candidate_start_gap": 0.11523431809531459,
+    "start_gap_delta": -2.5510260570626997e-11,
+    "struct_break_even_lambda": 213294.02719279286,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      4
+    ],
+    "candidate_state": 4,
+    "candidate_coords": [
+      [
+        1,
+        5
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 100.30378074817703,
+    "rate_delta": 39.503780748177036,
+    "base_objective": 60.8,
+    "candidate_objective": 100.30378074817703,
+    "gain": -39.503780748177036,
+    "base_violation": 9.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 9.0,
+    "base_struct": 11.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 11.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 1.3454815587499362,
+    "base_value": 0.0,
+    "candidate_value": 0.0,
+    "value_delta": 0.0,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 3.5912527952888214,
+    "selected": true
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      5
+    ],
+    "candidate_state": 5,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 99.40378074817704,
+    "rate_delta": 38.603780748177044,
+    "base_objective": 60.8,
+    "candidate_objective": 99.40378074817704,
+    "gain": -38.603780748177044,
+    "base_violation": 9.0,
+    "candidate_violation": 1.0,
+    "violation_gain": 8.0,
+    "base_struct": 11.0,
+    "candidate_struct": 3.0,
+    "struct_delta": 8.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 0.9838719320700477,
+    "model_delta": 0.3616096266798885,
+    "base_value": 0.0,
+    "candidate_value": 7.105427357601002e-15,
+    "value_delta": -7.105427357601002e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 4.8254725935221305,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      11
+    ],
+    "candidate_state": 11,
+    "candidate_coords": [
+      [
+        1,
+        13
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 99.40378074817704,
+    "rate_delta": 38.603780748177044,
+    "base_objective": 60.8,
+    "candidate_objective": 99.40378074817704,
+    "gain": -38.603780748177044,
+    "base_violation": 9.0,
+    "candidate_violation": 9.0,
+    "violation_gain": 0.0,
+    "base_struct": 11.0,
+    "candidate_struct": 11.0,
+    "struct_delta": 0.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 1.3454815587499362,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 5.329070518200751e-15,
+    "value_delta": -5.329070518200751e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      12
+    ],
+    "candidate_state": 12,
+    "candidate_coords": [
+      [
+        1,
+        15
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 100.30378074817703,
+    "rate_delta": 39.503780748177036,
+    "base_objective": 60.8,
+    "candidate_objective": 100.30378074817703,
+    "gain": -39.503780748177036,
+    "base_violation": 9.0,
+    "candidate_violation": 5.0,
+    "violation_gain": 4.0,
+    "base_struct": 11.0,
+    "candidate_struct": 7.0,
+    "struct_delta": 4.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 1.1343839518268155,
+    "model_delta": 0.21109760692312074,
+    "base_value": 0.0,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": -1.7763568394002505e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 9.875945187044259,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      16
+    ],
+    "candidate_state": 16,
+    "candidate_coords": [
+      [
+        1,
+        19
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 100.30378074817703,
+    "rate_delta": 39.503780748177036,
+    "base_objective": 60.8,
+    "candidate_objective": 100.30378074817703,
+    "gain": -39.503780748177036,
+    "base_violation": 9.0,
+    "candidate_violation": 9.0,
+    "violation_gain": 0.0,
+    "base_struct": 11.0,
+    "candidate_struct": 11.0,
+    "struct_delta": 0.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 1.3454815587499362,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": -1.7763568394002505e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      26
+    ],
+    "candidate_state": 26,
+    "candidate_coords": [
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 101.20378074817704,
+    "rate_delta": 40.40378074817704,
+    "base_objective": 60.8,
+    "candidate_objective": 101.20378074817704,
+    "gain": -40.40378074817704,
+    "base_violation": 9.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 9.0,
+    "base_struct": 11.0,
+    "candidate_struct": 1.0,
+    "struct_delta": 10.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 0.9201733467139999,
+    "model_delta": 0.4253082120359364,
+    "base_value": 0.0,
+    "candidate_value": 0.0,
+    "value_delta": 0.0,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 4.0403780748177045,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      28
+    ],
+    "candidate_state": 28,
+    "candidate_coords": [
+      [
+        3,
+        7
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 101.20378074817704,
+    "rate_delta": 40.40378074817704,
+    "base_objective": 60.8,
+    "candidate_objective": 101.20378074817704,
+    "gain": -40.40378074817704,
+    "base_violation": 9.0,
+    "candidate_violation": 9.0,
+    "violation_gain": 0.0,
+    "base_struct": 11.0,
+    "candidate_struct": 11.0,
+    "struct_delta": 0.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 1.3454815587499362,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      32
+    ],
+    "candidate_state": 32,
+    "candidate_coords": [
+      [
+        3,
+        13
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 101.20378074817704,
+    "rate_delta": 40.40378074817704,
+    "base_objective": 60.8,
+    "candidate_objective": 101.20378074817704,
+    "gain": -40.40378074817704,
+    "base_violation": 9.0,
+    "candidate_violation": 3.0,
+    "violation_gain": 6.0,
+    "base_struct": 11.0,
+    "candidate_struct": 5.0,
+    "struct_delta": 6.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 1.0901871749713057,
+    "model_delta": 0.25529438377863056,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 6.733963458029507,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      4,
+      26
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 141.1664628905392,
+    "rate_delta": 80.36646289053921,
+    "base_objective": 60.8,
+    "candidate_objective": 141.1664628905392,
+    "gain": -80.36646289053921,
+    "base_violation": 9.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 9.0,
+    "base_struct": 11.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 11.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 1.3454815587499362,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 3.552713678800501e-15,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": 7.30604208095811,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 2,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      4,
+      5,
+      26
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 177.9783619290707,
+    "rate_delta": 117.1783619290707,
+    "base_objective": 60.8,
+    "candidate_objective": 177.9783619290707,
+    "gain": -117.1783619290707,
+    "base_violation": 9.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 9.0,
+    "base_struct": 11.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 11.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 1.3454815587499362,
+    "base_value": 0.0,
+    "candidate_value": 7.105427357601002e-15,
+    "value_delta": -7.105427357601002e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 10.652578357188245,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 2,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      4,
+      5,
+      26,
+      32
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        3,
+        13
+      ]
+    ],
+    "base_rate_bits": 60.8,
+    "candidate_rate_bits": 215.7920737271764,
+    "rate_delta": 154.99207372717638,
+    "base_objective": 60.8,
+    "candidate_objective": 215.7920737271764,
+    "gain": -154.99207372717638,
+    "base_violation": 9.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 9.0,
+    "base_struct": 11.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 11.0,
+    "base_model": 1.3454815587499362,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 1.3454815587499362,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 3.552713678800501e-15,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": 14.090188520652397,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      5
+    ],
+    "candidate_state": 5,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 135.97414546776048,
+    "rate_delta": 38.670364719583446,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 135.97414546776048,
+    "gain": -38.670364719583446,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 7.105427357601002e-15,
+    "value_delta": -7.105427357601002e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 3.552713678800501e-15,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      11
+    ],
+    "candidate_state": 11,
+    "candidate_coords": [
+      [
+        1,
+        13
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 135.97414546776048,
+    "rate_delta": 38.670364719583446,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 135.97414546776048,
+    "gain": -38.670364719583446,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 5.329070518200751e-15,
+    "value_delta": -5.329070518200751e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 3.552713678800501e-15,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      12
+    ],
+    "candidate_state": 12,
+    "candidate_coords": [
+      [
+        1,
+        15
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 136.87414546776046,
+    "rate_delta": 39.570364719583424,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 136.87414546776046,
+    "gain": -39.570364719583424,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 3.552713678800501e-15,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      16
+    ],
+    "candidate_state": 16,
+    "candidate_coords": [
+      [
+        1,
+        19
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 136.87414546776046,
+    "rate_delta": 39.570364719583424,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 136.87414546776046,
+    "gain": -39.570364719583424,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 1.7763568394002505e-15,
+    "value_delta": -1.7763568394002505e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      26
+    ],
+    "candidate_state": 26,
+    "candidate_coords": [
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 137.77414546776046,
+    "rate_delta": 40.47036471958343,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 137.77414546776046,
+    "gain": -40.47036471958343,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 3.552713678800501e-15,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      28
+    ],
+    "candidate_state": 28,
+    "candidate_coords": [
+      [
+        3,
+        7
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 137.77414546776046,
+    "rate_delta": 40.47036471958343,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 137.77414546776046,
+    "gain": -40.47036471958343,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      32
+    ],
+    "candidate_state": 32,
+    "candidate_coords": [
+      [
+        3,
+        13
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 137.77414546776046,
+    "rate_delta": 40.47036471958343,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 137.77414546776046,
+    "gain": -40.47036471958343,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 3.552713678800501e-15,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      34
+    ],
+    "candidate_state": 34,
+    "candidate_coords": [
+      [
+        3,
+        15
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 137.77414546776046,
+    "rate_delta": 40.47036471958343,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 137.77414546776046,
+    "gain": -40.47036471958343,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 3.552713678800501e-15,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 3,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      5,
+      11
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        13
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 174.76332442979182,
+    "rate_delta": 77.45954368161479,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 174.76332442979182,
+    "gain": -77.45954368161479,
+    "base_violation": 0.0,
+    "candidate_violation": 9.0,
+    "violation_gain": -9.0,
+    "base_struct": 0.0,
+    "candidate_struct": 11.0,
+    "struct_delta": -11.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 1.3454815587499362,
+    "model_delta": -1.3454815587499362,
+    "base_value": 0.0,
+    "candidate_value": 7.105427357601002e-15,
+    "value_delta": -7.105427357601002e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 3,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      5,
+      11,
+      16
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        13
+      ],
+      [
+        1,
+        19
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 212.4482175374017,
+    "rate_delta": 115.14443678922466,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 212.4482175374017,
+    "gain": -115.14443678922466,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.0,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 3,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      5,
+      11,
+      12,
+      16
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        13
+      ],
+      [
+        1,
+        15
+      ],
+      [
+        1,
+        19
+      ]
+    ],
+    "base_rate_bits": 97.30378074817703,
+    "candidate_rate_bits": 249.46199872861865,
+    "rate_delta": 152.15821798044163,
+    "base_objective": 97.30378074817703,
+    "candidate_objective": 249.46199872861865,
+    "gain": -152.15821798044163,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 0.0,
+    "candidate_struct": 0.0,
+    "struct_delta": 0.0,
+    "base_model": 2.2204460492503132e-17,
+    "candidate_model": 2.2204460492503132e-17,
+    "model_delta": 0.0,
+    "base_value": 0.0,
+    "candidate_value": 3.552713678800501e-15,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 0.0,
+    "candidate_start_gap": 0.0,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      57
+    ],
+    "candidate_state": 57,
+    "candidate_coords": [
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 9.051447651567235,
+    "violation_gain": 0.017241379310345195,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 11.051447651567235,
+    "struct_delta": 0.017241379310345195,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3325849410068216,
+    "model_delta": 0.00022819732379653068,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 2242.4992833942206,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      55
+    ],
+    "candidate_state": 55,
+    "candidate_coords": [
+      [
+        5,
+        17
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 98.63044741484372,
+    "rate_delta": 39.537114081510374,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 98.63044741484372,
+    "gain": -39.537114081510374,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 9.03420627225689,
+    "violation_gain": 0.03448275862069039,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 11.03420627225689,
+    "struct_delta": 0.03448275862069039,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3323413785139482,
+    "model_delta": 0.0004717598166699144,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 1146.5763083637764,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      4
+    ],
+    "candidate_state": 4,
+    "candidate_coords": [
+      [
+        1,
+        5
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.2241379503523362,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.2241379503523362,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.01991753492498871,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 172.499930009171,
+    "selected": true
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      35
+    ],
+    "candidate_state": 35,
+    "candidate_coords": [
+      [
+        3,
+        17
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 9.016964892946545,
+    "violation_gain": 0.051724137931035585,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 11.016964892946545,
+    "struct_delta": 0.051724137931035585,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3320814162718508,
+    "model_delta": 0.000731722058767259,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 747.4997611314068,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      26
+    ],
+    "candidate_state": 26,
+    "candidate_coords": [
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 98.63044741484372,
+    "rate_delta": 39.537114081510374,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 98.63044741484372,
+    "gain": -39.537114081510374,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 8.861792479147494,
+    "violation_gain": 0.20689655173008603,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 10.861792479147494,
+    "struct_delta": 0.20689655173008603,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.005617936893186792,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.845013113983441e-11,
+    "value_delta": 7.602807272633072e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.845013113983441e-11,
+    "start_gap_delta": 7.602807272633072e-13,
+    "struct_break_even_lambda": 191.09605138847297,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      37
+    ],
+    "candidate_state": 37,
+    "candidate_coords": [
+      [
+        3,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 98.63044741484372,
+    "rate_delta": 39.537114081510374,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 98.63044741484372,
+    "gain": -39.537114081510374,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 8.999723513636201,
+    "violation_gain": 0.068965517241379,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 10.999723513636201,
+    "struct_delta": 0.068965517241379,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.331803950039185,
+    "model_delta": 0.0010091882914331496,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 573.288154181903,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      12
+    ],
+    "candidate_state": 12,
+    "candidate_coords": [
+      [
+        1,
+        15
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 8.965240755015511,
+    "violation_gain": 0.1034482758620694,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 10.965240755015511,
+    "struct_delta": 0.1034482758620694,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.330854339334157,
+    "model_delta": 0.0019587989964611197,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.920685915341892e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.920685915341892e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 373.7498805657098,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      16
+    ],
+    "candidate_state": 16,
+    "candidate_coords": [
+      [
+        1,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 8.982482134325856,
+    "violation_gain": 0.0862068965517242,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 10.982482134325856,
+    "struct_delta": 0.0862068965517242,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3315078012229242,
+    "model_delta": 0.0013053371076938713,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 448.49985667885335,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      4,
+      26
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 137.75312955720588,
+    "rate_delta": 78.65979622387255,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 137.75312955720588,
+    "gain": -78.65979622387255,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.2241379503523362,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.2241379503523362,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.01991753492498871,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.8972380050618085e-11,
+    "value_delta": 2.3803181647963356e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.8972380050618085e-11,
+    "start_gap_delta": 2.3803181647963356e-13,
+    "struct_break_even_lambda": 350.94367598268116,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 2,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      4,
+      12,
+      26
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        15
+      ],
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 174.62502859573735,
+    "rate_delta": 115.53169526240401,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 174.62502859573735,
+    "gain": -115.53169526240401,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.2241379503523362,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.2241379503523362,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.01991753492498871,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.8972380050618085e-11,
+    "value_delta": 2.3803181647963356e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.8972380050618085e-11,
+    "start_gap_delta": 2.3803181647963356e-13,
+    "struct_break_even_lambda": 515.4490575147701,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 2,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      4,
+      12,
+      16,
+      26
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        15
+      ],
+      [
+        1,
+        19
+      ],
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 210.69874039384308,
+    "rate_delta": 151.60540706050975,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 210.69874039384308,
+    "gain": -151.60540706050975,
+    "base_violation": 9.06868903087758,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.2241379503523362,
+    "base_struct": 11.06868903087758,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.2241379503523362,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.01991753492498871,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.8975932764296886e-11,
+    "value_delta": 2.3447910280083306e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.8975932764296886e-11,
+    "start_gap_delta": 2.3447910280083306e-13,
+    "struct_break_even_lambda": 676.3932962811158,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      57
+    ],
+    "candidate_state": 57,
+    "candidate_coords": [
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 133.4874788010938,
+    "rate_delta": 38.73036471958342,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 133.4874788010938,
+    "gain": -38.73036471958342,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      26
+    ],
+    "candidate_state": 26,
+    "candidate_coords": [
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 134.36081213442714,
+    "rate_delta": 39.603698052916755,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 134.36081213442714,
+    "gain": -39.603698052916755,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.8972380050618085e-11,
+    "value_delta": 2.3803181647963356e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.8972380050618085e-11,
+    "start_gap_delta": 2.3803181647963356e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      55
+    ],
+    "candidate_state": 55,
+    "candidate_coords": [
+      [
+        5,
+        17
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 134.36081213442714,
+    "rate_delta": 39.603698052916755,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 134.36081213442714,
+    "gain": -39.603698052916755,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      28
+    ],
+    "candidate_state": 28,
+    "candidate_coords": [
+      [
+        3,
+        7
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 134.36081213442714,
+    "rate_delta": 39.603698052916755,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 134.36081213442714,
+    "gain": -39.603698052916755,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      35
+    ],
+    "candidate_state": 35,
+    "candidate_coords": [
+      [
+        3,
+        17
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 133.4874788010938,
+    "rate_delta": 38.73036471958342,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 133.4874788010938,
+    "gain": -38.73036471958342,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      11
+    ],
+    "candidate_state": 11,
+    "candidate_coords": [
+      [
+        1,
+        13
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 132.61414546776047,
+    "rate_delta": 37.857031386250085,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 132.61414546776047,
+    "gain": -37.857031386250085,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      32
+    ],
+    "candidate_state": 32,
+    "candidate_coords": [
+      [
+        3,
+        13
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 134.36081213442714,
+    "rate_delta": 39.603698052916755,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 134.36081213442714,
+    "gain": -39.603698052916755,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 3,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      37
+    ],
+    "candidate_state": 37,
+    "candidate_coords": [
+      [
+        3,
+        19
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 134.36081213442714,
+    "rate_delta": 39.603698052916755,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 134.36081213442714,
+    "gain": -39.603698052916755,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 3,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      11,
+      57
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        13
+      ],
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 171.4633244297918,
+    "rate_delta": 76.70621034828143,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 171.4633244297918,
+    "gain": -76.70621034828143,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.920685915341892e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.920685915341892e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 3,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      11,
+      35,
+      57
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        13
+      ],
+      [
+        3,
+        17
+      ],
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 208.3082175374017,
+    "rate_delta": 113.55110345589132,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 208.3082175374017,
+    "gain": -113.55110345589132,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 3,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      11,
+      26,
+      35,
+      57
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        13
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        3,
+        17
+      ],
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 94.75711408151038,
+    "candidate_rate_bits": 245.355332061952,
+    "rate_delta": 150.59821798044163,
+    "base_objective": 94.75711408151038,
+    "candidate_objective": 245.355332061952,
+    "gain": -150.59821798044163,
+    "base_violation": 8.844551080525244,
+    "candidate_violation": 8.844551080525244,
+    "violation_gain": 0.0,
+    "base_struct": 10.844551080525244,
+    "candidate_struct": 10.844551080525244,
+    "struct_delta": 0.0,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.8972380050618085e-11,
+    "value_delta": 2.3803181647963356e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.8972380050618085e-11,
+    "start_gap_delta": 2.3803181647963356e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  }
+]

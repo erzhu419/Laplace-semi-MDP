@@ -210,6 +210,14 @@ def structural_bits(p_norm: float, eps: float = 1e-12) -> float:
     return float(-np.log2(max(eps, 1.0 - p_norm)))
 
 
+def tail_cvar(values: Sequence[float], alpha: float = 0.95) -> float:
+    if not values:
+        return 0.0
+    sorted_values = np.sort(np.asarray(values, dtype=float))
+    start = min(len(sorted_values) - 1, int(np.floor(alpha * len(sorted_values))))
+    return float(np.mean(sorted_values[start:]))
+
+
 def log2_comb(n: int, k: int) -> float:
     if k < 0 or k > n:
         return float("inf")
@@ -229,6 +237,12 @@ def edge_code_bits(n_boundary: int, n_edges_valid: int) -> float:
     if possible == 0:
         return 0.0
     return log2_comb(possible, min(n_edges_valid, possible))
+
+
+def selection_code_bits(n_candidates: int, batch_size: int) -> float:
+    if batch_size <= 1:
+        return math.log2(max(2, n_candidates))
+    return log2_comb(n_candidates, batch_size) + math.log2(max(2, batch_size + 1))
 
 
 def build_first_boundary_reductions(
@@ -589,6 +603,13 @@ def build_first_boundary_reductions(
                 }
             )
 
+    valid_edge_rows = [row for row in edge_rows if bool(row["edge_valid"])]
+    valid_struct_prob = [float(row["struct_hidden_prob"]) for row in valid_edge_rows]
+    valid_struct_bits = [float(row["struct_hidden_bits"]) for row in valid_edge_rows]
+    valid_struct_distinct = [float(row["struct_hidden_distinct"]) for row in valid_edge_rows]
+    valid_struct_distinct_bits = [
+        float(row["struct_hidden_distinct_bits"]) for row in valid_edge_rows
+    ]
     metadata: Dict[str, object] = {
         "option_set": "first_boundary_targeted",
         "local_horizon": local_horizon,
@@ -624,26 +645,22 @@ def build_first_boundary_reductions(
         "residual_backup_value_norm_max": float(
             max((float(row["residual_backup_value_norm"]) for row in edge_rows), default=0.0)
         ),
-        "struct_hidden_prob_valid_total": float(
-            sum(float(row["struct_hidden_prob"]) for row in edge_rows if bool(row["edge_valid"]))
-        ),
+        "struct_hidden_prob_valid_total": float(sum(valid_struct_prob)),
         "struct_hidden_prob_max": float(max((float(row["struct_hidden_prob"]) for row in edge_rows), default=0.0)),
-        "struct_hidden_bits_valid_total": float(
-            sum(float(row["struct_hidden_bits"]) for row in edge_rows if bool(row["edge_valid"]))
-        ),
+        "struct_hidden_prob_cvar95": tail_cvar(valid_struct_prob),
+        "struct_hidden_bits_valid_total": float(sum(valid_struct_bits)),
         "struct_hidden_bits_max": float(max((float(row["struct_hidden_bits"]) for row in edge_rows), default=0.0)),
-        "struct_hidden_distinct_valid_total": float(
-            sum(float(row["struct_hidden_distinct"]) for row in edge_rows if bool(row["edge_valid"]))
-        ),
+        "struct_hidden_bits_cvar95": tail_cvar(valid_struct_bits),
+        "struct_hidden_distinct_valid_total": float(sum(valid_struct_distinct)),
         "struct_hidden_distinct_max": float(
             max((float(row["struct_hidden_distinct"]) for row in edge_rows), default=0.0)
         ),
-        "struct_hidden_distinct_bits_valid_total": float(
-            sum(float(row["struct_hidden_distinct_bits"]) for row in edge_rows if bool(row["edge_valid"]))
-        ),
+        "struct_hidden_distinct_cvar95": tail_cvar(valid_struct_distinct),
+        "struct_hidden_distinct_bits_valid_total": float(sum(valid_struct_distinct_bits)),
         "struct_hidden_distinct_bits_max": float(
             max((float(row["struct_hidden_distinct_bits"]) for row in edge_rows), default=0.0)
         ),
+        "struct_hidden_distinct_bits_cvar95": tail_cvar(valid_struct_distinct_bits),
         "struct_nohit_prob_max": float(max((float(row["struct_nohit_prob"]) for row in edge_rows), default=0.0)),
         "beta_global": float(max((float(row["beta_row"]) for row in edge_rows), default=0.0)),
         "l_gamma_row_max": float(max((float(row["l_gamma_row"]) for row in edge_rows), default=0.0)),
@@ -794,15 +811,296 @@ def mdl_code_length(
     )
 
 
+def rate_code_length(
+    row: Mapping[str, object],
+    option_pair_bit_cost: float,
+    policy_tv_bit_cost: float,
+    policy_region_bit_cost: float,
+    include_edge_encoding: bool,
+) -> float:
+    n_boundary = int(row["n_boundary"])
+    n_edges_valid = int(row["n_edges_valid"])
+    edge_bits = edge_code_bits(n_boundary, n_edges_valid) if include_edge_encoding else 0.0
+    return (
+        boundary_code_bits(int(row["n_states"]), n_boundary)
+        + edge_bits
+        + option_pair_bit_cost * float(row["n_pair_options"])
+        + policy_tv_bit_cost * float(row["target_policy_tv_total"])
+        + policy_region_bit_cost * float(row["target_policy_regions_total"])
+    )
+
+
+def structural_distortion(row: Mapping[str, object], struct_kind: str) -> float:
+    if struct_kind == "occupancy_distinct_bits":
+        return float(row.get("occupancy_struct_hidden_distinct_bits", 0.0))
+    if struct_kind == "distinct":
+        return float(row.get("struct_hidden_distinct_valid_total", 0.0))
+    if struct_kind == "distinct_bits":
+        return float(row.get("struct_hidden_distinct_bits_valid_total", 0.0))
+    if struct_kind == "hidden_bits":
+        return float(row.get("struct_hidden_bits_valid_total", 0.0))
+    if struct_kind == "audit_prob_max":
+        return float(row.get("struct_hidden_prob_max", 0.0))
+    if struct_kind == "audit_prob_cvar95":
+        return float(row.get("struct_hidden_prob_cvar95", 0.0))
+    if struct_kind == "audit_distinct_max":
+        return float(row.get("struct_hidden_distinct_max", 0.0))
+    if struct_kind == "audit_distinct_cvar95":
+        return float(row.get("struct_hidden_distinct_cvar95", 0.0))
+    if struct_kind == "audit_distinct_bits_max":
+        return float(row.get("struct_hidden_distinct_bits_max", 0.0))
+    if struct_kind == "audit_distinct_bits_cvar95":
+        return float(row.get("struct_hidden_distinct_bits_cvar95", 0.0))
+    return float(row.get("occupancy_struct_hidden_distinct", 0.0))
+
+
+def finite_budget_violation(value: float, budget: float) -> float:
+    if not np.isfinite(budget):
+        return 0.0
+    return max(0.0, float(value) - float(budget))
+
+
+def rate_distortion_components(
+    row: Mapping[str, object],
+    rate_bits: float,
+    struct_kind: str,
+    struct_budget: float,
+    audit_kind: str,
+    audit_budget: float,
+    model_budget: float,
+    value_budget: float,
+    start_gap_budget: float,
+    lambda_struct: float,
+    lambda_audit: float,
+    lambda_model: float,
+    lambda_value: float,
+    lambda_start_gap: float,
+) -> Dict[str, float]:
+    struct = structural_distortion(row, struct_kind)
+    audit = 0.0 if audit_kind == "none" else structural_distortion(row, audit_kind)
+    model = float(row.get("occupancy_model_residual", 0.0))
+    value = float(row.get("value_gap_max", 0.0))
+    start_gap = float(row.get("start_gap", 0.0))
+    violation = (
+        finite_budget_violation(struct, struct_budget)
+        + finite_budget_violation(audit, audit_budget)
+        + finite_budget_violation(model, model_budget)
+        + finite_budget_violation(value, value_budget)
+        + finite_budget_violation(start_gap, start_gap_budget)
+    )
+    objective = (
+        rate_bits
+        + lambda_struct * struct
+        + lambda_audit * audit
+        + lambda_model * model
+        + lambda_value * value
+        + lambda_start_gap * start_gap
+    )
+    return {
+        "rate_bits": float(rate_bits),
+        "struct": float(struct),
+        "audit": float(audit),
+        "model": float(model),
+        "value": float(value),
+        "start_gap": float(start_gap),
+        "violation": float(violation),
+        "objective": float(objective),
+    }
+
+
+def _struct_score_value(score: float, kind: str) -> float:
+    if "bits" in kind:
+        return structural_bits(normalize_structural_prob(score, p_ref_upper=0.0))
+    return float(score)
+
+
+def rd_operator_candidate_scores(
+    row: Mapping[str, object],
+    edge_rows: Sequence[Mapping[str, object]],
+    boundary: Sequence[int],
+    rd_struct_kind: str,
+    rd_struct_budget: float,
+    rd_audit_kind: str,
+    rd_audit_budget: float,
+    rd_model_budget: float,
+    rd_value_budget: float,
+    rd_start_gap_budget: float,
+    rd_lambda_struct: float,
+    rd_lambda_audit: float,
+    rd_lambda_model: float,
+    rd_lambda_value: float,
+    rd_lambda_start_gap: float,
+    option_pair_bit_cost: float,
+    policy_tv_bit_cost: float,
+    policy_region_bit_cost: float,
+    include_edge_encoding: bool,
+) -> Tuple[List[Dict[str, object]], Dict[str, float]]:
+    """Cheap split surrogate from current edge exposure.
+
+    This is the first explicit "operator" approximation to exact RD search:
+    it scores a state by how much current policy-weighted and audit-tail
+    hidden-boundary exposure would be resolved if that state became a vertex.
+    """
+
+    base_rate_bits = rate_code_length(
+        row,
+        option_pair_bit_cost=option_pair_bit_cost,
+        policy_tv_bit_cost=policy_tv_bit_cost,
+        policy_region_bit_cost=policy_region_bit_cost,
+        include_edge_encoding=include_edge_encoding,
+    )
+    base = rate_distortion_components(
+        row=row,
+        rate_bits=base_rate_bits,
+        struct_kind=rd_struct_kind,
+        struct_budget=rd_struct_budget,
+        audit_kind=rd_audit_kind,
+        audit_budget=rd_audit_budget,
+        model_budget=rd_model_budget,
+        value_budget=rd_value_budget,
+        start_gap_budget=rd_start_gap_budget,
+        lambda_struct=rd_lambda_struct,
+        lambda_audit=rd_lambda_audit,
+        lambda_model=rd_lambda_model,
+        lambda_value=rd_lambda_value,
+        lambda_start_gap=rd_lambda_start_gap,
+    )
+    boundary_set = set(int(state) for state in boundary)
+    n_states = int(row["n_states"])
+    n_boundary = int(row["n_boundary"])
+    struct_violation = finite_budget_violation(base["struct"], rd_struct_budget)
+    audit_violation = finite_budget_violation(base["audit"], rd_audit_budget)
+    value_violation = finite_budget_violation(base["value"], rd_value_budget)
+    model_violation = finite_budget_violation(base["model"], rd_model_budget)
+    start_gap_violation = finite_budget_violation(base["start_gap"], rd_start_gap_budget)
+    base_violation = (
+        struct_violation
+        + audit_violation
+        + value_violation
+        + model_violation
+        + start_gap_violation
+    )
+    valid_exposures = [
+        float(edge_row.get("struct_hidden_distinct", 0.0))
+        for edge_row in edge_rows
+        if bool(edge_row.get("edge_valid", False))
+    ]
+    if valid_exposures:
+        tail_cut = float(np.percentile(np.asarray(valid_exposures, dtype=float), 95.0))
+    else:
+        tail_cut = float("inf")
+
+    candidate_scores: Dict[int, Dict[str, float]] = defaultdict(
+        lambda: {
+            "occupancy_struct_benefit": 0.0,
+            "audit_tail_benefit": 0.0,
+            "unweighted_struct_benefit": 0.0,
+            "model_benefit": 0.0,
+        }
+    )
+    for edge_row in edge_rows:
+        if not bool(edge_row.get("edge_valid", False)):
+            continue
+        try:
+            scores = json.loads(str(edge_row.get("struct_distinct_scores", "{}")))
+        except json.JSONDecodeError:
+            scores = {}
+        if not scores:
+            continue
+        occupancy = float(edge_row.get("policy_occupancy", 0.0))
+        exposure = float(edge_row.get("struct_hidden_distinct", 0.0))
+        tail_weight = 1.0 if exposure >= tail_cut and exposure > 1e-12 else 0.0
+        model_residual = float(edge_row.get("model_residual", 0.0))
+        for raw_state, raw_score in scores.items():
+            state = int(raw_state)
+            if state in boundary_set:
+                continue
+            score = _struct_score_value(float(raw_score), rd_struct_kind)
+            audit_score = _struct_score_value(float(raw_score), rd_audit_kind)
+            candidate_scores[state]["occupancy_struct_benefit"] += occupancy * score
+            candidate_scores[state]["audit_tail_benefit"] += tail_weight * audit_score
+            candidate_scores[state]["unweighted_struct_benefit"] += score
+            candidate_scores[state]["model_benefit"] += tail_weight * model_residual * float(raw_score)
+
+    boundary_rate_delta = boundary_code_bits(n_states, n_boundary + 1) - boundary_code_bits(n_states, n_boundary)
+    edge_rate_delta = edge_code_bits(n_boundary + 1, int(row["n_edges_valid"]) + 2 * n_boundary) - edge_code_bits(
+        n_boundary,
+        int(row["n_edges_valid"]),
+    ) if include_edge_encoding else 0.0
+    option_rate_delta = option_pair_bit_cost * float(2 * max(1, n_boundary))
+    approx_rate_delta = boundary_rate_delta + edge_rate_delta + option_rate_delta
+
+    struct_weight = 1.0 if struct_violation > 1e-12 else max(0.0, rd_lambda_struct)
+    audit_weight = 1.0 if audit_violation > 1e-12 else max(0.0, rd_lambda_audit)
+    model_weight = 1.0 if model_violation > 1e-12 else max(0.0, rd_lambda_model)
+    if base_violation <= 1e-12 and struct_weight + audit_weight + model_weight <= 1e-12:
+        struct_weight = 1.0
+
+    diagnostics: List[Dict[str, object]] = []
+    for state, parts in candidate_scores.items():
+        struct_benefit = (
+            parts["occupancy_struct_benefit"]
+            if rd_struct_kind.startswith("occupancy")
+            else parts["unweighted_struct_benefit"]
+        )
+        audit_benefit = parts["audit_tail_benefit"]
+        model_benefit = parts["model_benefit"]
+        violation_gain_proxy = (
+            min(struct_violation, struct_benefit)
+            + min(audit_violation, audit_benefit)
+            + min(model_violation, model_benefit)
+        )
+        objective_gain_proxy = (
+            struct_weight * struct_benefit
+            + audit_weight * audit_benefit
+            + model_weight * model_benefit
+            - approx_rate_delta
+        )
+        score = violation_gain_proxy if base_violation > 1e-12 else objective_gain_proxy
+        diagnostics.append(
+            {
+                "candidate_state": int(state),
+                "operator_score": float(score),
+                "violation_gain_proxy": float(violation_gain_proxy),
+                "objective_gain_proxy": float(objective_gain_proxy),
+                "struct_benefit_proxy": float(struct_benefit),
+                "audit_benefit_proxy": float(audit_benefit),
+                "model_benefit_proxy": float(model_benefit),
+                "approx_rate_delta": float(approx_rate_delta),
+            }
+        )
+    diagnostics.sort(
+        key=lambda item: (
+            float(item["operator_score"]),
+            float(item["violation_gain_proxy"]),
+            float(item["struct_benefit_proxy"]) + float(item["audit_benefit_proxy"]),
+            -int(item["candidate_state"]),
+        ),
+        reverse=True,
+    )
+    return diagnostics, {
+        **base,
+        "base_rate_bits": float(base_rate_bits),
+        "base_violation": float(base_violation),
+        "approx_rate_delta": float(approx_rate_delta),
+        "struct_violation": float(struct_violation),
+        "audit_violation": float(audit_violation),
+    }
+
+
 def policy_boundary_occupancy(
     reductions: Mapping[str, BellmanKronReduction],
-    policy_smdp: Sequence[str],
+    policy_smdp: Mapping[int, str] | Sequence[str],
     start_pos: int,
     goal_pos: int,
 ) -> np.ndarray:
     n = len(policy_smdp)
     P_pi = np.zeros((n, n), dtype=float)
-    for src_pos, action in enumerate(policy_smdp):
+    for src_pos in range(n):
+        if isinstance(policy_smdp, Mapping):
+            action = policy_smdp.get(src_pos)
+        else:
+            action = policy_smdp[src_pos]
         if src_pos == goal_pos or action not in reductions:
             continue
         P_pi[src_pos, :] = reductions[action].hit_probability[src_pos]
@@ -882,7 +1180,7 @@ def evaluate_boundary(
     value_gap_max = float("inf")
     start_value_smdp = float("nan")
     start_best_option = "INFEASIBLE"
-    policy_smdp: List[str] = []
+    policy_smdp: Mapping[int, str] | List[str] = {}
     occupancy_by_boundary = np.zeros(len(boundary), dtype=float)
     if start in boundary_to_pos and goal in boundary_to_pos:
         try:
@@ -1000,10 +1298,16 @@ def evaluate_boundary(
         "residual_backup_value_norm_max": float(metadata["residual_backup_value_norm_max"]),
         "struct_hidden_prob_valid_total": float(metadata["struct_hidden_prob_valid_total"]),
         "struct_hidden_prob_max": float(metadata["struct_hidden_prob_max"]),
+        "struct_hidden_prob_cvar95": float(metadata["struct_hidden_prob_cvar95"]),
         "struct_hidden_bits_valid_total": float(metadata["struct_hidden_bits_valid_total"]),
         "struct_hidden_bits_max": float(metadata["struct_hidden_bits_max"]),
+        "struct_hidden_bits_cvar95": float(metadata["struct_hidden_bits_cvar95"]),
         "struct_hidden_distinct_valid_total": float(metadata["struct_hidden_distinct_valid_total"]),
         "struct_hidden_distinct_max": float(metadata["struct_hidden_distinct_max"]),
+        "struct_hidden_distinct_cvar95": float(metadata["struct_hidden_distinct_cvar95"]),
+        "struct_hidden_distinct_bits_valid_total": float(metadata["struct_hidden_distinct_bits_valid_total"]),
+        "struct_hidden_distinct_bits_max": float(metadata["struct_hidden_distinct_bits_max"]),
+        "struct_hidden_distinct_bits_cvar95": float(metadata["struct_hidden_distinct_bits_cvar95"]),
         "struct_nohit_prob_max": float(metadata["struct_nohit_prob_max"]),
         "beta_global": float(metadata["beta_global"]),
         "l_gamma_row_max": float(metadata["l_gamma_row_max"]),
@@ -1015,6 +1319,12 @@ def evaluate_boundary(
         "start_gap": start_gap,
         "value_gap_max": value_gap_max,
         "start_best_option": start_best_option,
+        "policy_smdp_json": json.dumps(
+            {str(k): str(v) for k, v in policy_smdp.items()}
+            if isinstance(policy_smdp, Mapping)
+            else {str(k): str(v) for k, v in enumerate(policy_smdp)}
+        ),
+        "boundary_states_json": json.dumps([int(state) for state in boundary]),
         "policy_tv_total": pair_policy_metrics["policy_tv_total"],
         "policy_regions_total": pair_policy_metrics["policy_regions_total"],
         "policy_tv_mean": pair_policy_metrics["policy_tv_mean"],
@@ -1093,6 +1403,21 @@ def run_one(
     exact_mdl_policy_region_bit_cost: float = 0.5,
     exact_mdl_model_residual_bit_cost: float = 1.0,
     exact_mdl_include_edge_encoding: bool = False,
+    rd_top_k: int = 8,
+    rd_struct_kind: str = "occupancy_distinct",
+    rd_struct_budget: float = float("inf"),
+    rd_audit_kind: str = "none",
+    rd_audit_budget: float = float("inf"),
+    rd_model_budget: float = float("inf"),
+    rd_value_budget: float = float("inf"),
+    rd_start_gap_budget: float = float("inf"),
+    rd_lambda_struct: float = 0.0,
+    rd_lambda_audit: float = 0.0,
+    rd_lambda_model: float = 0.0,
+    rd_lambda_value: float = 0.0,
+    rd_lambda_start_gap: float = 0.0,
+    rd_batch_k: int = 1,
+    rd_candidate_rows: List[Dict[str, object]] | None = None,
 ) -> Tuple[List[Dict[str, object]], List[Dict[str, object]]]:
     grid = GridWorld(rows)
     goal = grid.symbol_states("G")[0]
@@ -1270,29 +1595,420 @@ def run_one(
         row["exact_mdl_candidate_bits"] = exact_mdl_candidate_bits
         row["exact_mdl_candidates_evaluated"] = exact_mdl_candidates_evaluated
 
+        rd_split_state = None
+        rd_split_states: List[int] = []
+        rd_split_gain = 0.0
+        rd_base_rate_bits = 0.0
+        rd_candidate_rate_bits = 0.0
+        rd_base_objective = 0.0
+        rd_candidate_objective = 0.0
+        rd_base_violation = 0.0
+        rd_candidate_violation = 0.0
+        rd_violation_gain = 0.0
+        rd_struct_delta = 0.0
+        rd_model_delta = 0.0
+        rd_audit_delta = 0.0
+        rd_base_audit = 0.0
+        rd_candidate_audit = 0.0
+        rd_value_delta = 0.0
+        rd_start_gap_delta = 0.0
+        rd_struct_break_even_lambda = float("inf")
+        rd_candidates_evaluated = 0
+        rd_operator_candidates_scored = 0
+        rd_operator_top_score = 0.0
+        if residual_split_policy == "rd":
+            ranked_candidates = [
+                state for state, _ in ranked_struct_proposal_states(edge_rows) if state not in set(boundary)
+            ]
+            if rd_top_k > 0:
+                ranked_candidates = ranked_candidates[:rd_top_k]
+
+            rd_base_rate_bits = rate_code_length(
+                row,
+                option_pair_bit_cost=exact_mdl_option_pair_bit_cost,
+                policy_tv_bit_cost=exact_mdl_policy_tv_bit_cost,
+                policy_region_bit_cost=exact_mdl_policy_region_bit_cost,
+                include_edge_encoding=exact_mdl_include_edge_encoding,
+            )
+            base_components = rate_distortion_components(
+                row=row,
+                rate_bits=rd_base_rate_bits,
+                struct_kind=rd_struct_kind,
+                struct_budget=rd_struct_budget,
+                audit_kind=rd_audit_kind,
+                audit_budget=rd_audit_budget,
+                model_budget=rd_model_budget,
+                value_budget=rd_value_budget,
+                start_gap_budget=rd_start_gap_budget,
+                lambda_struct=rd_lambda_struct,
+                lambda_audit=rd_lambda_audit,
+                lambda_model=rd_lambda_model,
+                lambda_value=rd_lambda_value,
+                lambda_start_gap=rd_lambda_start_gap,
+            )
+            rd_base_audit = base_components["audit"]
+            rd_base_violation = base_components["violation"]
+            rd_base_objective = base_components["objective"]
+            best_key = None
+            best_diag: Dict[str, object] | None = None
+            single_diags: List[Dict[str, object]] = []
+            all_diags: List[Dict[str, object]] = []
+
+            def evaluate_rd_candidate(candidate_states: Sequence[int], mode: str, rank: int) -> Dict[str, object]:
+                candidate_states_sorted = sorted({int(state) for state in candidate_states})
+                trial_boundary = sorted(set(boundary).union(candidate_states_sorted))
+                candidate_row, _candidate_edges = evaluate_boundary(
+                    map_name=map_name,
+                    grid=grid,
+                    boundary=trial_boundary,
+                    candidate_boundary=candidate_boundary,
+                    residual_boundary=residual_boundary,
+                    soft_state_cost=soft_state_cost,
+                    slip=slip,
+                    gamma=gamma,
+                    local_horizon=local_horizon,
+                    hidden_threshold=hidden_threshold,
+                    soft_threshold=soft_threshold,
+                    residual_threshold=residual_threshold,
+                    residual_reward_weight=residual_reward_weight,
+                    residual_hit_weight=residual_hit_weight,
+                    residual_threshold_mode=residual_threshold_mode,
+                    compute_struct_distinct=compute_struct_distinct,
+                    struct_mdl_node_cost_weight=struct_mdl_node_cost_weight,
+                    struct_mdl_edge_cost_weight=struct_mdl_edge_cost_weight,
+                    struct_mdl_exposure_bit_weight=struct_mdl_exposure_bit_weight,
+                    struct_mdl_min_gain=struct_mdl_min_gain,
+                    residual_kind=residual_kind,
+                    residual_top_fraction=residual_top_fraction,
+                    soft_kind=soft_kind,
+                    soft_top_fraction=soft_top_fraction,
+                    soft_cost_weight=soft_cost_weight,
+                    candidate_kind=candidate_kind,
+                    candidate_top_fraction=candidate_top_fraction,
+                    proposal_boundary=proposal_boundary,
+                )
+                batch_size = len(candidate_states_sorted)
+                candidate_rate_bits = rate_code_length(
+                    candidate_row,
+                    option_pair_bit_cost=exact_mdl_option_pair_bit_cost,
+                    policy_tv_bit_cost=exact_mdl_policy_tv_bit_cost,
+                    policy_region_bit_cost=exact_mdl_policy_region_bit_cost,
+                    include_edge_encoding=exact_mdl_include_edge_encoding,
+                ) + selection_code_bits(len(ranked_candidates), batch_size)
+                candidate_components = rate_distortion_components(
+                    row=candidate_row,
+                    rate_bits=candidate_rate_bits,
+                    struct_kind=rd_struct_kind,
+                    struct_budget=rd_struct_budget,
+                    audit_kind=rd_audit_kind,
+                    audit_budget=rd_audit_budget,
+                    model_budget=rd_model_budget,
+                    value_budget=rd_value_budget,
+                    start_gap_budget=rd_start_gap_budget,
+                    lambda_struct=rd_lambda_struct,
+                    lambda_audit=rd_lambda_audit,
+                    lambda_model=rd_lambda_model,
+                    lambda_value=rd_lambda_value,
+                    lambda_start_gap=rd_lambda_start_gap,
+                )
+                gain = base_components["objective"] - candidate_components["objective"]
+                violation_gain = base_components["violation"] - candidate_components["violation"]
+                struct_delta = base_components["struct"] - candidate_components["struct"]
+                audit_delta = base_components["audit"] - candidate_components["audit"]
+                model_delta = base_components["model"] - candidate_components["model"]
+                value_delta = base_components["value"] - candidate_components["value"]
+                start_gap_delta = base_components["start_gap"] - candidate_components["start_gap"]
+                rate_delta = candidate_rate_bits - rd_base_rate_bits
+                break_even = rate_delta / struct_delta if struct_delta > 1e-12 else float("inf")
+                return {
+                    "map": map_name,
+                    "slip": slip,
+                    "step": step,
+                    "mode": mode,
+                    "rank": rank,
+                    "n_boundary": len(boundary),
+                    "candidate_batch_size": batch_size,
+                    "candidate_states": candidate_states_sorted,
+                    "candidate_state": candidate_states_sorted[0] if batch_size == 1 else "",
+                    "candidate_coords": [idx_to_coord[state] for state in candidate_states_sorted],
+                    "base_rate_bits": rd_base_rate_bits,
+                    "candidate_rate_bits": candidate_rate_bits,
+                    "rate_delta": rate_delta,
+                    "base_objective": base_components["objective"],
+                    "candidate_objective": candidate_components["objective"],
+                    "gain": gain,
+                    "base_violation": base_components["violation"],
+                    "candidate_violation": candidate_components["violation"],
+                    "violation_gain": violation_gain,
+                    "base_struct": base_components["struct"],
+                    "candidate_struct": candidate_components["struct"],
+                    "struct_delta": struct_delta,
+                    "base_audit": base_components["audit"],
+                    "candidate_audit": candidate_components["audit"],
+                    "audit_delta": audit_delta,
+                    "base_model": base_components["model"],
+                    "candidate_model": candidate_components["model"],
+                    "model_delta": model_delta,
+                    "base_value": base_components["value"],
+                    "candidate_value": candidate_components["value"],
+                    "value_delta": value_delta,
+                    "base_start_gap": base_components["start_gap"],
+                    "candidate_start_gap": candidate_components["start_gap"],
+                    "start_gap_delta": start_gap_delta,
+                    "struct_break_even_lambda": break_even,
+                    "selected": False,
+                }
+
+            for rank, candidate_state in enumerate(ranked_candidates, start=1):
+                diag = evaluate_rd_candidate([int(candidate_state)], mode="single", rank=rank)
+                single_diags.append(diag)
+                all_diags.append(diag)
+
+            def rd_sort_key(diag: Mapping[str, object]) -> Tuple[float, float, float, float]:
+                if rd_base_violation > 1e-12:
+                    return (
+                        float(diag["violation_gain"]),
+                        float(diag["gain"]),
+                        float(diag["struct_delta"]) + float(diag["audit_delta"]),
+                        -float(diag["candidate_rate_bits"]),
+                    )
+                return (
+                    float(diag["gain"]),
+                    float(diag["struct_delta"]) + float(diag["audit_delta"]),
+                    float(diag["model_delta"]) + float(diag["value_delta"]) + float(diag["start_gap_delta"]),
+                    -float(diag["candidate_rate_bits"]),
+                )
+
+            ranked_single_diags = sorted(single_diags, key=rd_sort_key, reverse=True)
+            for batch_size in range(2, min(max(1, rd_batch_k), len(ranked_single_diags)) + 1):
+                batch_states = [
+                    int(state)
+                    for diag in ranked_single_diags[:batch_size]
+                    for state in diag["candidate_states"]
+                ]
+                diag = evaluate_rd_candidate(batch_states, mode="batch_prefix", rank=batch_size)
+                all_diags.append(diag)
+
+            for diag in all_diags:
+                key = rd_sort_key(diag)
+                if best_key is None or key > best_key:
+                    best_key = key
+                    best_diag = diag
+
+            rd_candidates_evaluated = len(all_diags)
+            if best_diag is not None:
+                accept = (
+                    rd_base_violation > 1e-12 and float(best_diag["violation_gain"]) > struct_mdl_min_gain
+                ) or (
+                    rd_base_violation <= 1e-12 and float(best_diag["gain"]) > struct_mdl_min_gain
+                )
+                if accept:
+                    rd_split_states = [int(state) for state in best_diag["candidate_states"]]
+                    rd_split_state = rd_split_states[0] if rd_split_states else None
+                    best_diag["selected"] = True
+                rd_split_gain = float(best_diag["gain"])
+                rd_candidate_rate_bits = float(best_diag["candidate_rate_bits"])
+                rd_candidate_objective = float(best_diag["candidate_objective"])
+                rd_candidate_violation = float(best_diag["candidate_violation"])
+                rd_violation_gain = float(best_diag["violation_gain"])
+                rd_struct_delta = float(best_diag["struct_delta"])
+                rd_audit_delta = float(best_diag["audit_delta"])
+                rd_candidate_audit = float(best_diag["candidate_audit"])
+                rd_model_delta = float(best_diag["model_delta"])
+                rd_value_delta = float(best_diag["value_delta"])
+                rd_start_gap_delta = float(best_diag["start_gap_delta"])
+                rd_struct_break_even_lambda = float(best_diag["struct_break_even_lambda"])
+            if rd_candidate_rows is not None:
+                rd_candidate_rows.extend(all_diags)
+        if residual_split_policy == "rd_surrogate":
+            operator_diags, operator_base = rd_operator_candidate_scores(
+                row=row,
+                edge_rows=edge_rows,
+                boundary=boundary,
+                rd_struct_kind=rd_struct_kind,
+                rd_struct_budget=rd_struct_budget,
+                rd_audit_kind=rd_audit_kind,
+                rd_audit_budget=rd_audit_budget,
+                rd_model_budget=rd_model_budget,
+                rd_value_budget=rd_value_budget,
+                rd_start_gap_budget=rd_start_gap_budget,
+                rd_lambda_struct=rd_lambda_struct,
+                rd_lambda_audit=rd_lambda_audit,
+                rd_lambda_model=rd_lambda_model,
+                rd_lambda_value=rd_lambda_value,
+                rd_lambda_start_gap=rd_lambda_start_gap,
+                option_pair_bit_cost=exact_mdl_option_pair_bit_cost,
+                policy_tv_bit_cost=exact_mdl_policy_tv_bit_cost,
+                policy_region_bit_cost=exact_mdl_policy_region_bit_cost,
+                include_edge_encoding=exact_mdl_include_edge_encoding,
+            )
+            if rd_top_k > 0:
+                operator_diags = operator_diags[:rd_top_k]
+            rd_operator_candidates_scored = len(operator_diags)
+            rd_base_rate_bits = float(operator_base["base_rate_bits"])
+            rd_base_objective = float(operator_base["objective"])
+            rd_base_violation = float(operator_base["base_violation"])
+            rd_base_audit = float(operator_base["audit"])
+            if operator_diags:
+                rd_operator_top_score = float(operator_diags[0]["operator_score"])
+                positive = [
+                    diag
+                    for diag in operator_diags
+                    if float(diag["operator_score"]) > struct_mdl_min_gain
+                    or (
+                        rd_base_violation > 1e-12
+                        and float(diag["violation_gain_proxy"]) > struct_mdl_min_gain
+                    )
+                ]
+                batch_size = min(max(1, rd_batch_k), len(positive))
+                selected_diags = positive[:batch_size]
+                if selected_diags:
+                    rd_split_states = [int(diag["candidate_state"]) for diag in selected_diags]
+                    rd_split_state = rd_split_states[0]
+                    rd_split_gain = float(sum(float(diag["operator_score"]) for diag in selected_diags))
+                    rd_violation_gain = float(
+                        sum(float(diag["violation_gain_proxy"]) for diag in selected_diags)
+                    )
+                    rd_struct_delta = float(
+                        sum(float(diag["struct_benefit_proxy"]) for diag in selected_diags)
+                    )
+                    rd_audit_delta = float(
+                        sum(float(diag["audit_benefit_proxy"]) for diag in selected_diags)
+                    )
+                    rd_model_delta = float(
+                        sum(float(diag["model_benefit_proxy"]) for diag in selected_diags)
+                    )
+                    rd_candidate_rate_bits = rd_base_rate_bits + float(
+                        sum(float(diag["approx_rate_delta"]) for diag in selected_diags)
+                    )
+                    rd_candidate_objective = rd_base_objective - rd_split_gain
+                    rd_candidate_violation = max(0.0, rd_base_violation - rd_violation_gain)
+                    rd_candidate_audit = max(0.0, rd_base_audit - rd_audit_delta)
+                    if rd_struct_delta > 1e-12:
+                        rd_struct_break_even_lambda = (
+                            rd_candidate_rate_bits - rd_base_rate_bits
+                        ) / rd_struct_delta
+                    for diag in selected_diags:
+                        diag["selected"] = True
+            if rd_candidate_rows is not None:
+                for rank, diag in enumerate(operator_diags, start=1):
+                    out_diag = {
+                        "map": map_name,
+                        "slip": slip,
+                        "step": step,
+                        "mode": "operator_surrogate",
+                        "rank": rank,
+                        "n_boundary": len(boundary),
+                        "candidate_batch_size": 1,
+                        "candidate_states": [int(diag["candidate_state"])],
+                        "candidate_state": int(diag["candidate_state"]),
+                        "candidate_coords": [idx_to_coord[int(diag["candidate_state"])]],
+                        "base_rate_bits": rd_base_rate_bits,
+                        "candidate_rate_bits": rd_base_rate_bits + float(diag["approx_rate_delta"]),
+                        "rate_delta": float(diag["approx_rate_delta"]),
+                        "base_objective": rd_base_objective,
+                        "candidate_objective": rd_base_objective - float(diag["operator_score"]),
+                        "gain": float(diag["operator_score"]),
+                        "base_violation": rd_base_violation,
+                        "candidate_violation": max(
+                            0.0,
+                            rd_base_violation - float(diag["violation_gain_proxy"]),
+                        ),
+                        "violation_gain": float(diag["violation_gain_proxy"]),
+                        "base_struct": float(operator_base["struct"]),
+                        "candidate_struct": max(
+                            0.0,
+                            float(operator_base["struct"]) - float(diag["struct_benefit_proxy"]),
+                        ),
+                        "struct_delta": float(diag["struct_benefit_proxy"]),
+                        "base_audit": rd_base_audit,
+                        "candidate_audit": max(
+                            0.0,
+                            rd_base_audit - float(diag["audit_benefit_proxy"]),
+                        ),
+                        "audit_delta": float(diag["audit_benefit_proxy"]),
+                        "base_model": float(operator_base["model"]),
+                        "candidate_model": max(
+                            0.0,
+                            float(operator_base["model"]) - float(diag["model_benefit_proxy"]),
+                        ),
+                        "model_delta": float(diag["model_benefit_proxy"]),
+                        "base_value": float(operator_base["value"]),
+                        "candidate_value": float(operator_base["value"]),
+                        "value_delta": 0.0,
+                        "base_start_gap": float(operator_base["start_gap"]),
+                        "candidate_start_gap": float(operator_base["start_gap"]),
+                        "start_gap_delta": 0.0,
+                        "struct_break_even_lambda": rd_struct_break_even_lambda,
+                        "selected": bool(diag.get("selected", False)),
+                    }
+                    rd_candidate_rows.append(out_diag)
+        row["rd_split_candidate_state"] = rd_split_state
+        row["rd_split_candidate_coord"] = idx_to_coord[rd_split_state] if rd_split_state is not None else None
+        row["rd_split_candidate_states"] = rd_split_states
+        row["rd_split_candidate_coords"] = [idx_to_coord[state] for state in rd_split_states]
+        row["rd_split_batch_size"] = len(rd_split_states)
+        row["rd_split_gain"] = rd_split_gain
+        row["rd_base_rate_bits"] = rd_base_rate_bits
+        row["rd_candidate_rate_bits"] = rd_candidate_rate_bits
+        row["rd_base_objective"] = rd_base_objective
+        row["rd_candidate_objective"] = rd_candidate_objective
+        row["rd_base_violation"] = rd_base_violation
+        row["rd_candidate_violation"] = rd_candidate_violation
+        row["rd_violation_gain"] = rd_violation_gain
+        row["rd_struct_delta"] = rd_struct_delta
+        row["rd_base_audit"] = rd_base_audit
+        row["rd_candidate_audit"] = rd_candidate_audit
+        row["rd_audit_delta"] = rd_audit_delta
+        row["rd_model_delta"] = rd_model_delta
+        row["rd_value_delta"] = rd_value_delta
+        row["rd_start_gap_delta"] = rd_start_gap_delta
+        row["rd_struct_break_even_lambda"] = rd_struct_break_even_lambda
+        row["rd_candidates_evaluated"] = rd_candidates_evaluated
+        row["rd_operator_candidates_scored"] = rd_operator_candidates_scored
+        row["rd_operator_top_score"] = rd_operator_top_score
+
         split_state = row["hard_split_candidate_state"]
+        split_states: List[int] = [int(split_state)] if split_state is not None else []
         split_source = "hard_hidden"
         split_score = row["hard_split_candidate_score"]
         if split_state is None and residual_split_policy == "threshold":
             split_state = row["residual_split_candidate_state"]
+            split_states = [int(split_state)] if split_state is not None else []
             split_score = row["residual_split_candidate_score"]
             split_source = f"residual_{residual_threshold_mode}"
         if split_state is None and residual_split_policy == "mdl":
             split_state = row["struct_mdl_split_candidate_state"]
+            split_states = [int(split_state)] if split_state is not None else []
             split_score = row["struct_mdl_split_gain"]
             split_source = "residual_mdl"
         if split_state is None and residual_split_policy == "exact_mdl":
             split_state = row["exact_mdl_split_candidate_state"]
+            split_states = [int(split_state)] if split_state is not None else []
             split_score = row["exact_mdl_split_gain"]
             split_source = "residual_exact_mdl"
+        if split_state is None and residual_split_policy == "rd":
+            split_state = row["rd_split_candidate_state"]
+            split_states = [int(state) for state in row["rd_split_candidate_states"]]
+            split_score = row["rd_violation_gain"] if row["rd_base_violation"] > 1e-12 else row["rd_split_gain"]
+            split_source = "residual_rate_distortion"
+        if split_state is None and residual_split_policy == "rd_surrogate":
+            split_state = row["rd_split_candidate_state"]
+            split_states = [int(state) for state in row["rd_split_candidate_states"]]
+            split_score = row["rd_violation_gain"] if row["rd_base_violation"] > 1e-12 else row["rd_split_gain"]
+            split_source = "residual_rd_surrogate"
         if split_state is None and soft_split_policy == "threshold":
             split_state = row["soft_split_candidate_state"]
+            split_states = [int(split_state)] if split_state is not None else []
             split_score = row["soft_split_candidate_score"]
             split_source = "soft_threshold"
         row["split_candidate_state"] = split_state
+        row["split_candidate_states"] = split_states
         row["split_candidate_score"] = split_score if split_state is not None else 0.0
         row["split_candidate_source"] = split_source if split_state is not None else "none"
         row["split_candidate_coord"] = idx_to_coord[int(split_state)] if split_state is not None else None
+        row["split_candidate_coords"] = [idx_to_coord[state] for state in split_states]
+        row["split_batch_size"] = len(split_states)
         if split_state is None:
             row["stop_reason"] = "hybrid_threshold"
             break
@@ -1300,7 +2016,7 @@ def run_one(
             row["stop_reason"] = "max_splits"
             break
         row["stop_reason"] = "continue"
-        boundary = sorted(set(boundary).union({int(split_state)}))
+        boundary = sorted(set(boundary).union(split_states))
 
     if "stop_reason" not in trace[-1]:
         trace[-1]["stop_reason"] = "max_splits"
@@ -1349,6 +2065,20 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
             f"residual_reward_weight = {args.residual_reward_weight}, residual_hit_weight = {args.residual_hit_weight}, "
             f"soft_cost_weight = {args.soft_cost_weight}"
         ),
+        (
+            f"rd_struct_kind = {getattr(args, 'rd_struct_kind', 'occupancy_distinct')}, "
+            f"rd_struct_budget = {getattr(args, 'rd_struct_budget', float('inf'))}, "
+            f"rd_audit_kind = {getattr(args, 'rd_audit_kind', 'none')}, "
+            f"rd_audit_budget = {getattr(args, 'rd_audit_budget', float('inf'))}, "
+            f"rd_model_budget = {getattr(args, 'rd_model_budget', float('inf'))}, "
+            f"rd_value_budget = {getattr(args, 'rd_value_budget', float('inf'))}, "
+            f"rd_start_gap_budget = {getattr(args, 'rd_start_gap_budget', float('inf'))}, "
+            f"rd_batch_k = {getattr(args, 'rd_batch_k', 1)}, "
+            f"rd_lambdas = "
+            f"({getattr(args, 'rd_lambda_struct', 0.0)}, {getattr(args, 'rd_lambda_audit', 0.0)}, "
+            f"{getattr(args, 'rd_lambda_model', 0.0)}, "
+            f"{getattr(args, 'rd_lambda_value', 0.0)}, {getattr(args, 'rd_lambda_start_gap', 0.0)})"
+        ),
         "",
         "## Final Rows",
         "",
@@ -1373,6 +2103,7 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
                 "struct_hidden_prob_max",
                 "struct_hidden_bits_valid_total",
                 "struct_hidden_distinct_valid_total",
+                "struct_hidden_distinct_cvar95",
                 "occupancy_struct_hidden_distinct",
                 "struct_mdl_split_benefit",
                 "struct_mdl_split_cost",
@@ -1382,6 +2113,17 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
                 "exact_mdl_split_candidate_coord",
                 "exact_mdl_base_bits",
                 "exact_mdl_candidate_bits",
+                "rd_base_rate_bits",
+                "rd_candidate_rate_bits",
+                "rd_base_violation",
+                "rd_candidate_violation",
+                "rd_violation_gain",
+                "rd_struct_delta",
+                "rd_audit_delta",
+                "rd_struct_break_even_lambda",
+                "rd_split_batch_size",
+                "rd_split_candidate_coord",
+                "rd_split_candidate_coords",
                 "residual_split_candidate_coord",
                 "soft_split_candidate_coord",
                 "feasible",
@@ -1415,6 +2157,7 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
                 "struct_hidden_prob_max",
                 "struct_hidden_bits_valid_total",
                 "struct_hidden_distinct_valid_total",
+                "struct_hidden_distinct_cvar95",
                 "occupancy_struct_hidden_distinct",
                 "struct_mdl_split_benefit",
                 "struct_mdl_split_cost",
@@ -1423,9 +2166,21 @@ def write_report(rows: Sequence[Dict[str, object]], out_path: Path, args: argpar
                 "exact_mdl_base_bits",
                 "exact_mdl_candidate_bits",
                 "exact_mdl_candidates_evaluated",
+                "rd_base_rate_bits",
+                "rd_candidate_rate_bits",
+                "rd_base_violation",
+                "rd_candidate_violation",
+                "rd_violation_gain",
+                "rd_struct_delta",
+                "rd_audit_delta",
+                "rd_struct_break_even_lambda",
+                "rd_candidates_evaluated",
+                "rd_split_batch_size",
                 "feasible",
                 "start_gap",
                 "split_candidate_coord",
+                "split_candidate_coords",
+                "split_batch_size",
                 "split_candidate_source",
                 "split_candidate_score",
                 "stop_reason",
@@ -1539,7 +2294,11 @@ def main() -> None:
     parser.add_argument("--compute-struct-distinct", action="store_true")
     parser.add_argument("--residual-reward-weight", type=float, default=0.05)
     parser.add_argument("--residual-hit-weight", type=float, default=0.0)
-    parser.add_argument("--residual-split-policy", choices=["never", "threshold", "mdl", "exact_mdl"], default="never")
+    parser.add_argument(
+        "--residual-split-policy",
+        choices=["never", "threshold", "mdl", "exact_mdl", "rd", "rd_surrogate"],
+        default="never",
+    )
     parser.add_argument("--struct-mdl-node-cost-weight", type=float, default=1.0)
     parser.add_argument("--struct-mdl-edge-cost-weight", type=float, default=0.1)
     parser.add_argument("--struct-mdl-exposure-bit-weight", type=float, default=1.0)
@@ -1555,6 +2314,53 @@ def main() -> None:
     parser.add_argument("--exact-mdl-policy-region-bit-cost", type=float, default=0.5)
     parser.add_argument("--exact-mdl-model-residual-bit-cost", type=float, default=1.0)
     parser.add_argument("--exact-mdl-include-edge-encoding", action="store_true")
+    parser.add_argument("--rd-top-k", type=int, default=8)
+    parser.add_argument(
+        "--rd-struct-kind",
+        choices=[
+            "distinct",
+            "distinct_bits",
+            "hidden_bits",
+            "occupancy_distinct",
+            "occupancy_distinct_bits",
+            "audit_prob_max",
+            "audit_prob_cvar95",
+            "audit_distinct_max",
+            "audit_distinct_cvar95",
+            "audit_distinct_bits_max",
+            "audit_distinct_bits_cvar95",
+        ],
+        default="occupancy_distinct",
+    )
+    parser.add_argument("--rd-struct-budget", type=float, default=float("inf"))
+    parser.add_argument(
+        "--rd-audit-kind",
+        choices=[
+            "none",
+            "distinct",
+            "distinct_bits",
+            "hidden_bits",
+            "occupancy_distinct",
+            "occupancy_distinct_bits",
+            "audit_prob_max",
+            "audit_prob_cvar95",
+            "audit_distinct_max",
+            "audit_distinct_cvar95",
+            "audit_distinct_bits_max",
+            "audit_distinct_bits_cvar95",
+        ],
+        default="none",
+    )
+    parser.add_argument("--rd-audit-budget", type=float, default=float("inf"))
+    parser.add_argument("--rd-model-budget", type=float, default=float("inf"))
+    parser.add_argument("--rd-value-budget", type=float, default=float("inf"))
+    parser.add_argument("--rd-start-gap-budget", type=float, default=float("inf"))
+    parser.add_argument("--rd-lambda-struct", type=float, default=0.0)
+    parser.add_argument("--rd-lambda-audit", type=float, default=0.0)
+    parser.add_argument("--rd-lambda-model", type=float, default=0.0)
+    parser.add_argument("--rd-lambda-value", type=float, default=0.0)
+    parser.add_argument("--rd-lambda-start-gap", type=float, default=0.0)
+    parser.add_argument("--rd-batch-k", type=int, default=1)
     parser.add_argument(
         "--soft-kind",
         choices=["none", "bottleneck", "betweenness", "value_gradient", "transition_entropy", "combined"],
@@ -1572,12 +2378,13 @@ def main() -> None:
     args.effective_compute_struct_distinct = (
         args.compute_struct_distinct
         or args.residual_threshold_mode == "struct_distinct"
-        or args.residual_split_policy in {"mdl", "exact_mdl"}
+        or args.residual_split_policy in {"mdl", "exact_mdl", "rd", "rd_surrogate"}
     )
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     trace_rows: List[Dict[str, object]] = []
     edge_rows: List[Dict[str, object]] = []
+    rd_candidate_rows: List[Dict[str, object]] = []
     for map_name in args.maps:
         if map_name not in MAPS:
             raise ValueError(f"Unknown map: {map_name}")
@@ -1617,6 +2424,21 @@ def main() -> None:
                 exact_mdl_policy_region_bit_cost=args.exact_mdl_policy_region_bit_cost,
                 exact_mdl_model_residual_bit_cost=args.exact_mdl_model_residual_bit_cost,
                 exact_mdl_include_edge_encoding=args.exact_mdl_include_edge_encoding,
+                rd_top_k=args.rd_top_k,
+                rd_struct_kind=args.rd_struct_kind,
+                rd_struct_budget=args.rd_struct_budget,
+                rd_audit_kind=args.rd_audit_kind,
+                rd_audit_budget=args.rd_audit_budget,
+                rd_model_budget=args.rd_model_budget,
+                rd_value_budget=args.rd_value_budget,
+                rd_start_gap_budget=args.rd_start_gap_budget,
+                rd_lambda_struct=args.rd_lambda_struct,
+                rd_lambda_audit=args.rd_lambda_audit,
+                rd_lambda_model=args.rd_lambda_model,
+                rd_lambda_value=args.rd_lambda_value,
+                rd_lambda_start_gap=args.rd_lambda_start_gap,
+                rd_batch_k=args.rd_batch_k,
+                rd_candidate_rows=rd_candidate_rows,
             )
             trace_rows.extend(trace)
             edge_rows.extend(edges)
@@ -1632,11 +2454,18 @@ def main() -> None:
 
     write_csv(args.out_dir / "trace.csv", trace_rows)
     write_csv(args.out_dir / "edges.csv", edge_rows)
+    write_csv(args.out_dir / "rd_candidates.csv", rd_candidate_rows)
     (args.out_dir / "trace.json").write_text(json.dumps(trace_rows, indent=2) + "\n", encoding="utf-8")
     (args.out_dir / "edges.json").write_text(json.dumps(edge_rows, indent=2) + "\n", encoding="utf-8")
+    (args.out_dir / "rd_candidates.json").write_text(
+        json.dumps(rd_candidate_rows, indent=2) + "\n",
+        encoding="utf-8",
+    )
     write_report(trace_rows, args.out_dir / "summary.md", args)
     print(f"Wrote {args.out_dir / 'trace.csv'}")
     print(f"Wrote {args.out_dir / 'edges.csv'}")
+    if rd_candidate_rows:
+        print(f"Wrote {args.out_dir / 'rd_candidates.csv'}")
     print(f"Wrote {args.out_dir / 'summary.md'}")
 
 

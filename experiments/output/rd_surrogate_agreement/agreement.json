@@ -1,0 +1,206 @@
+[
+  {
+    "map": "maze_13",
+    "step": 0,
+    "exact_selected_states": [
+      57
+    ],
+    "surrogate_selected_states": [
+      57
+    ],
+    "exact_first": 57,
+    "surrogate_first": 57,
+    "first_match": true,
+    "exact_set_subset_surrogate": true,
+    "surrogate_set_subset_exact": true,
+    "exact_first_rank_in_surrogate": null,
+    "surrogate_first_rank_in_exact": null,
+    "surrogate_top8": [],
+    "exact_top8": []
+  },
+  {
+    "map": "maze_13",
+    "step": 1,
+    "exact_selected_states": [
+      13
+    ],
+    "surrogate_selected_states": [
+      13
+    ],
+    "exact_first": 13,
+    "surrogate_first": 13,
+    "first_match": true,
+    "exact_set_subset_surrogate": true,
+    "surrogate_set_subset_exact": true,
+    "exact_first_rank_in_surrogate": null,
+    "surrogate_first_rank_in_exact": null,
+    "surrogate_top8": [
+      32,
+      53,
+      30,
+      19,
+      21,
+      5,
+      8,
+      3
+    ],
+    "exact_top8": [
+      32,
+      53,
+      30,
+      19,
+      21,
+      5,
+      8,
+      3
+    ]
+  },
+  {
+    "map": "maze_13",
+    "step": 2,
+    "exact_selected_states": [
+      17
+    ],
+    "surrogate_selected_states": [
+      17
+    ],
+    "exact_first": 17,
+    "surrogate_first": 17,
+    "first_match": true,
+    "exact_set_subset_surrogate": true,
+    "surrogate_set_subset_exact": true,
+    "exact_first_rank_in_surrogate": 1,
+    "surrogate_first_rank_in_exact": 3,
+    "surrogate_top8": [
+      17,
+      3,
+      5,
+      53,
+      32,
+      30,
+      19,
+      21
+    ],
+    "exact_top8": [
+      32,
+      53,
+      17,
+      30,
+      3,
+      19,
+      5,
+      21
+    ]
+  },
+  {
+    "map": "maze_13",
+    "step": 3,
+    "exact_selected_states": [
+      53
+    ],
+    "surrogate_selected_states": [
+      53
+    ],
+    "exact_first": 53,
+    "surrogate_first": 53,
+    "first_match": true,
+    "exact_set_subset_surrogate": true,
+    "surrogate_set_subset_exact": true,
+    "exact_first_rank_in_surrogate": 2,
+    "surrogate_first_rank_in_exact": 2,
+    "surrogate_top8": [
+      32,
+      53,
+      30,
+      19,
+      21,
+      5,
+      8,
+      3
+    ],
+    "exact_top8": [
+      32,
+      53,
+      30,
+      19,
+      21,
+      5,
+      8,
+      3
+    ]
+  },
+  {
+    "map": "maze_13",
+    "step": 4,
+    "exact_selected_states": [
+      3
+    ],
+    "surrogate_selected_states": [
+      3
+    ],
+    "exact_first": 3,
+    "surrogate_first": 3,
+    "first_match": true,
+    "exact_set_subset_surrogate": true,
+    "surrogate_set_subset_exact": true,
+    "exact_first_rank_in_surrogate": 6,
+    "surrogate_first_rank_in_exact": 7,
+    "surrogate_top8": [
+      32,
+      30,
+      19,
+      21,
+      8,
+      3,
+      5,
+      24
+    ],
+    "exact_top8": [
+      32,
+      30,
+      19,
+      21,
+      8,
+      5,
+      3,
+      60
+    ]
+  },
+  {
+    "map": "maze_13",
+    "step": 5,
+    "exact_selected_states": [
+      5
+    ],
+    "surrogate_selected_states": [
+      5
+    ],
+    "exact_first": 5,
+    "surrogate_first": 5,
+    "first_match": true,
+    "exact_set_subset_surrogate": true,
+    "surrogate_set_subset_exact": true,
+    "exact_first_rank_in_surrogate": 6,
+    "surrogate_first_rank_in_exact": 6,
+    "surrogate_top8": [
+      32,
+      30,
+      19,
+      21,
+      8,
+      5,
+      24,
+      28
+    ],
+    "exact_top8": [
+      32,
+      30,
+      19,
+      21,
+      8,
+      5,
+      60,
+      24
+    ]
+  }
+]

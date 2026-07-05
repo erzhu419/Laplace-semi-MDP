@@ -1,3 +1,23 @@
+# 我：
+https://github.com/erzhu419/Laplace-semi-MDP
+这个是目前的进展，然后有几个问题：
+在 Bellman-Kron SMDP abstraction 中，给定 boundary set B 和 option set O 后，
+Schur complement 可以精确保留 boundary Bellman backup。
+
+但实验发现 endpoints + goal-conditioned targeted option 可以用极少 graph nodes 得到很低 planning gap，
+这可能只是把整个任务复杂性藏进 option policy，而不是学到了合理的 compact graph。
+
+应该如何定义公平的 objective / regularizer 来同时惩罚：
+1. graph complexity
+2. option complexity
+3. option duration / all-to-all reachability
+4. held-out rollout residual
+5. Markov/SMDP consistency
+
+从而避免 “one option solves the whole task” 的退化解？
+还是以我们之前的方向为目标，有没有相关理论或实验设计建议？
+
+# GPT :
 我这边公开 `main` 暂时没有搜到 `B_res` 字段，所以按你描述的新实现语义来判断。结论是：
 
 **1. (B_{\rm res}) 一定会带入偏置，但这不是致命问题；关键是把它从“ground truth boundary”降级成“diagnostic probe family”。**

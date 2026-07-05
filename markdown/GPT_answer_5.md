@@ -1,4 +1,7 @@
-直接结论：
+# 我：
+proposal-only eigen/coverage 能进一步降低 hidden/edge， 但 DL 更高。这个 improvement 应该被 MDL 接受吗？ MDL 里的 edge_cost_weight / hidden exposure weight 应该怎么校准， 才能不是人为偏向当前 struct_mdl_e05？
+
+# GPT 直接结论：
 
 **proposal-only eigen/coverage 不应该因为 hidden/edge 下降就自动被 MDL 接受。**
 如果它只是通过增加 proposal nodes / valid edges 把分母变大，使 `struct_hidden_distinct_per_edge` 下降，但 **total structural exposure、option library size、edge/model cost、DL 都上升**，严格 MDL 应该拒绝。它可以作为 Pareto frontier 上的“更结构化但更贵”的点报告，而不是被主 MDL objective 选中。

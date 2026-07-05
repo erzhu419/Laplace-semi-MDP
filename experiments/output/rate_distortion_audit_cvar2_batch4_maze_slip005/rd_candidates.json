@@ -1,0 +1,2462 @@
+[
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      57
+    ],
+    "candidate_state": 57,
+    "candidate_coords": [
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 10.000297359950695,
+    "violation_gain": 0.9658251183342621,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 12.000297359950695,
+    "struct_delta": 0.9658251183342621,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3325849410068216,
+    "model_delta": 0.00022819732379653068,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 40.03186499731922,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      55
+    ],
+    "candidate_state": 55,
+    "candidate_coords": [
+      [
+        5,
+        17
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 98.63044741484372,
+    "rate_delta": 39.537114081510374,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 98.63044741484372,
+    "gain": -39.537114081510374,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 9.03420627225689,
+    "violation_gain": 1.9319162060280668,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 11.03420627225689,
+    "struct_delta": 1.9319162060280668,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3323413785139482,
+    "model_delta": 0.0004717598166699144,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 20.465232372990396,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      4
+    ],
+    "candidate_state": 4,
+    "candidate_coords": [
+      [
+        1,
+        5
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 9.999999911802908,
+    "violation_gain": 0.9661225664820492,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 11.999999911802908,
+    "struct_delta": 0.9661225664820492,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.01991753492498871,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 40.01954005583765,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      35
+    ],
+    "candidate_state": 35,
+    "candidate_coords": [
+      [
+        3,
+        17
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 9.016964892946545,
+    "violation_gain": 1.949157585338412,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 11.016964892946545,
+    "struct_delta": 1.949157585338412,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3320814162718508,
+    "model_delta": 0.000731722058767259,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 19.836149236473485,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      26
+    ],
+    "candidate_state": 26,
+    "candidate_coords": [
+      [
+        3,
+        5
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 98.63044741484372,
+    "rate_delta": 39.537114081510374,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 98.63044741484372,
+    "gain": -39.537114081510374,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 9.000605236905653,
+    "violation_gain": 1.9655172413793043,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 11.000605236905653,
+    "struct_delta": 1.9655172413793043,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.005617936893186792,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.845013113983441e-11,
+    "value_delta": 7.602807272633072e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.845013113983441e-11,
+    "start_gap_delta": 7.602807272633072e-13,
+    "struct_break_even_lambda": 20.115373830943938,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      37
+    ],
+    "candidate_state": 37,
+    "candidate_coords": [
+      [
+        3,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 98.63044741484372,
+    "rate_delta": 39.537114081510374,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 98.63044741484372,
+    "gain": -39.537114081510374,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 8.999723513636201,
+    "violation_gain": 1.9663989646487554,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 10.999723513636201,
+    "struct_delta": 1.9663989646487554,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.331803950039185,
+    "model_delta": 0.0010091882914331496,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 20.106354199882638,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      12
+    ],
+    "candidate_state": 12,
+    "candidate_coords": [
+      [
+        1,
+        15
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 8.965240755015511,
+    "violation_gain": 2.000881723269446,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 10.965240755015511,
+    "struct_delta": 2.000881723269446,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.330854339334157,
+    "model_delta": 0.0019587989964611197,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.920685915341892e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.920685915341892e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 19.323371440966696,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 2,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      16
+    ],
+    "candidate_state": 16,
+    "candidate_coords": [
+      [
+        1,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 97.75711408151038,
+    "rate_delta": 38.66378074817704,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 97.75711408151038,
+    "gain": -38.66378074817704,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 8.982482134325856,
+    "violation_gain": 1.9836403439591006,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 10.982482134325856,
+    "struct_delta": 1.9836403439591006,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3315078012229242,
+    "model_delta": 0.0013053371076938713,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 19.49132606922529,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 2,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      12,
+      16
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        15
+      ],
+      [
+        1,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 136.87979622387255,
+    "rate_delta": 77.78646289053921,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 136.87979622387255,
+    "gain": -77.78646289053921,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 8.965240755015511,
+    "violation_gain": 2.000881723269446,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 10.965240755015511,
+    "struct_delta": 2.000881723269446,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.330854339334157,
+    "model_delta": 0.0019587989964611197,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 38.876092467592706,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 2,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      12,
+      16,
+      37
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        15
+      ],
+      [
+        1,
+        19
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 174.62502859573735,
+    "rate_delta": 115.53169526240401,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 174.62502859573735,
+    "gain": -115.53169526240401,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 8.965240755015511,
+    "violation_gain": 2.000881723269446,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 10.965240755015511,
+    "struct_delta": 2.000881723269446,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.330854339334157,
+    "model_delta": 0.0019587989964611197,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.8975932764296886e-11,
+    "value_delta": 2.3447910280083306e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.8975932764296886e-11,
+    "start_gap_delta": 2.3447910280083306e-13,
+    "struct_break_even_lambda": 57.74039210754793,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 0,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 2,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      12,
+      16,
+      26,
+      37
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        15
+      ],
+      [
+        1,
+        19
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "base_rate_bits": 59.09333333333334,
+    "candidate_rate_bits": 211.57207372717642,
+    "rate_delta": 152.47874039384308,
+    "base_objective": 59.09333333333334,
+    "candidate_objective": 211.57207372717642,
+    "gain": -152.47874039384308,
+    "base_violation": 10.966122478284957,
+    "candidate_violation": 5.931050133006551,
+    "violation_gain": 5.035072345278406,
+    "base_struct": 12.966122478284957,
+    "candidate_struct": 7.931050133006551,
+    "struct_delta": 5.035072345278406,
+    "base_model": 1.332813138330618,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.005617936893186792,
+    "base_value": 2.921041186709772e-11,
+    "candidate_value": 2.8972380050618085e-11,
+    "value_delta": 2.3803181647963356e-13,
+    "base_start_gap": 2.921041186709772e-11,
+    "candidate_start_gap": 2.8972380050618085e-11,
+    "start_gap_delta": 2.3803181647963356e-13,
+    "struct_break_even_lambda": 30.283326621280555,
+    "selected": true
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 6,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      28
+    ],
+    "candidate_state": 28,
+    "candidate_coords": [
+      [
+        3,
+        7
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 242.52412095011968,
+    "rate_delta": 39.403258334775586,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 242.52412095011968,
+    "gain": -39.403258334775586,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 4.2872639071143555,
+    "violation_gain": 1.6437862258921951,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 6.2872639071143555,
+    "struct_delta": 1.6437862258921951,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8968827336939285e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8968827336939285e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 23.971035718704083,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 6,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      34
+    ],
+    "candidate_state": 34,
+    "candidate_coords": [
+      [
+        3,
+        15
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 242.52412095011968,
+    "rate_delta": 39.403258334775586,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 242.52412095011968,
+    "gain": -39.403258334775586,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 4.287469350979009,
+    "violation_gain": 1.6435807820275414,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 6.287469350979009,
+    "struct_delta": 1.6435807820275414,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8975932764296886e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8975932764296886e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": 23.974032043723,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 6,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      5
+    ],
+    "candidate_state": 5,
+    "candidate_coords": [
+      [
+        1,
+        7
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 240.777454283453,
+    "rate_delta": 37.656591668108916,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 240.777454283453,
+    "gain": -37.656591668108916,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 3.666878751116254,
+    "violation_gain": 2.2641713818902964,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 5.666878751116254,
+    "struct_delta": 2.2641713818902964,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8968827336939285e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8968827336939285e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 16.63151118740421,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 6,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      32
+    ],
+    "candidate_state": 32,
+    "candidate_coords": [
+      [
+        3,
+        13
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 242.52412095011968,
+    "rate_delta": 39.403258334775586,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 242.52412095011968,
+    "gain": -39.403258334775586,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 3.6668788458199444,
+    "violation_gain": 2.264171287186606,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 5.666878845819944,
+    "struct_delta": 2.264171287186606,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8975932764296886e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8975932764296886e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": 17.40294939599598,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 6,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      11
+    ],
+    "candidate_state": 11,
+    "candidate_coords": [
+      [
+        1,
+        13
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 240.777454283453,
+    "rate_delta": 37.656591668108916,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 240.777454283453,
+    "gain": -37.656591668108916,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 3.6667762817669827,
+    "violation_gain": 2.264273851239568,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 5.666776281766983,
+    "struct_delta": 2.264273851239568,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8968827336939285e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8968827336939285e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 16.63075853103809,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 6,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      57
+    ],
+    "candidate_state": 57,
+    "candidate_coords": [
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 241.65078761678635,
+    "rate_delta": 38.52992500144225,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 241.65078761678635,
+    "gain": -38.52992500144225,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 4.954136017626236,
+    "violation_gain": 0.9769141153803149,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 6.954136017626236,
+    "struct_delta": 0.9769141153803149,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8975932764296886e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8975932764296886e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": 39.44044250649655,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 6,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      35
+    ],
+    "candidate_state": 35,
+    "candidate_coords": [
+      [
+        3,
+        17
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 241.65078761678635,
+    "rate_delta": 38.52992500144225,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 241.65078761678635,
+    "gain": -38.52992500144225,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 4.954136017626236,
+    "violation_gain": 0.9769141153803149,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 6.954136017626236,
+    "struct_delta": 0.9769141153803149,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.921041186709772e-11,
+    "value_delta": -2.3803181647963356e-13,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.921041186709772e-11,
+    "start_gap_delta": -2.3803181647963356e-13,
+    "struct_break_even_lambda": 39.44044250649655,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 6,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      55
+    ],
+    "candidate_state": 55,
+    "candidate_coords": [
+      [
+        5,
+        17
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 242.52412095011968,
+    "rate_delta": 39.403258334775586,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 242.52412095011968,
+    "gain": -39.403258334775586,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 4.954136017626236,
+    "violation_gain": 0.9769141153803149,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 6.954136017626236,
+    "struct_delta": 0.9769141153803149,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8975932764296886e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8975932764296886e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": 40.33441396169796,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 6,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      5,
+      11
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        13
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 279.00332165914267,
+    "rate_delta": 75.88245904379858,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 279.00332165914267,
+    "gain": -75.88245904379858,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 3.6667762817669827,
+    "violation_gain": 2.264273851239568,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 5.666776281766983,
+    "struct_delta": 2.264273851239568,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8975932764296886e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8975932764296886e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": 33.51293351829197,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 6,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      5,
+      11,
+      32
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        13
+      ],
+      [
+        3,
+        13
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 317.2268072065197,
+    "rate_delta": 114.10594459117561,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 317.2268072065197,
+    "gain": -114.10594459117561,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 3.0000822350157375,
+    "violation_gain": 2.930967897990813,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 5.0000822350157375,
+    "struct_delta": 2.930967897990813,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374315,
+    "model_delta": -2.220446049250313e-16,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.8972380050618085e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.8972380050618085e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 38.93114785371603,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 1,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 6,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      5,
+      11,
+      28,
+      32
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        13
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        3,
+        13
+      ]
+    ],
+    "base_rate_bits": 203.1208626153441,
+    "candidate_rate_bits": 354.9438467325124,
+    "rate_delta": 151.8229841171683,
+    "base_objective": 203.1208626153441,
+    "candidate_objective": 354.9438467325124,
+    "gain": -151.8229841171683,
+    "base_violation": 5.931050133006551,
+    "candidate_violation": 2.6000658069650013,
+    "violation_gain": 3.3309843260415493,
+    "base_struct": 7.931050133006551,
+    "candidate_struct": 4.600065806965001,
+    "struct_delta": 3.3309843260415493,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.8972380050618085e-11,
+    "candidate_value": 2.920330643974012e-11,
+    "value_delta": -2.3092638912203256e-13,
+    "base_start_gap": 2.8972380050618085e-11,
+    "candidate_start_gap": 2.920330643974012e-11,
+    "start_gap_delta": -2.3092638912203256e-13,
+    "struct_break_even_lambda": 45.579014866632704,
+    "selected": true
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 10,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      57
+    ],
+    "candidate_state": 57,
+    "candidate_coords": [
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 385.98446083218755,
+    "rate_delta": 39.49182521150749,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 385.98446083218755,
+    "gain": -39.49182521150749,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 1.4764525137829732,
+    "violation_gain": 1.1236132931820282,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 3.476452513782973,
+    "struct_delta": 1.1236132931820282,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.919975372606132e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.919975372606132e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 35.14716802581448,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 10,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      35
+    ],
+    "candidate_state": 35,
+    "candidate_coords": [
+      [
+        3,
+        17
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 385.98446083218755,
+    "rate_delta": 39.49182521150749,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 385.98446083218755,
+    "gain": -39.49182521150749,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 1.5029284181486529,
+    "violation_gain": 1.0971373888163485,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 3.502928418148653,
+    "struct_delta": 1.0971373888163485,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.9196201012382517e-11,
+    "value_delta": 7.105427357601002e-15,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.9196201012382517e-11,
+    "start_gap_delta": 7.105427357601002e-15,
+    "struct_break_even_lambda": 35.99533259377243,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 10,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      55
+    ],
+    "candidate_state": 55,
+    "candidate_coords": [
+      [
+        5,
+        17
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 386.8577941655209,
+    "rate_delta": 40.365158544840824,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 386.8577941655209,
+    "gain": -40.365158544840824,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 0.6726739608232251,
+    "violation_gain": 1.9273918461417763,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 2.672673960823225,
+    "struct_delta": 1.9273918461417763,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.919975372606132e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.919975372606132e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 20.94289162094526,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 10,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      23
+    ],
+    "candidate_state": 23,
+    "candidate_coords": [
+      [
+        3,
+        1
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 386.8577941655209,
+    "rate_delta": 40.365158544840824,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 386.8577941655209,
+    "gain": -40.365158544840824,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 3.3646789974804916,
+    "violation_gain": -0.7646131905154903,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 5.364678997480492,
+    "struct_delta": -0.7646131905154903,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 0.10929203403156419,
+    "model_delta": 1.2179031674058671,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 1.637801005927031e-11,
+    "value_delta": 1.2825296380469808e-11,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 1.637801005927031e-11,
+    "start_gap_delta": 1.2825296380469808e-11,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 10,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      76
+    ],
+    "candidate_state": 76,
+    "candidate_coords": [
+      [
+        7,
+        15
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 386.8577941655209,
+    "rate_delta": 40.365158544840824,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 386.8577941655209,
+    "gain": -40.365158544840824,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 4.491438893412307,
+    "violation_gain": -1.891373086447306,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 6.491438893412307,
+    "struct_delta": -1.891373086447306,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3003046557233429,
+    "model_delta": 0.026890545714088443,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.920330643974012e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.920330643974012e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 10,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      25
+    ],
+    "candidate_state": 25,
+    "candidate_coords": [
+      [
+        3,
+        3
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 385.98446083218755,
+    "rate_delta": 39.49182521150749,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 385.98446083218755,
+    "gain": -39.49182521150749,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 3.0290450010947794,
+    "violation_gain": -0.42897919412977803,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 5.029045001094779,
+    "struct_delta": -0.42897919412977803,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 0.9724057760954048,
+    "model_delta": 0.3547894253420265,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.920330643974012e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.920330643974012e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 10,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      54
+    ],
+    "candidate_state": 54,
+    "candidate_coords": [
+      [
+        5,
+        15
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 385.98446083218755,
+    "rate_delta": 39.49182521150749,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 385.98446083218755,
+    "gain": -39.49182521150749,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 3.994364226352431,
+    "violation_gain": -1.3942984193874297,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 5.994364226352431,
+    "struct_delta": -1.3942984193874297,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.2854866426957197,
+    "model_delta": 0.04170855874171164,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.919975372606132e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.919975372606132e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 10,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      44
+    ],
+    "candidate_state": 44,
+    "candidate_coords": [
+      [
+        5,
+        3
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 386.8577941655209,
+    "rate_delta": 40.365158544840824,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 386.8577941655209,
+    "gain": -40.365158544840824,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 2.6928383876133957,
+    "violation_gain": -0.09277258064839433,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 4.692838387613396,
+    "struct_delta": -0.09277258064839433,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.0069744950495805,
+    "model_delta": 0.32022070638785083,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.919975372606132e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.919975372606132e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 10,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      55,
+      57
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        5,
+        17
+      ],
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 427.0549700341071,
+    "rate_delta": 80.56233441342704,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 427.0549700341071,
+    "gain": -80.56233441342704,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 0.4090983384816238,
+    "violation_gain": 2.1909674684833775,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 2.409098338481624,
+    "struct_delta": 2.1909674684833775,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.920330643974012e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.920330643974012e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 36.77021022552816,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 10,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      35,
+      55,
+      57
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        3,
+        17
+      ],
+      [
+        5,
+        17
+      ],
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 465.6046312536106,
+    "rate_delta": 119.11199563293053,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 465.6046312536106,
+    "gain": -119.11199563293053,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 0.2329995313935358,
+    "violation_gain": 2.3670662755714655,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 2.232999531393536,
+    "struct_delta": 2.3670662755714655,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.919975372606132e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.919975372606132e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 50.320515678917396,
+    "selected": true
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 2,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 10,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      35,
+      44,
+      55,
+      57
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        3,
+        17
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        5,
+        17
+      ],
+      [
+        5,
+        19
+      ]
+    ],
+    "base_rate_bits": 346.49263562068006,
+    "candidate_rate_bits": 504.59979833466787,
+    "rate_delta": 158.1071627139878,
+    "base_objective": 346.49263562068006,
+    "candidate_objective": 504.59979833466787,
+    "gain": -158.1071627139878,
+    "base_violation": 2.6000658069650013,
+    "candidate_violation": 2.4244737829172873,
+    "violation_gain": 0.175592024047714,
+    "base_struct": 4.600065806965001,
+    "candidate_struct": 4.424473782917287,
+    "struct_delta": 0.175592024047714,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.0069744950495805,
+    "model_delta": 0.32022070638785083,
+    "base_value": 2.920330643974012e-11,
+    "candidate_value": 2.919975372606132e-11,
+    "value_delta": 3.552713678800501e-15,
+    "base_start_gap": 2.920330643974012e-11,
+    "candidate_start_gap": 2.919975372606132e-11,
+    "start_gap_delta": 3.552713678800501e-15,
+    "struct_break_even_lambda": 900.4233738488315,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 13,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      34
+    ],
+    "candidate_state": 34,
+    "candidate_coords": [
+      [
+        3,
+        15
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 499.14858722283554,
+    "rate_delta": 41.35131089128254,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 499.14858722283554,
+    "gain": -41.35131089128254,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.2329995313935358,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 1.9864612014695069,
+    "struct_delta": 0.2465383299240289,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3271952014374313,
+    "model_delta": 0.0,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.920330643974012e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.920330643974012e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": 167.72771562144106,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 13,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      4
+    ],
+    "candidate_state": 4,
+    "candidate_coords": [
+      [
+        1,
+        5
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 498.2752538895022,
+    "rate_delta": 40.4779775579492,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 498.2752538895022,
+    "gain": -40.4779775579492,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.2329995313935358,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 1.9843935032984052,
+    "struct_delta": 0.24860602809513055,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.014299598031801919,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.917133201663091e-11,
+    "value_delta": 2.842170943040401e-14,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.917133201663091e-11,
+    "start_gap_delta": 2.842170943040401e-14,
+    "struct_break_even_lambda": 162.81977499942224,
+    "selected": true
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 13,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      23
+    ],
+    "candidate_state": 23,
+    "candidate_coords": [
+      [
+        3,
+        1
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 499.14858722283554,
+    "rate_delta": 41.35131089128254,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 499.14858722283554,
+    "gain": -41.35131089128254,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 0.8063116721320767,
+    "violation_gain": -0.5733121407385409,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 2.8063116721320767,
+    "struct_delta": -0.5733121407385409,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 0.10929203403156419,
+    "model_delta": 1.2179031674058671,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.900080176004849e-11,
+    "value_delta": 1.9895196601282805e-13,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.900080176004849e-11,
+    "start_gap_delta": 1.9895196601282805e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 13,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      25
+    ],
+    "candidate_state": 25,
+    "candidate_coords": [
+      [
+        3,
+        3
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 498.2752538895022,
+    "rate_delta": 40.4779775579492,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 498.2752538895022,
+    "gain": -40.4779775579492,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 2.199766990024865,
+    "violation_gain": -1.9667674586313293,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 4.199766990024865,
+    "struct_delta": -1.9667674586313293,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 0.9724057760954048,
+    "model_delta": 0.3547894253420265,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.920330643974012e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.920330643974012e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 13,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      76
+    ],
+    "candidate_state": 76,
+    "candidate_coords": [
+      [
+        7,
+        15
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 499.14858722283554,
+    "rate_delta": 41.35131089128254,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 499.14858722283554,
+    "gain": -41.35131089128254,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 1.6950832585210094,
+    "violation_gain": -1.4620837271274736,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 3.6950832585210094,
+    "struct_delta": -1.4620837271274736,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3003046557233433,
+    "model_delta": 0.026890545714088,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.920330643974012e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.920330643974012e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 13,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      44
+    ],
+    "candidate_state": 44,
+    "candidate_coords": [
+      [
+        5,
+        3
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 499.14858722283554,
+    "rate_delta": 41.35131089128254,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 499.14858722283554,
+    "gain": -41.35131089128254,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 2.4244737829172873,
+    "violation_gain": -2.1914742515237515,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 4.424473782917287,
+    "struct_delta": -2.1914742515237515,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.0069744950495805,
+    "model_delta": 0.32022070638785083,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.919975372606132e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.919975372606132e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 13,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      54
+    ],
+    "candidate_state": 54,
+    "candidate_coords": [
+      [
+        5,
+        15
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 498.2752538895022,
+    "rate_delta": 40.4779775579492,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 498.2752538895022,
+    "gain": -40.4779775579492,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 1.4108730461931236,
+    "violation_gain": -1.1778735147995878,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 3.4108730461931236,
+    "struct_delta": -1.1778735147995878,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.2854866426957197,
+    "model_delta": 0.04170855874171164,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.919975372606132e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.919975372606132e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 13,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      42
+    ],
+    "candidate_state": 42,
+    "candidate_coords": [
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 498.2752538895022,
+    "rate_delta": 40.4779775579492,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 498.2752538895022,
+    "gain": -40.4779775579492,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 3.413804195454765,
+    "violation_gain": -3.1808046640612293,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 5.413804195454765,
+    "struct_delta": -3.1808046640612293,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.039362447434653,
+    "model_delta": 0.2878327540027783,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.920330643974012e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.920330643974012e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 13,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      4,
+      34
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        3,
+        15
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 540.3734693218474,
+    "rate_delta": 82.57619299029443,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 540.3734693218474,
+    "gain": -82.57619299029443,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.2329995313935358,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 1.0034157872113536,
+    "struct_delta": 1.2295837441821822,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.014299598031801919,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.917133201663091e-11,
+    "value_delta": 2.842170943040401e-14,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.917133201663091e-11,
+    "start_gap_delta": 2.842170943040401e-14,
+    "struct_break_even_lambda": 67.1578437670525,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 13,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      4,
+      23,
+      34
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        15
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 580.8584150253114,
+    "rate_delta": 123.06113869375838,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 580.8584150253114,
+    "gain": -123.06113869375838,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.2329995313935358,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 1.7012122896952413,
+    "struct_delta": 0.5317872416982945,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 0.09802477976767239,
+    "model_delta": 1.229170421669759,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.8961721909581684e-11,
+    "value_delta": 2.3803181647963356e-13,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.8961721909581684e-11,
+    "start_gap_delta": 2.3803181647963356e-13,
+    "struct_break_even_lambda": 231.4104759278452,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 3,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 13,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      4,
+      23,
+      34,
+      54
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        1,
+        5
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        15
+      ],
+      [
+        5,
+        15
+      ]
+    ],
+    "base_rate_bits": 457.797276331553,
+    "candidate_rate_bits": 620.0708578368975,
+    "rate_delta": 162.2735815053445,
+    "base_objective": 457.797276331553,
+    "candidate_objective": 620.0708578368975,
+    "gain": -162.2735815053445,
+    "base_violation": 0.2329995313935358,
+    "candidate_violation": 1.5209547346500805,
+    "violation_gain": -1.2879552032565447,
+    "base_struct": 2.232999531393536,
+    "candidate_struct": 3.5209547346500805,
+    "struct_delta": -1.2879552032565447,
+    "base_model": 1.3271952014374313,
+    "candidate_model": 0.09802477976767239,
+    "model_delta": 1.229170421669759,
+    "base_value": 2.919975372606132e-11,
+    "candidate_value": 2.887645678129047e-11,
+    "value_delta": 3.232969447708456e-13,
+    "base_start_gap": 2.919975372606132e-11,
+    "candidate_start_gap": 2.887645678129047e-11,
+    "start_gap_delta": 3.232969447708456e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "single",
+    "rank": 1,
+    "n_boundary": 14,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      34
+    ],
+    "candidate_state": 34,
+    "candidate_coords": [
+      [
+        3,
+        15
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 536.9811518990687,
+    "rate_delta": 41.705898009566454,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 536.9811518990687,
+    "gain": -41.705898009566454,
+    "base_violation": 0.0,
+    "candidate_violation": 0.0,
+    "violation_gain": 0.0,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 1.0034157872113536,
+    "struct_delta": 0.9809777160870516,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.3128956034056294,
+    "model_delta": 0.0,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.917133201663091e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.917133201663091e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": 42.51462324335356,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "single",
+    "rank": 2,
+    "n_boundary": 14,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      23
+    ],
+    "candidate_state": 23,
+    "candidate_coords": [
+      [
+        3,
+        1
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 536.9811518990687,
+    "rate_delta": 41.705898009566454,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 536.9811518990687,
+    "gain": -41.705898009566454,
+    "base_violation": 0.0,
+    "candidate_violation": 0.6421015115106434,
+    "violation_gain": -0.6421015115106434,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 2.6421015115106434,
+    "struct_delta": -0.6577080082122382,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 0.09802477976767239,
+    "model_delta": 1.214870823637957,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.8965274623260484e-11,
+    "value_delta": 2.0605739337042905e-13,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.8965274623260484e-11,
+    "start_gap_delta": 2.0605739337042905e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "single",
+    "rank": 3,
+    "n_boundary": 14,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      25
+    ],
+    "candidate_state": 25,
+    "candidate_coords": [
+      [
+        3,
+        3
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 536.1078185657353,
+    "rate_delta": 40.83256467623312,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 536.1078185657353,
+    "gain": -40.83256467623312,
+    "base_violation": 0.0,
+    "candidate_violation": 1.9089070710902623,
+    "violation_gain": -1.9089070710902623,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 3.9089070710902623,
+    "struct_delta": -1.924513567791857,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 0.958106178063603,
+    "model_delta": 0.3547894253420264,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.917133201663091e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.917133201663091e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "single",
+    "rank": 4,
+    "n_boundary": 14,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      76
+    ],
+    "candidate_state": 76,
+    "candidate_coords": [
+      [
+        7,
+        15
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 536.9811518990687,
+    "rate_delta": 41.705898009566454,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 536.9811518990687,
+    "gain": -41.705898009566454,
+    "base_violation": 0.0,
+    "candidate_violation": 2.2539258638187896,
+    "violation_gain": -2.2539258638187896,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 4.25392586381879,
+    "struct_delta": -2.269532360520384,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.2860050576915412,
+    "model_delta": 0.02689054571408822,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.9174884730309714e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.9174884730309714e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "single",
+    "rank": 5,
+    "n_boundary": 14,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      44
+    ],
+    "candidate_state": 44,
+    "candidate_coords": [
+      [
+        5,
+        3
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 536.9811518990687,
+    "rate_delta": 41.705898009566454,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 536.9811518990687,
+    "gain": -41.705898009566454,
+    "base_violation": 0.0,
+    "candidate_violation": 2.2040950646288273,
+    "violation_gain": -2.2040950646288273,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 4.204095064628827,
+    "struct_delta": -2.219701561330422,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 0.9926748970177783,
+    "model_delta": 0.32022070638785105,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.9174884730309714e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.9174884730309714e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "single",
+    "rank": 6,
+    "n_boundary": 14,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      54
+    ],
+    "candidate_state": 54,
+    "candidate_coords": [
+      [
+        5,
+        15
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 536.1078185657354,
+    "rate_delta": 40.83256467623323,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 536.1078185657354,
+    "gain": -40.83256467623323,
+    "base_violation": 0.0,
+    "candidate_violation": 1.9204521470271771,
+    "violation_gain": -1.9204521470271771,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 3.920452147027177,
+    "struct_delta": -1.936058643728772,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.2711870446639177,
+    "model_delta": 0.04170855874171164,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.858513425962883e-11,
+    "value_delta": 5.861977570020827e-13,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.858513425962883e-11,
+    "start_gap_delta": 5.861977570020827e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "single",
+    "rank": 7,
+    "n_boundary": 14,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      42
+    ],
+    "candidate_state": 42,
+    "candidate_coords": [
+      [
+        5,
+        1
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 536.1078185657354,
+    "rate_delta": 40.83256467623323,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 536.1078185657354,
+    "gain": -40.83256467623323,
+    "base_violation": 0.0,
+    "candidate_violation": 3.194395431053474,
+    "violation_gain": -3.194395431053474,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 5.194395431053474,
+    "struct_delta": -3.2100019277550684,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.025062849402851,
+    "model_delta": 0.2878327540027783,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.9174884730309714e-11,
+    "value_delta": -3.552713678800501e-15,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.9174884730309714e-11,
+    "start_gap_delta": -3.552713678800501e-15,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "single",
+    "rank": 8,
+    "n_boundary": 14,
+    "candidate_batch_size": 1,
+    "candidate_states": [
+      64
+    ],
+    "candidate_state": 64,
+    "candidate_coords": [
+      [
+        7,
+        1
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 536.9811518990687,
+    "rate_delta": 41.705898009566454,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 536.9811518990687,
+    "gain": -41.705898009566454,
+    "base_violation": 0.0,
+    "candidate_violation": 3.1130509369883272,
+    "violation_gain": -3.1130509369883272,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 5.113050936988327,
+    "struct_delta": -3.1286574336899218,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 1.055407603928996,
+    "model_delta": 0.2574879994766335,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.917133201663091e-11,
+    "value_delta": 0.0,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.917133201663091e-11,
+    "start_gap_delta": 0.0,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "batch_prefix",
+    "rank": 2,
+    "n_boundary": 14,
+    "candidate_batch_size": 2,
+    "candidate_states": [
+      25,
+      54
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        3,
+        3
+      ],
+      [
+        5,
+        15
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 577.6967108593659,
+    "rate_delta": 82.4214569698637,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 577.6967108593659,
+    "gain": -82.4214569698637,
+    "base_violation": 0.0,
+    "candidate_violation": 2.5205066874781368,
+    "violation_gain": -2.5205066874781368,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 4.520506687478137,
+    "struct_delta": -2.5361131841797313,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 0.958106178063603,
+    "model_delta": 0.3547894253420264,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.858513425962883e-11,
+    "value_delta": 5.861977570020827e-13,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.858513425962883e-11,
+    "start_gap_delta": 5.861977570020827e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "batch_prefix",
+    "rank": 3,
+    "n_boundary": 14,
+    "candidate_batch_size": 3,
+    "candidate_states": [
+      25,
+      42,
+      54
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        3,
+        3
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        15
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 617.6803349804561,
+    "rate_delta": 122.4050810909539,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 617.6803349804561,
+    "gain": -122.4050810909539,
+    "base_violation": 0.0,
+    "candidate_violation": 1.8822212395031221,
+    "violation_gain": -1.8822212395031221,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 3.882221239503122,
+    "struct_delta": -1.897827736204717,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 0.958106178063603,
+    "model_delta": 0.3547894253420264,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.858513425962883e-11,
+    "value_delta": 5.861977570020827e-13,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.858513425962883e-11,
+    "start_gap_delta": 5.861977570020827e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  },
+  {
+    "map": "maze",
+    "slip": 0.05,
+    "step": 4,
+    "mode": "batch_prefix",
+    "rank": 4,
+    "n_boundary": 14,
+    "candidate_batch_size": 4,
+    "candidate_states": [
+      25,
+      34,
+      42,
+      54
+    ],
+    "candidate_state": "",
+    "candidate_coords": [
+      [
+        3,
+        3
+      ],
+      [
+        3,
+        15
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        15
+      ]
+    ],
+    "base_rate_bits": 495.2752538895022,
+    "candidate_rate_bits": 658.1449873448146,
+    "rate_delta": 162.86973345531237,
+    "base_objective": 495.2752538895022,
+    "candidate_objective": 658.1449873448146,
+    "gain": -162.86973345531237,
+    "base_violation": 0.0,
+    "candidate_violation": 1.521982057941658,
+    "violation_gain": -1.521982057941658,
+    "base_struct": 1.9843935032984052,
+    "candidate_struct": 3.521982057941658,
+    "struct_delta": -1.5375885546432528,
+    "base_model": 1.3128956034056294,
+    "candidate_model": 0.958106178063603,
+    "model_delta": 0.3547894253420264,
+    "base_value": 2.917133201663091e-11,
+    "candidate_value": 2.858513425962883e-11,
+    "value_delta": 5.861977570020827e-13,
+    "base_start_gap": 2.917133201663091e-11,
+    "candidate_start_gap": 2.858513425962883e-11,
+    "start_gap_delta": 5.861977570020827e-13,
+    "struct_break_even_lambda": Infinity,
+    "selected": false
+  }
+]

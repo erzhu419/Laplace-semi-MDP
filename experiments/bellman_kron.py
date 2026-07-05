@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 import networkx as nx
@@ -53,6 +54,7 @@ class GridWorld:
     def n_states(self) -> int:
         return len(self.open_cells)
 
+    @lru_cache(maxsize=None)
     def index_maps(self) -> Tuple[Dict[Tuple[int, int], State], Dict[State, Tuple[int, int]]]:
         cells = self.open_cells
         coord_to_idx = {coord: i for i, coord in enumerate(cells)}

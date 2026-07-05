@@ -1,0 +1,2 @@
+map,exact_time_sec,surrogate_time_sec,speedup,exact_steps,surrogate_steps,first_match_rate,mean_exact_rank_in_surrogate,max_exact_rank_in_surrogate
+maze_13,19.826366773981135,1.503588891995605,13.186029026635751,6,6,1.0,3.75,6

@@ -1,3 +1,7 @@
+# 我：
+如果 value-impact residual 会把长 option 的结构隐藏问题稀释掉，那 raw structural residual 应该怎么归一化，才能不靠 magic number，同时又不被 duration normalization 洗掉。
+
+# GPT：
 结论：**raw structural residual 不应该按 duration 归一化，也不应该乘 (\gamma^\tau)。**
 它应该被定义成一个**undiscounted first-hit event risk**，然后用**reference / null calibration** 或 **MDL split criterion** 来归一化。这样既没有魔法阈值，也不会因为 option 很长而被洗掉。
 

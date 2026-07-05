@@ -1,3 +1,7 @@
+# 我：
+1. residual bypass 应该是 hard constraint，还是 weighted penalty？ 2. policy complexity 应该按 total option library、mean per option， 还是按 optimal abstract policy occupancy 加权？ 3. first-candidate-boundary targeted option 应该怎么定义： 是把跨过 B0 \ B 的 edge 判 invalid，还是先吸收到 hidden terminal 再触发 split？
+
+# GPT：
 我的建议可以压成三句话：
 
 **bypass / residual：训练搜索时用 penalty，最终合法性判断用 hard constraint。**
