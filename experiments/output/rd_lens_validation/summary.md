@@ -1,0 +1,144 @@
+# RD Lens Validation
+
+- lens_groups: `topology:junction,bottleneck,turn_articulation,betweenness; value:value_gradient; stochastic:transition_entropy`
+- extra_test_probes: `combined`
+- risk_kinds: `mean_cvar, max, group_mean_cvar, group_max_cvar`
+- elapsed_sec: 373.252
+
+## Leave-One-Lens-Out
+
+- maze_9 holdout=junction mean_cvar: B=5/17, test_mean=0, test_cvar=0, gap=-208.6
+- maze_9 holdout=junction max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=junction group_mean_cvar: B=5/17, test_mean=0, test_cvar=0, gap=-208.6
+- maze_9 holdout=junction group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=bottleneck mean_cvar: B=5/17, test_mean=5.467e-07, test_cvar=5.467e-07, gap=-208.6
+- maze_9 holdout=bottleneck max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=bottleneck group_mean_cvar: B=5/17, test_mean=5.467e-07, test_cvar=5.467e-07, gap=-208.6
+- maze_9 holdout=bottleneck group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=turn_articulation mean_cvar: B=5/17, test_mean=5.467e-07, test_cvar=5.467e-07, gap=-208.6
+- maze_9 holdout=turn_articulation max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=turn_articulation group_mean_cvar: B=5/17, test_mean=5.467e-07, test_cvar=5.467e-07, gap=-208.6
+- maze_9 holdout=turn_articulation group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=betweenness mean_cvar: B=5/17, test_mean=357.7, test_cvar=357.7, gap=208.7
+- maze_9 holdout=betweenness max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=betweenness group_mean_cvar: B=5/17, test_mean=357.7, test_cvar=357.7, gap=208.7
+- maze_9 holdout=betweenness group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=value_gradient mean_cvar: B=5/17, test_mean=357.6, test_cvar=357.6, gap=208.5
+- maze_9 holdout=value_gradient max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=value_gradient group_mean_cvar: B=5/17, test_mean=357.6, test_cvar=357.6, gap=208.5
+- maze_9 holdout=value_gradient group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=transition_entropy mean_cvar: B=5/17, test_mean=357.6, test_cvar=357.6, gap=208.5
+- maze_9 holdout=transition_entropy max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=transition_entropy group_mean_cvar: B=5/17, test_mean=357.6, test_cvar=357.6, gap=208.5
+- maze_9 holdout=transition_entropy group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=combined mean_cvar: B=5/17, test_mean=178.9, test_cvar=178.9, gap=0.08482
+- maze_9 holdout=combined max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 holdout=combined group_mean_cvar: B=5/17, test_mean=178.9, test_cvar=178.9, gap=0.08482
+- maze_9 holdout=combined group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=junction mean_cvar: B=5/28, test_mean=495.8, test_cvar=495.8, gap=324.7
+- four_rooms_9 holdout=junction max: B=5/28, test_mean=208.5, test_cvar=208.5, gap=69.5
+- four_rooms_9 holdout=junction group_mean_cvar: B=5/28, test_mean=495.8, test_cvar=495.8, gap=324.7
+- four_rooms_9 holdout=junction group_max_cvar: B=5/28, test_mean=208.5, test_cvar=208.5, gap=69.5
+- four_rooms_9 holdout=bottleneck mean_cvar: B=5/28, test_mean=109.2, test_cvar=109.2, gap=-54.55
+- four_rooms_9 holdout=bottleneck max: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=bottleneck group_mean_cvar: B=5/28, test_mean=109.2, test_cvar=109.2, gap=-54.55
+- four_rooms_9 holdout=bottleneck group_max_cvar: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=turn_articulation mean_cvar: B=5/28, test_mean=63.18, test_cvar=63.18, gap=-108.2
+- four_rooms_9 holdout=turn_articulation max: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=turn_articulation group_mean_cvar: B=5/28, test_mean=63.18, test_cvar=63.18, gap=-108.2
+- four_rooms_9 holdout=turn_articulation group_max_cvar: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=betweenness mean_cvar: B=5/28, test_mean=70.64, test_cvar=70.64, gap=-99.51
+- four_rooms_9 holdout=betweenness max: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=betweenness group_mean_cvar: B=5/28, test_mean=70.64, test_cvar=70.64, gap=-99.51
+- four_rooms_9 holdout=betweenness group_max_cvar: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=value_gradient mean_cvar: B=5/28, test_mean=331.8, test_cvar=331.8, gap=162
+- four_rooms_9 holdout=value_gradient max: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=value_gradient group_mean_cvar: B=5/28, test_mean=331.8, test_cvar=331.8, gap=162
+- four_rooms_9 holdout=value_gradient group_max_cvar: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=transition_entropy mean_cvar: B=5/28, test_mean=198.4, test_cvar=198.4, gap=49.5
+- four_rooms_9 holdout=transition_entropy max: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=transition_entropy group_mean_cvar: B=5/28, test_mean=198.4, test_cvar=198.4, gap=49.5
+- four_rooms_9 holdout=transition_entropy group_max_cvar: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=combined mean_cvar: B=5/28, test_mean=198.4, test_cvar=198.4, gap=49.5
+- four_rooms_9 holdout=combined max: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 holdout=combined group_mean_cvar: B=5/28, test_mean=198.4, test_cvar=198.4, gap=49.5
+- four_rooms_9 holdout=combined group_max_cvar: B=5/28, test_mean=0, test_cvar=0, gap=0
+- open_room_7 holdout=junction mean_cvar: B=5/14, test_mean=5.957, test_cvar=5.957, gap=3.947
+- open_room_7 holdout=junction max: B=5/14, test_mean=495.9, test_cvar=495.9, gap=277.6
+- open_room_7 holdout=junction group_mean_cvar: B=5/14, test_mean=5.957, test_cvar=5.957, gap=3.947
+- open_room_7 holdout=junction group_max_cvar: B=5/14, test_mean=495.9, test_cvar=495.9, gap=277.6
+- open_room_7 holdout=bottleneck mean_cvar: B=5/14, test_mean=181.7, test_cvar=181.7, gap=54.12
+- open_room_7 holdout=bottleneck max: B=5/14, test_mean=191, test_cvar=191, gap=63.57
+- open_room_7 holdout=bottleneck group_mean_cvar: B=5/14, test_mean=181.7, test_cvar=181.7, gap=54.12
+- open_room_7 holdout=bottleneck group_max_cvar: B=5/14, test_mean=191, test_cvar=191, gap=63.57
+- open_room_7 holdout=turn_articulation mean_cvar: B=5/14, test_mean=10.34, test_cvar=10.34, gap=-145.8
+- open_room_7 holdout=turn_articulation max: B=5/14, test_mean=13.69, test_cvar=13.69, gap=-143.3
+- open_room_7 holdout=turn_articulation group_mean_cvar: B=5/14, test_mean=10.34, test_cvar=10.34, gap=-145.8
+- open_room_7 holdout=turn_articulation group_max_cvar: B=5/14, test_mean=13.69, test_cvar=13.69, gap=-143.3
+- open_room_7 holdout=betweenness mean_cvar: B=5/14, test_mean=56.86, test_cvar=56.86, gap=-91.48
+- open_room_7 holdout=betweenness max: B=5/14, test_mean=28.93, test_cvar=28.93, gap=-125.5
+- open_room_7 holdout=betweenness group_mean_cvar: B=5/14, test_mean=56.86, test_cvar=56.86, gap=-91.48
+- open_room_7 holdout=betweenness group_max_cvar: B=5/14, test_mean=28.93, test_cvar=28.93, gap=-125.5
+- open_room_7 holdout=value_gradient mean_cvar: B=5/14, test_mean=161.4, test_cvar=161.4, gap=30.53
+- open_room_7 holdout=value_gradient max: B=5/14, test_mean=173, test_cvar=173, gap=42.6
+- open_room_7 holdout=value_gradient group_mean_cvar: B=5/14, test_mean=161.4, test_cvar=161.4, gap=30.53
+- open_room_7 holdout=value_gradient group_max_cvar: B=5/14, test_mean=173, test_cvar=173, gap=42.6
+- open_room_7 holdout=transition_entropy mean_cvar: B=5/14, test_mean=172.7, test_cvar=172.7, gap=43.69
+- open_room_7 holdout=transition_entropy max: B=5/14, test_mean=173, test_cvar=173, gap=42.6
+- open_room_7 holdout=transition_entropy group_mean_cvar: B=5/14, test_mean=172.7, test_cvar=172.7, gap=43.69
+- open_room_7 holdout=transition_entropy group_max_cvar: B=5/14, test_mean=173, test_cvar=173, gap=42.6
+- open_room_7 holdout=combined mean_cvar: B=5/14, test_mean=172.7, test_cvar=172.7, gap=43.63
+- open_room_7 holdout=combined max: B=5/14, test_mean=173, test_cvar=173, gap=42.6
+- open_room_7 holdout=combined group_mean_cvar: B=5/14, test_mean=172.7, test_cvar=172.7, gap=43.63
+- open_room_7 holdout=combined group_max_cvar: B=5/14, test_mean=173, test_cvar=173, gap=42.6
+
+## Stratified One-Per-Group
+
+- maze_9 train=['junction', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['junction', 'value_gradient', 'transition_entropy'] max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['junction', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['junction', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['bottleneck', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/17, test_mean=134.1, test_cvar=357.7, gap=-104.2
+- maze_9 train=['bottleneck', 'value_gradient', 'transition_entropy'] max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['bottleneck', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/17, test_mean=134.1, test_cvar=357.7, gap=-104.2
+- maze_9 train=['bottleneck', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['turn_articulation', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/17, test_mean=134.1, test_cvar=357.7, gap=-104.2
+- maze_9 train=['turn_articulation', 'value_gradient', 'transition_entropy'] max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['turn_articulation', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/17, test_mean=134.1, test_cvar=357.7, gap=-104.2
+- maze_9 train=['turn_articulation', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['betweenness', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['betweenness', 'value_gradient', 'transition_entropy'] max: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['betweenness', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- maze_9 train=['betweenness', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/17, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 train=['junction', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/28, test_mean=110.3, test_cvar=198.4, gap=-106.4
+- four_rooms_9 train=['junction', 'value_gradient', 'transition_entropy'] max: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 train=['junction', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/28, test_mean=110.3, test_cvar=198.4, gap=-106.4
+- four_rooms_9 train=['junction', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/28, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 train=['bottleneck', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/28, test_mean=139.6, test_cvar=226, gap=-38.21
+- four_rooms_9 train=['bottleneck', 'value_gradient', 'transition_entropy'] max: B=5/28, test_mean=141.8, test_cvar=177.2, gap=-5.76
+- four_rooms_9 train=['bottleneck', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/28, test_mean=139.6, test_cvar=226, gap=-38.21
+- four_rooms_9 train=['bottleneck', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/28, test_mean=141.8, test_cvar=177.2, gap=-5.76
+- four_rooms_9 train=['turn_articulation', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/28, test_mean=277.7, test_cvar=501.7, gap=114.3
+- four_rooms_9 train=['turn_articulation', 'value_gradient', 'transition_entropy'] max: B=5/28, test_mean=155, test_cvar=177.2, gap=25.07
+- four_rooms_9 train=['turn_articulation', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/28, test_mean=277.7, test_cvar=501.7, gap=114.3
+- four_rooms_9 train=['turn_articulation', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/28, test_mean=155, test_cvar=177.2, gap=25.07
+- four_rooms_9 train=['betweenness', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/28, test_mean=218.7, test_cvar=495.8, gap=2.845
+- four_rooms_9 train=['betweenness', 'value_gradient', 'transition_entropy'] max: B=5/28, test_mean=126.1, test_cvar=208.5, gap=-53.3
+- four_rooms_9 train=['betweenness', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/28, test_mean=218.7, test_cvar=495.8, gap=2.845
+- four_rooms_9 train=['betweenness', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/28, test_mean=126.1, test_cvar=208.5, gap=-53.3
+- open_room_7 train=['junction', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/14, test_mean=105.4, test_cvar=181.7, gap=-69.75
+- open_room_7 train=['junction', 'value_gradient', 'transition_entropy'] max: B=5/14, test_mean=101.7, test_cvar=191, gap=-81.29
+- open_room_7 train=['junction', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/14, test_mean=105.4, test_cvar=181.7, gap=-69.75
+- open_room_7 train=['junction', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/14, test_mean=101.7, test_cvar=191, gap=-81.29
+- open_room_7 train=['bottleneck', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/14, test_mean=194.7, test_cvar=484.3, gap=-15.89
+- open_room_7 train=['bottleneck', 'value_gradient', 'transition_entropy'] max: B=5/14, test_mean=230.3, test_cvar=495.9, gap=-64.58
+- open_room_7 train=['bottleneck', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/14, test_mean=194.7, test_cvar=484.3, gap=-15.89
+- open_room_7 train=['bottleneck', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/14, test_mean=230.3, test_cvar=495.9, gap=-64.58
+- open_room_7 train=['turn_articulation', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/14, test_mean=3.004, test_cvar=5.957, gap=1.001
+- open_room_7 train=['turn_articulation', 'value_gradient', 'transition_entropy'] max: B=5/14, test_mean=254.4, test_cvar=484.3, gap=123.4
+- open_room_7 train=['turn_articulation', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/14, test_mean=3.004, test_cvar=5.957, gap=1.001
+- open_room_7 train=['turn_articulation', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/14, test_mean=254.4, test_cvar=484.3, gap=123.4
+- open_room_7 train=['betweenness', 'value_gradient', 'transition_entropy'] mean_cvar: B=5/14, test_mean=237, test_cvar=484.3, gap=82.77
+- open_room_7 train=['betweenness', 'value_gradient', 'transition_entropy'] max: B=5/14, test_mean=237, test_cvar=484.3, gap=82.77
+- open_room_7 train=['betweenness', 'value_gradient', 'transition_entropy'] group_mean_cvar: B=5/14, test_mean=237, test_cvar=484.3, gap=82.77
+- open_room_7 train=['betweenness', 'value_gradient', 'transition_entropy'] group_max_cvar: B=5/14, test_mean=237, test_cvar=484.3, gap=82.77

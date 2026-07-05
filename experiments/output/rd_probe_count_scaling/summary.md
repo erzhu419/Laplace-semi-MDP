@@ -1,0 +1,53 @@
+# RD Probe Count Scaling
+
+- probe_pool: `junction, bottleneck, turn_articulation, combined, value_gradient, transition_entropy`
+- risk_kinds: `mean, mean_cvar, max`
+- elapsed_sec: 91.793
+
+## Summary
+
+- maze_9 m=1 mean: B=5/17, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- maze_9 m=1 mean_cvar: B=5/17, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- maze_9 m=1 max: B=5/17, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- maze_9 m=2 mean: B=5/17, train_mean=2.733e-07, test_mean=223.5, test_cvar=357.6, gap=223.5
+- maze_9 m=2 mean_cvar: B=5/17, train_mean=2.733e-07, test_mean=223.5, test_cvar=357.6, gap=223.5
+- maze_9 m=2 max: B=5/17, train_mean=2.733e-07, test_mean=223.5, test_cvar=357.6, gap=223.5
+- maze_9 m=3 mean: B=5/17, train_mean=3.644e-07, test_mean=298, test_cvar=357.6, gap=298
+- maze_9 m=3 mean_cvar: B=5/17, train_mean=3.644e-07, test_mean=298, test_cvar=357.6, gap=298
+- maze_9 m=3 max: B=5/17, train_mean=3.644e-07, test_mean=298, test_cvar=357.6, gap=298
+- maze_9 m=4 mean: B=5/17, train_mean=44.72, test_mean=357.6, test_cvar=357.6, gap=312.8
+- maze_9 m=4 mean_cvar: B=5/17, train_mean=44.72, test_mean=357.6, test_cvar=357.6, gap=312.8
+- maze_9 m=4 max: B=5/17, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- maze_9 m=5 mean: B=5/17, train_mean=107.3, test_mean=357.6, test_cvar=357.6, gap=250.3
+- maze_9 m=5 mean_cvar: B=5/17, train_mean=107.3, test_mean=357.6, test_cvar=357.6, gap=250.3
+- maze_9 m=5 max: B=5/17, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 m=1 mean: B=5/28, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 m=1 mean_cvar: B=5/28, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 m=1 max: B=5/28, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 m=2 mean: B=5/28, train_mean=145.8, test_mean=137.4, test_cvar=171.1, gap=-8.444
+- four_rooms_9 m=2 mean_cvar: B=5/28, train_mean=226.4, test_mean=159.8, test_cvar=198.3, gap=-66.68
+- four_rooms_9 m=2 max: B=5/28, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 m=3 mean: B=5/28, train_mean=279.8, test_mean=396.4, test_cvar=396.6, gap=116.6
+- four_rooms_9 m=3 mean_cvar: B=5/28, train_mean=215.2, test_mean=331.8, test_cvar=331.8, gap=116.6
+- four_rooms_9 m=3 max: B=5/28, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 m=4 mean: B=5/28, train_mean=309, test_mean=396.5, test_cvar=396.6, gap=87.52
+- four_rooms_9 m=4 mean_cvar: B=5/28, train_mean=309, test_mean=396.5, test_cvar=396.6, gap=87.52
+- four_rooms_9 m=4 max: B=5/28, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- four_rooms_9 m=5 mean: B=5/28, train_mean=326.5, test_mean=396.4, test_cvar=396.4, gap=69.88
+- four_rooms_9 m=5 mean_cvar: B=5/28, train_mean=326.5, test_mean=396.4, test_cvar=396.4, gap=69.88
+- four_rooms_9 m=5 max: B=5/28, train_mean=0, test_mean=0, test_cvar=0, gap=0
+- open_room_7 m=1 mean: B=5/14, train_mean=4.932, test_mean=0.9864, test_cvar=4.932, gap=-3.946
+- open_room_7 m=1 mean_cvar: B=5/14, train_mean=4.932, test_mean=0.9864, test_cvar=4.932, gap=-3.946
+- open_room_7 m=1 max: B=5/14, train_mean=4.932, test_mean=0.9864, test_cvar=4.932, gap=-3.946
+- open_room_7 m=2 mean: B=5/14, train_mean=4.932, test_mean=3.953e-06, test_cvar=8.018e-06, gap=-4.932
+- open_room_7 m=2 mean_cvar: B=5/14, train_mean=4.932, test_mean=3.953e-06, test_cvar=8.018e-06, gap=-4.932
+- open_room_7 m=2 max: B=5/14, train_mean=196.9, test_mean=133.2, test_cvar=173, gap=-63.72
+- open_room_7 m=3 mean: B=5/14, train_mean=255.6, test_mean=186.6, test_cvar=190.7, gap=-69
+- open_room_7 m=3 mean_cvar: B=5/14, train_mean=255.6, test_mean=186.6, test_cvar=190.7, gap=-69
+- open_room_7 m=3 max: B=5/14, train_mean=135.8, test_mean=173, test_cvar=173, gap=37.17
+- open_room_7 m=4 mean: B=5/14, train_mean=237.9, test_mean=187.6, test_cvar=190.7, gap=-50.23
+- open_room_7 m=4 mean_cvar: B=5/14, train_mean=237.9, test_mean=187.6, test_cvar=190.7, gap=-50.23
+- open_room_7 m=4 max: B=5/14, train_mean=145.1, test_mean=173, test_cvar=173, gap=27.88
+- open_room_7 m=5 mean: B=5/14, train_mean=143.5, test_mean=172.7, test_cvar=172.7, gap=29.26
+- open_room_7 m=5 mean_cvar: B=5/14, train_mean=143.5, test_mean=172.7, test_cvar=172.7, gap=29.26
+- open_room_7 m=5 max: B=5/14, train_mean=150.7, test_mean=173, test_cvar=173, gap=22.3

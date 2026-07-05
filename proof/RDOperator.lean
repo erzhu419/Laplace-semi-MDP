@@ -113,6 +113,46 @@ theorem approximation_top_stability
     approx y < approx xBest :=
   margin_stability hSecond hMargin hApproxUpper hApproxLowerBest hy
 
+/-- Frozen vector-valued objective for multi-probe/group RD.
+
+`Probe -> Int` is the finite distortion vector, and `risk` is any finite-vector
+aggregator: mean, max, CVaR, smoothmax approximation, or a paper-specific
+robust risk.  The theorem below only needs that `risk` is fixed during the
+greedy step.
+-/
+structure MultiProbeObjective (State Probe : Type) where
+  rateBase : Int
+  risk : (Probe -> Int) -> Int
+  distortionBefore : Probe -> Int
+  distortionDrop : State -> Probe -> Int
+  rateCost : State -> Int
+
+namespace MultiProbeObjective
+
+/-- Probe-wise distortion vector after adding candidate `x`. -/
+def distortionAfter (theta : MultiProbeObjective State Probe) (x : State) : Probe -> Int :=
+  fun probe => theta.distortionBefore probe - theta.distortionDrop x probe
+
+/-- Frozen robust objective before the split. -/
+def objectiveBefore (theta : MultiProbeObjective State Probe) : Int :=
+  theta.rateBase + theta.risk theta.distortionBefore
+
+/-- Frozen robust objective after the split. -/
+def objectiveAfter (theta : MultiProbeObjective State Probe) (x : State) : Int :=
+  theta.rateBase + theta.rateCost x + theta.risk (theta.distortionAfter x)
+
+/-- Multi-probe RD finite-difference operator. -/
+def fdOperator (theta : MultiProbeObjective State Probe) (x : State) : Int :=
+  theta.risk theta.distortionBefore - theta.risk (theta.distortionAfter x) - theta.rateCost x
+
+/-- Multi-probe exactness: the robust operator is the frozen objective drop. -/
+theorem fd_exact (theta : MultiProbeObjective State Probe) (x : State) :
+    theta.fdOperator x = theta.objectiveBefore - theta.objectiveAfter x := by
+  simp [fdOperator, objectiveBefore, objectiveAfter]
+  omega
+
+end MultiProbeObjective
+
 variable {α : Type}
 
 /-- Iterate an abstract planning/update operator. -/

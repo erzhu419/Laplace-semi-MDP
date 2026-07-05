@@ -1,0 +1,800 @@
+[
+  {
+    "map": "maze_9",
+    "method": "group_constrained",
+    "budget_frac": 0.25,
+    "n_basis": 17,
+    "n_boundary": 3,
+    "selection_time_sec": 0.8462225520052016,
+    "max_splits": 5,
+    "stop_reason": "feasible",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 0.0,
+    "test_bits_cvar": 0.0,
+    "boundary": [
+      0,
+      1,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "method": "scalar_mean_cvar",
+    "budget_frac": 0.25,
+    "n_basis": 17,
+    "n_boundary": 7,
+    "selection_time_sec": 2.447831908997614,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 618.1661727546035,
+      "value": 618.0182450611271,
+      "stochastic": 420.1350781404769
+    },
+    "final_group_violations": {
+      "topology": 598.7345962065112,
+      "value": 598.5866685130349,
+      "stochastic": 400.7035015923846
+    },
+    "total_violation": 1598.0247663119305,
+    "max_violation": 598.7345962065112,
+    "n_groups_feasible": 0,
+    "all_groups_feasible": false,
+    "test_bits_mean": 255.6636815439539,
+    "test_bits_cvar": 255.6636815439539,
+    "boundary": [
+      0,
+      2,
+      3,
+      5,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "method": "scalar_max",
+    "budget_frac": 0.25,
+    "n_basis": 17,
+    "n_boundary": 7,
+    "selection_time_sec": 2.453734593989793,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 0.0,
+    "test_bits_cvar": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "method": "group_constrained",
+    "budget_frac": 0.5,
+    "n_basis": 17,
+    "n_boundary": 3,
+    "selection_time_sec": 0.8592986310250126,
+    "max_splits": 5,
+    "stop_reason": "feasible",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 0.0,
+    "test_bits_cvar": 0.0,
+    "boundary": [
+      0,
+      1,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "method": "scalar_mean_cvar",
+    "budget_frac": 0.5,
+    "n_basis": 17,
+    "n_boundary": 7,
+    "selection_time_sec": 2.4681467579794116,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 618.1661727546035,
+      "value": 618.0182450611271,
+      "stochastic": 420.1350781404769
+    },
+    "final_group_violations": {
+      "topology": 579.303019658419,
+      "value": 579.1550919649426,
+      "stochastic": 381.2719250442923
+    },
+    "total_violation": 1539.730036667654,
+    "max_violation": 579.303019658419,
+    "n_groups_feasible": 0,
+    "all_groups_feasible": false,
+    "test_bits_mean": 255.6636815439539,
+    "test_bits_cvar": 255.6636815439539,
+    "boundary": [
+      0,
+      2,
+      3,
+      5,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "method": "scalar_max",
+    "budget_frac": 0.5,
+    "n_basis": 17,
+    "n_boundary": 7,
+    "selection_time_sec": 2.473710470017977,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 0.0,
+    "test_bits_cvar": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      30
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "method": "group_constrained",
+    "budget_frac": 0.25,
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 14.026840125967283,
+    "max_splits": 5,
+    "stop_reason": "feasible",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 0.0,
+    "test_bits_cvar": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "method": "scalar_mean_cvar",
+    "budget_frac": 0.25,
+    "n_basis": 28,
+    "n_boundary": 7,
+    "selection_time_sec": 6.589259984961245,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 578.3768624136472,
+      "value": 415.6812487574556,
+      "stochastic": 355.5614766930501
+    },
+    "final_group_violations": {
+      "topology": 558.945285865555,
+      "value": 396.2496722093633,
+      "stochastic": 336.12990014495784
+    },
+    "total_violation": 1291.3248582198762,
+    "max_violation": 558.945285865555,
+    "n_groups_feasible": 0,
+    "all_groups_feasible": false,
+    "test_bits_mean": 355.56140885809015,
+    "test_bits_cvar": 355.56140885809015,
+    "boundary": [
+      0,
+      1,
+      9,
+      38,
+      39,
+      40,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "method": "scalar_max",
+    "budget_frac": 0.25,
+    "n_basis": 28,
+    "n_boundary": 7,
+    "selection_time_sec": 6.600288595014717,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 0.0,
+    "test_bits_cvar": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "method": "group_constrained",
+    "budget_frac": 0.5,
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 13.94085473997984,
+    "max_splits": 5,
+    "stop_reason": "feasible",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 0.0,
+    "test_bits_cvar": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "method": "scalar_mean_cvar",
+    "budget_frac": 0.5,
+    "n_basis": 28,
+    "n_boundary": 7,
+    "selection_time_sec": 6.6425567520200275,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 578.3768624136472,
+      "value": 415.6812487574556,
+      "stochastic": 355.5614766930501
+    },
+    "final_group_violations": {
+      "topology": 539.5137093174627,
+      "value": 376.81809566127106,
+      "stochastic": 316.6983235968655
+    },
+    "total_violation": 1233.0301285755993,
+    "max_violation": 539.5137093174627,
+    "n_groups_feasible": 0,
+    "all_groups_feasible": false,
+    "test_bits_mean": 355.56140885809015,
+    "test_bits_cvar": 355.56140885809015,
+    "boundary": [
+      0,
+      1,
+      9,
+      38,
+      39,
+      40,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "method": "scalar_max",
+    "budget_frac": 0.5,
+    "n_basis": 28,
+    "n_boundary": 7,
+    "selection_time_sec": 6.692031637008768,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 0.0,
+    "test_bits_cvar": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "method": "group_constrained",
+    "budget_frac": 0.25,
+    "n_basis": 14,
+    "n_boundary": 7,
+    "selection_time_sec": 16.016129066003487,
+    "max_splits": 5,
+    "stop_reason": "feasible",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 4.93196715778488,
+      "value": 6.016733322324146e-10,
+      "stochastic": 7.769556235739366e-06
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 7.406954498258164e-06,
+    "test_bits_cvar": 7.406954498258164e-06,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      36,
+      43,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "method": "scalar_mean_cvar",
+    "budget_frac": 0.25,
+    "n_basis": 14,
+    "n_boundary": 7,
+    "selection_time_sec": 4.255921187985223,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 4.93196715778488,
+      "value": 6.016733322324146e-10,
+      "stochastic": 7.769556235739366e-06
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 7.406954498258164e-06,
+    "test_bits_cvar": 7.406954498258164e-06,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      36,
+      43,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "method": "scalar_max",
+    "budget_frac": 0.25,
+    "n_basis": 14,
+    "n_boundary": 7,
+    "selection_time_sec": 4.168325757025741,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 19.43157654809228,
+      "value": 19.43157654809228,
+      "stochastic": 19.43157654809228
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.050181961922725046,
+      "value": 1.1388085118491652e-10,
+      "stochastic": 4.257374969325816e-09
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 3.5384664752128804e-10,
+    "test_bits_cvar": 3.5384664752128804e-10,
+    "boundary": [
+      0,
+      3,
+      4,
+      6,
+      7,
+      8,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "method": "group_constrained",
+    "budget_frac": 0.5,
+    "n_basis": 14,
+    "n_boundary": 7,
+    "selection_time_sec": 15.940014937950764,
+    "max_splits": 5,
+    "stop_reason": "feasible",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 4.93196715778488,
+      "value": 6.016733322324146e-10,
+      "stochastic": 7.769556235739366e-06
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 7.406954498258164e-06,
+    "test_bits_cvar": 7.406954498258164e-06,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      36,
+      43,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "method": "scalar_mean_cvar",
+    "budget_frac": 0.5,
+    "n_basis": 14,
+    "n_boundary": 7,
+    "selection_time_sec": 4.217108020966407,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 4.93196715778488,
+      "value": 6.016733322324146e-10,
+      "stochastic": 7.769556235739366e-06
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 7.406954498258164e-06,
+    "test_bits_cvar": 7.406954498258164e-06,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      36,
+      43,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "method": "scalar_max",
+    "budget_frac": 0.5,
+    "n_basis": 14,
+    "n_boundary": 7,
+    "selection_time_sec": 4.140433017979376,
+    "max_splits": 5,
+    "stop_reason": "fixed_splits",
+    "budgets": {
+      "topology": 38.86315309618456,
+      "value": 38.86315309618456,
+      "stochastic": 38.86315309618456
+    },
+    "initial_group_risks": {
+      "topology": 77.72630619236912,
+      "value": 77.72630619236912,
+      "stochastic": 77.72630619236912
+    },
+    "final_group_risks": {
+      "topology": 0.050181961922725046,
+      "value": 1.1388085118491652e-10,
+      "stochastic": 4.257374969325816e-09
+    },
+    "final_group_violations": {
+      "topology": 0.0,
+      "value": 0.0,
+      "stochastic": 0.0
+    },
+    "total_violation": 0.0,
+    "max_violation": 0.0,
+    "n_groups_feasible": 3,
+    "all_groups_feasible": true,
+    "test_bits_mean": 3.5384664752128804e-10,
+    "test_bits_cvar": 3.5384664752128804e-10,
+    "boundary": [
+      0,
+      3,
+      4,
+      6,
+      7,
+      8,
+      48
+    ]
+  }
+]

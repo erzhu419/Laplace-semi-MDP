@@ -14,6 +14,8 @@ What is formalized now:
 - frozen finite-difference identity;
 - adaptive recomputation drift decomposition;
 - margin stability, matching the diagnostic `m > 2 * epsilon_adapt`;
+- exact finite-difference identity for a frozen multi-probe robust RD objective
+  with an arbitrary finite-vector risk aggregator;
 - an abstract Bellman contraction/non-expansion obligation for the graph-SMDP
   planning layer.
 

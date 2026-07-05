@@ -198,3 +198,60 @@ It currently proves:
 - abstract graph-SMDP Bellman contraction/non-expansion obligations.
 
 This is intentionally not yet a full real-analysis proof of first-hit Green kernels. The next proof layer should instantiate the abstract integers/reweighted terms with real-valued finite MDP quantities, preferably with Mathlib: stochastic matrix absorption, truncated Green convergence, Taylor error for the bits distortion, and sup-norm Bellman contraction over finite graph options.
+
+## GPT Answer 9 Follow-up: Fixed Basis + Multi-Probe RD
+
+`GPT_answer_9.md` sharpens the failure mode from the held-out diagnostics:
+
+```text
+exact frozen operator != cross-probe generalization
+```
+
+The right next algorithmic shape is two-layer:
+
+```text
+1. freeze a probe-independent multi-task basis C0 / O0
+2. optimize a robust multi-probe RD objective on that fixed basis
+```
+
+I added `experiments/run_rd_multiprobe_basis.py` to test this directly. It builds two basis modes:
+
+- `fixed`: topology + spectral + coverage + deterministic random anchors;
+- `residual_train`: a deliberately leakier basis made from train residual probes.
+
+Then it runs several frozen robust objectives over the same train probes:
+
+- `single`: first train probe only;
+- `mean`: average train distortion;
+- `mean_cvar`: `(1 - eta) * mean + eta * CVaR_alpha`;
+- `max`: minimax / worst-probe distortion.
+
+The implemented multi-probe finite-difference score is:
+
+\[
+S_\rho(x\mid B)
+=
+\lambda
+\left[
+\rho(D(B))-\rho(D(B)-\Delta(x))
+\right]
+-c_x,
+\]
+
+where each component of \(\Delta(x)\) is the per-probe first-hit Green finite difference.
+
+The Lean proof core now includes `MultiProbeObjective.fd_exact`, which proves this formula is exactly the frozen objective drop for any fixed finite-vector risk aggregator \(\rho\). This keeps the theory clean: mean, max, CVaR, and smoothmax all share the same exactness theorem.
+
+`experiments/run_rd_probe_count_scaling.py` adds a first probe-count scaling table over a fixed basis. The first result is a warning rather than a victory lap: increasing the prefix length of an arbitrary probe pool does not monotonically reduce held-out distortion. The next version should use leave-one-lens-out or stratified probe sampling so each train family covers topology, stochasticity, and value-gradient lenses.
+
+`experiments/run_rd_lens_validation.py` now runs that next validation. It has two protocols: leave-one-lens-out and stratified one-per-group. On the first `maze_9/four_rooms_9/open_room_7` pass, minimax is clearly more robust than `mean_cvar` in leave-one-lens-out average held-out distortion, but it still has individual lens failures. I also added `group_mean_cvar` and `group_max_cvar`; in this small suite they choose the same boundaries as the corresponding ungrouped risks, which suggests the next real fix is group-specific constraints/budgets rather than another scalarized robust risk.
+
+`experiments/run_rd_group_constrained.py` implements that constrained version. It minimizes boundary rate implicitly by stopping once all group budgets are feasible:
+
+\[
+\operatorname{CVaR}_{\rm topology}(B)\le\epsilon_{\rm topology},\quad
+\operatorname{CVaR}_{\rm value}(B)\le\epsilon_{\rm value},\quad
+\operatorname{CVaR}_{\rm stochastic}(B)\le\epsilon_{\rm stochastic}.
+\]
+
+The first pass shows the constrained formulation is materially different from scalar mean/CVaR: on `maze_9` and `four_rooms_9`, group-constrained beam search reaches feasibility with fewer vertices than scalar max, while scalar mean/CVaR violates all groups. A one-step greedy variant can dead-end, so the current optimizer uses a small beam; this is evidence that adaptive graph construction is non-submodular even when the frozen per-step operator is exact.

@@ -1,0 +1,127 @@
+map,split,probe,n_boundary,n_basis,boundary,rate_bits,hidden_bits,hidden_linear,start_gap,value_gap_max,n_edges_valid,budget_frac,method
+maze_9,train,betweenness,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.25,group_constrained
+maze_9,train,bottleneck,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.25,group_constrained
+maze_9,train,junction,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.25,group_constrained
+maze_9,train,transition_entropy,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.25,group_constrained
+maze_9,train,turn_articulation,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.25,group_constrained
+maze_9,train,value_gradient,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.25,group_constrained
+maze_9,test,combined,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.25,group_constrained
+maze_9,train,betweenness,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,618.1661727546035,21.033553815109695,nan,nan,0,0.25,scalar_mean_cvar
+maze_9,train,bottleneck,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,1.9171738803316907e-10,1.7489138843985117e-10,nan,nan,0,0.25,scalar_mean_cvar
+maze_9,train,junction,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,0.0026638467815751376,0.0018461538461538624,nan,nan,0,0.25,scalar_mean_cvar
+maze_9,train,transition_entropy,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,420.1350781404769,14.06897556568249,nan,nan,0,0.25,scalar_mean_cvar
+maze_9,train,turn_articulation,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,1.9171738803316907e-10,1.7489138843985117e-10,nan,nan,0,0.25,scalar_mean_cvar
+maze_9,train,value_gradient,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,618.0182450611271,20.999384425918958,nan,nan,0,0.25,scalar_mean_cvar
+maze_9,test,combined,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,255.6636815439539,7.087719095775681,nan,nan,0,0.25,scalar_mean_cvar
+maze_9,train,betweenness,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.25,scalar_max
+maze_9,train,bottleneck,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.25,scalar_max
+maze_9,train,junction,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.25,scalar_max
+maze_9,train,transition_entropy,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.25,scalar_max
+maze_9,train,turn_articulation,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.25,scalar_max
+maze_9,train,value_gradient,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.25,scalar_max
+maze_9,test,combined,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.25,scalar_max
+maze_9,train,betweenness,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.5,group_constrained
+maze_9,train,bottleneck,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.5,group_constrained
+maze_9,train,junction,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.5,group_constrained
+maze_9,train,transition_entropy,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.5,group_constrained
+maze_9,train,turn_articulation,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.5,group_constrained
+maze_9,train,value_gradient,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.5,group_constrained
+maze_9,test,combined,3,17,"[0, 1, 30]",32.53798099512757,0.0,0.0,nan,nan,2,0.5,group_constrained
+maze_9,train,betweenness,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,618.1661727546035,21.033553815109695,nan,nan,0,0.5,scalar_mean_cvar
+maze_9,train,bottleneck,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,1.9171738803316907e-10,1.7489138843985117e-10,nan,nan,0,0.5,scalar_mean_cvar
+maze_9,train,junction,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,0.0026638467815751376,0.0018461538461538624,nan,nan,0,0.5,scalar_mean_cvar
+maze_9,train,transition_entropy,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,420.1350781404769,14.06897556568249,nan,nan,0,0.5,scalar_mean_cvar
+maze_9,train,turn_articulation,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,1.9171738803316907e-10,1.7489138843985117e-10,nan,nan,0,0.5,scalar_mean_cvar
+maze_9,train,value_gradient,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,618.0182450611271,20.999384425918958,nan,nan,0,0.5,scalar_mean_cvar
+maze_9,test,combined,7,17,"[0, 2, 3, 5, 17, 21, 30]",82.62925789904375,255.6636815439539,7.087719095775681,nan,nan,0,0.5,scalar_mean_cvar
+maze_9,train,betweenness,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.5,scalar_max
+maze_9,train,bottleneck,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.5,scalar_max
+maze_9,train,junction,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.5,scalar_max
+maze_9,train,transition_entropy,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.5,scalar_max
+maze_9,train,turn_articulation,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.5,scalar_max
+maze_9,train,value_gradient,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.5,scalar_max
+maze_9,test,combined,7,17,"[0, 1, 2, 3, 4, 5, 30]",84.35592456571041,0.0,0.0,nan,nan,18,0.5,scalar_max
+four_rooms_9,train,betweenness,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.25,group_constrained
+four_rooms_9,train,bottleneck,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.25,group_constrained
+four_rooms_9,train,junction,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.25,group_constrained
+four_rooms_9,train,transition_entropy,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.25,group_constrained
+four_rooms_9,train,turn_articulation,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.25,group_constrained
+four_rooms_9,train,value_gradient,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.25,group_constrained
+four_rooms_9,test,combined,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.25,group_constrained
+four_rooms_9,train,betweenness,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,353.23946532815137,25.16056930688737,nan,nan,0,0.25,scalar_mean_cvar
+four_rooms_9,train,bottleneck,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,144.2784961941842,22.077554238870622,nan,nan,0,0.25,scalar_mean_cvar
+four_rooms_9,train,junction,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,578.3768624136472,30.94655675252141,nan,nan,0,0.25,scalar_mean_cvar
+four_rooms_9,train,transition_entropy,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,355.5614766930501,19.965108330291624,nan,nan,0,0.25,scalar_mean_cvar
+four_rooms_9,train,turn_articulation,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,65.43335974967641,14.685513324067523,nan,nan,0,0.25,scalar_mean_cvar
+four_rooms_9,train,value_gradient,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,415.6812487574556,24.84515265381932,nan,nan,0,0.25,scalar_mean_cvar
+four_rooms_9,test,combined,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,355.56140885809015,19.96506490726209,nan,nan,0,0.25,scalar_mean_cvar
+four_rooms_9,train,betweenness,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.25,scalar_max
+four_rooms_9,train,bottleneck,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.25,scalar_max
+four_rooms_9,train,junction,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.25,scalar_max
+four_rooms_9,train,transition_entropy,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.25,scalar_max
+four_rooms_9,train,turn_articulation,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.25,scalar_max
+four_rooms_9,train,value_gradient,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.25,scalar_max
+four_rooms_9,test,combined,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.25,scalar_max
+four_rooms_9,train,betweenness,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.5,group_constrained
+four_rooms_9,train,bottleneck,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.5,group_constrained
+four_rooms_9,train,junction,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.5,group_constrained
+four_rooms_9,train,transition_entropy,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.5,group_constrained
+four_rooms_9,train,turn_articulation,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.5,group_constrained
+four_rooms_9,train,value_gradient,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.5,group_constrained
+four_rooms_9,test,combined,5,28,"[0, 1, 2, 9, 67]",101.78179943166579,0.0,0.0,nan,nan,4,0.5,group_constrained
+four_rooms_9,train,betweenness,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,353.23946532815137,25.16056930688737,nan,nan,0,0.5,scalar_mean_cvar
+four_rooms_9,train,bottleneck,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,144.2784961941842,22.077554238870622,nan,nan,0,0.5,scalar_mean_cvar
+four_rooms_9,train,junction,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,578.3768624136472,30.94655675252141,nan,nan,0,0.5,scalar_mean_cvar
+four_rooms_9,train,transition_entropy,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,355.5614766930501,19.965108330291624,nan,nan,0,0.5,scalar_mean_cvar
+four_rooms_9,train,turn_articulation,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,65.43335974967641,14.685513324067523,nan,nan,0,0.5,scalar_mean_cvar
+four_rooms_9,train,value_gradient,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,415.6812487574556,24.84515265381932,nan,nan,0,0.5,scalar_mean_cvar
+four_rooms_9,test,combined,7,28,"[0, 1, 9, 38, 39, 40, 67]",148.3563100713864,355.56140885809015,19.96506490726209,nan,nan,0,0.5,scalar_mean_cvar
+four_rooms_9,train,betweenness,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.5,scalar_max
+four_rooms_9,train,bottleneck,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.5,scalar_max
+four_rooms_9,train,junction,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.5,scalar_max
+four_rooms_9,train,transition_entropy,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.5,scalar_max
+four_rooms_9,train,turn_articulation,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.5,scalar_max
+four_rooms_9,train,value_gradient,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.5,scalar_max
+four_rooms_9,test,combined,7,28,"[0, 1, 2, 3, 4, 9, 67]",144.22297673805303,0.0,0.0,nan,nan,6,0.5,scalar_max
+open_room_7,train,betweenness,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,0.0004434378674278896,0.00030732359816087025,nan,nan,3,0.25,group_constrained
+open_room_7,train,bottleneck,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,4.93196715778488,0.9999999999999999,nan,nan,3,0.25,group_constrained
+open_room_7,train,junction,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,4.93196715778488,0.9999999999999999,nan,nan,3,0.25,group_constrained
+open_room_7,train,transition_entropy,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,7.769556235739366e-06,5.3854354555134135e-06,nan,nan,3,0.25,group_constrained
+open_room_7,train,turn_articulation,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,1.2740438618576403e-07,8.831298731982384e-08,nan,nan,3,0.25,group_constrained
+open_room_7,train,value_gradient,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,6.016733322324146e-10,4.2004812567006503e-10,nan,nan,3,0.25,group_constrained
+open_room_7,test,combined,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,7.406954498258164e-06,5.134100318192844e-06,nan,nan,3,0.25,group_constrained
+open_room_7,train,betweenness,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,0.0004434378674278896,0.00030732359816087025,nan,nan,3,0.25,scalar_mean_cvar
+open_room_7,train,bottleneck,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,4.93196715778488,0.9999999999999999,nan,nan,3,0.25,scalar_mean_cvar
+open_room_7,train,junction,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,4.93196715778488,0.9999999999999999,nan,nan,3,0.25,scalar_mean_cvar
+open_room_7,train,transition_entropy,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,7.769556235739366e-06,5.3854354555134135e-06,nan,nan,3,0.25,scalar_mean_cvar
+open_room_7,train,turn_articulation,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,1.2740438618576403e-07,8.831298731982384e-08,nan,nan,3,0.25,scalar_mean_cvar
+open_room_7,train,value_gradient,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,6.016733322324146e-10,4.2004812567006503e-10,nan,nan,3,0.25,scalar_mean_cvar
+open_room_7,test,combined,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,7.406954498258164e-06,5.134100318192844e-06,nan,nan,3,0.25,scalar_mean_cvar
+open_room_7,train,betweenness,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,2.7614153131259358e-05,1.9140582795487155e-05,nan,nan,2,0.25,scalar_max
+open_room_7,train,bottleneck,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,0.050181961922725046,0.034482758620689655,nan,nan,2,0.25,scalar_max
+open_room_7,train,junction,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,0.050181961922725046,0.034482758620689655,nan,nan,2,0.25,scalar_max
+open_room_7,train,transition_entropy,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,4.257374969325816e-09,2.952987455508724e-09,nan,nan,2,0.25,scalar_max
+open_room_7,train,turn_articulation,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,0.0,3.660230378970453e-15,nan,nan,2,0.25,scalar_max
+open_room_7,train,value_gradient,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,1.1388085118491652e-10,8.093612884585341e-11,nan,nan,2,0.25,scalar_max
+open_room_7,test,combined,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,3.5384664752128804e-10,2.472676521269385e-10,nan,nan,2,0.25,scalar_max
+open_room_7,train,betweenness,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,0.0004434378674278896,0.00030732359816087025,nan,nan,3,0.5,group_constrained
+open_room_7,train,bottleneck,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,4.93196715778488,0.9999999999999999,nan,nan,3,0.5,group_constrained
+open_room_7,train,junction,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,4.93196715778488,0.9999999999999999,nan,nan,3,0.5,group_constrained
+open_room_7,train,transition_entropy,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,7.769556235739366e-06,5.3854354555134135e-06,nan,nan,3,0.5,group_constrained
+open_room_7,train,turn_articulation,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,1.2740438618576403e-07,8.831298731982384e-08,nan,nan,3,0.5,group_constrained
+open_room_7,train,value_gradient,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,6.016733322324146e-10,4.2004812567006503e-10,nan,nan,3,0.5,group_constrained
+open_room_7,test,combined,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,7.406954498258164e-06,5.134100318192844e-06,nan,nan,3,0.5,group_constrained
+open_room_7,train,betweenness,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,0.0004434378674278896,0.00030732359816087025,nan,nan,3,0.5,scalar_mean_cvar
+open_room_7,train,bottleneck,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,4.93196715778488,0.9999999999999999,nan,nan,3,0.5,scalar_mean_cvar
+open_room_7,train,junction,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,4.93196715778488,0.9999999999999999,nan,nan,3,0.5,scalar_mean_cvar
+open_room_7,train,transition_entropy,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,7.769556235739366e-06,5.3854354555134135e-06,nan,nan,3,0.5,scalar_mean_cvar
+open_room_7,train,turn_articulation,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,1.2740438618576403e-07,8.831298731982384e-08,nan,nan,3,0.5,scalar_mean_cvar
+open_room_7,train,value_gradient,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,6.016733322324146e-10,4.2004812567006503e-10,nan,nan,3,0.5,scalar_mean_cvar
+open_room_7,test,combined,7,14,"[0, 7, 8, 15, 36, 43, 48]",77.06043884918303,7.406954498258164e-06,5.134100318192844e-06,nan,nan,3,0.5,scalar_mean_cvar
+open_room_7,train,betweenness,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,2.7614153131259358e-05,1.9140582795487155e-05,nan,nan,2,0.5,scalar_max
+open_room_7,train,bottleneck,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,0.050181961922725046,0.034482758620689655,nan,nan,2,0.5,scalar_max
+open_room_7,train,junction,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,0.050181961922725046,0.034482758620689655,nan,nan,2,0.5,scalar_max
+open_room_7,train,transition_entropy,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,4.257374969325816e-09,2.952987455508724e-09,nan,nan,2,0.5,scalar_max
+open_room_7,train,turn_articulation,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,0.0,3.660230378970453e-15,nan,nan,2,0.5,scalar_max
+open_room_7,train,value_gradient,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,1.1388085118491652e-10,8.093612884585341e-11,nan,nan,2,0.5,scalar_max
+open_room_7,test,combined,7,14,"[0, 3, 4, 6, 7, 8, 48]",69.02710551584968,3.5384664752128804e-10,2.472676521269385e-10,nan,nan,2,0.5,scalar_max

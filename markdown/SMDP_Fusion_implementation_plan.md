@@ -4297,3 +4297,351 @@ to a constrained rate-distortion objective over boundary sets?
 What assumptions are needed for h_e(x), rho_pi(e), and CVaR_tail terms
 to behave like an operator rather than a heuristic score?
 ```
+
+## 30. GPT_answer_9 后续：fixed basis + multi-probe RD
+
+`GPT_answer_9.md` 的核心反驳是：held-out residual probe 的失败不是 frozen
+operator exactness 的失败，而是 probe overfitting。
+
+新增参考：
+
+```text
+reference/papers/gdro_2024__efficient-algorithms-for-empirical-group-distributionally-robust-optimization-and-beyond.pdf
+reference/pages/gdro_2024.html
+reference/gpt_answer_9_download_report.md
+```
+
+`State Abstraction as Compression in Apprenticeship Learning` 和
+`david-abel/rl_info_theory` 之前已经在 `reference/` 缓存。
+
+实现：
+
+```text
+experiments/run_rd_multiprobe_basis.py
+```
+
+这个实验把 GPT 的建议拆成两层：
+
+```text
+fixed basis:
+  C0 = topology + spectral + coverage + deterministic random anchors
+
+residual_train basis:
+  C_train = train residual probes induced candidate universe
+
+multi-probe risk:
+  single / mean / mean_cvar / max
+```
+
+主 score 是：
+
+```text
+S_rho(x|B) =
+  lambda * [rho(D(B)) - rho(D(B) - Delta(x))] - c_x
+```
+
+其中 `Delta_l(x)` 由每个 probe 的 first-hit Green finite difference 给出。
+
+对应 Lean 证明也补了：
+
+```text
+proof/RDOperator.lean:
+  MultiProbeObjective.fd_exact
+```
+
+这说明只要 `C0/O0`、probe family、edge weights、rate cost 在 greedy step 内固定，
+任意有限向量 risk aggregator `rho` 都有 exact finite-difference theorem。
+
+第一组实验输出：
+
+```text
+experiments/output/rd_multiprobe_basis/summary.md
+```
+
+当前结果的关键信息不是“multi-probe 已经赢了”，而是一个更有用的反例：
+
+```text
+train probes = junction + bottleneck
+test probes  = turn_articulation + combined + value_gradient
+```
+
+在 maze 上，mean/mean_cvar/max 能把 train probe bits 压到接近 0，
+但 held-out test bits 仍然很高。这说明：
+
+```text
+固定 basis 只是解决 hypothesis leakage；
+probe set 本身还必须覆盖 held-out lens 的结构类型。
+```
+
+下一步应该做 probe-count / leave-one-lens-out scaling：
+
+```text
+m = 1, 2, 3, 4, ...
+plot:
+  train_bits_mean
+  test_bits_mean
+  test_bits_cvar
+  test-train gap
+```
+
+如果随着 train probe family 变丰富，held-out gap 下降，就能和
+Hoeffding + finite hypothesis class bound 对上。
+
+### 30.1 Probe-count scaling
+
+我又补了 probe 数量变化实验：
+
+```text
+experiments/run_rd_probe_count_scaling.py
+experiments/output/rd_probe_count_scaling/summary.md
+```
+
+默认 probe pool：
+
+```text
+junction, bottleneck, turn_articulation, combined, value_gradient, transition_entropy
+```
+
+这个实验还比较粗糙，但已经暴露出一个重要点：
+
+```text
+只增加 probe 数量并不自动改善 held-out；
+probe 的顺序/族覆盖和 risk aggregator 会强烈影响结果。
+```
+
+例如在 maze/four_rooms 上，某些 `mean` / `mean_cvar` 前缀训练会把 train bits
+压低但 held-out 仍高；而 `max` 在部分前缀上表现出完全不同的 boundary 选择。
+这说明下一步不只是“多加 probes”，而是要做：
+
+```text
+leave-one-lens-out
+stratified probe sampling
+balanced CVaR group weighting
+```
+
+也就是把 `P_train` 从任意 prefix 改成覆盖 topology / stochastic / value-gradient
+三类 lens 的分层集合。
+
+### 30.2 Leave-one-lens-out 与 stratified validation
+
+继续补了正式的 lens validation：
+
+```text
+experiments/run_rd_lens_validation.py
+experiments/output/rd_lens_validation/summary.md
+```
+
+默认 lens group：
+
+```text
+topology:
+  junction, bottleneck, turn_articulation, betweenness
+
+value:
+  value_gradient
+
+stochastic:
+  transition_entropy
+
+extra held-out:
+  combined
+```
+
+实验有两个 protocol：
+
+```text
+leave_one_lens_out:
+  每次 hold out 一个 lens，其余全部训练
+
+stratified_one_per_group:
+  每次从 topology/value/stochastic 中各取一个训练，其余 lens 测试
+```
+
+第一轮结果：
+
+```text
+LOO mean test bits:
+  mean_cvar ≈ 165.7
+  max       ≈ 69.4
+
+stratified mean test bits:
+  mean_cvar ≈ 129.6
+  max       ≈ 103.9
+```
+
+所以现在更明确了：
+
+```text
+1. mean_cvar 不是自动稳健；它仍会被 train probe composition 影响。
+2. max/minimax 在 leave-one-lens-out 上明显降低平均 held-out risk，
+   但也会在 open_room/junction 这类 lens 上出现个别 worst-case failure。
+3. topology 组内部不是可互换的：junction / bottleneck / turn / betweenness
+   各自诱导的 held-out risk 不一样。
+```
+
+下一步更像是：
+
+```text
+group-balanced robust risk:
+  rho(D) = mean_groups CVaR_lenses_in_group(D)
+  或 max_groups CVaR_lenses_in_group(D)
+
+而不是简单 mean_cvar over all probes。
+```
+
+这能防止某一类 lens 数量多而淹没其他类，也能比 pure max 少一点过度悲观。
+
+### 30.3 Group-balanced robust risk
+
+继续把上面的 group-balanced risk 也接进了 operator：
+
+```text
+experiments/run_rd_multiprobe_basis.py:
+  group_mean_cvar
+  group_max_cvar
+```
+
+`run_rd_lens_validation.py` 现在默认同时跑：
+
+```text
+mean_cvar
+max
+group_mean_cvar
+group_max_cvar
+```
+
+第一轮结果有点反直觉，但很有价值：
+
+```text
+leave-one-lens-out mean test bits:
+  mean_cvar       ≈ 165.7
+  group_mean_cvar ≈ 165.7
+  max             ≈ 69.4
+  group_max_cvar  ≈ 69.4
+
+stratified mean test bits:
+  mean_cvar       ≈ 129.6
+  group_mean_cvar ≈ 129.6
+  max             ≈ 103.9
+  group_max_cvar  ≈ 103.9
+```
+
+也就是说，在当前 tiny probe family 和 `B=5` budget 下，
+group-balanced risk 没有改变 greedy 选择；它和普通 mean/max 落到同一个 boundary。
+这不是坏事，它说明失败不是单纯“某一组 lens 数量太多导致加权失衡”，
+而更像是：
+
+```text
+1. topology 组内部 lens 不是互相替代的；
+2. 当前 split budget 太小，某些 held-out lens 需要不同 vertex；
+3. pure max 在平均 held-out 上更稳，但仍会牺牲个别 open-room/junction case。
+```
+
+下一步如果继续推进，应该改成 constrained multi-objective：
+
+```text
+min R(B)
+subject to:
+  CVaR_topology(B) <= eps_topology
+  CVaR_value(B) <= eps_value
+  CVaR_stochastic(B) <= eps_stochastic
+```
+
+而不是把所有 group 塞进单个 scalar risk。
+
+### 30.4 Group-constrained RD + beam search
+
+现在把真正的 group-constrained 版本也补上了：
+
+```text
+experiments/run_rd_group_constrained.py
+experiments/output/rd_group_constrained/summary.md
+```
+
+目标不再是另一个 scalar risk，而是：
+
+```text
+min R(B)
+subject to:
+  CVaR_topology(B)   <= eps_topology
+  CVaR_value(B)      <= eps_value
+  CVaR_stochastic(B) <= eps_stochastic
+```
+
+实现上先用 endpoint boundary 估计每个 group 的初始 risk，
+再用 `budget_frac` 设定：
+
+```text
+eps_g = budget_frac * initial_CVaR_g
+```
+
+然后贪心/beam 搜索选择 boundary，使 group violation：
+
+```text
+sum_g max(0, risk_g(B) - eps_g)
+```
+
+下降。
+
+一个重要实现细节：普通 one-step greedy 会在 maze 里选到局部最优但死路的 split。
+所以脚本加入了：
+
+```text
+--beam-width
+--beam-expand
+```
+
+当前正式结果用：
+
+```text
+beam_width = 4
+beam_expand = 6
+max_splits = 5
+budget_fracs = 0.25, 0.5
+```
+
+结果很强：
+
+```text
+maze_9:
+  group_constrained:
+    B=3, feasible=True, test_cvar=0
+  scalar_mean_cvar:
+    B=7, feasible=False, test_cvar≈255.7
+  scalar_max:
+    B=7, feasible=True, test_cvar=0
+
+four_rooms_9:
+  group_constrained:
+    B=5, feasible=True, test_cvar=0
+  scalar_mean_cvar:
+    B=7, feasible=False, test_cvar≈355.6
+  scalar_max:
+    B=7, feasible=True, test_cvar=0
+
+open_room_7:
+  group_constrained:
+    B=7, feasible=True
+  scalar_mean_cvar:
+    B=7, feasible=True
+  scalar_max:
+    B=7, feasible=True
+```
+
+这基本支持 GPT 的方向，但也补了一条关键修正：
+
+```text
+group constraints 本身还不够；
+因为 first-hit/kernel 重构是非子模的，必须配 beam/lookahead，
+否则 one-step greedy 可能选到 violation reduction 最大但后续不可继续的 split。
+```
+
+现在的论文故事可以更稳地写成：
+
+```text
+1. frozen multi-probe RD operator: exact theorem
+2. robust abstraction objective: group-constrained RD
+3. optimization algorithm: small-width beam greedy, because adaptive graph construction is non-submodular
+4. empirical result: constraints reach feasibility with fewer vertices than scalar max,
+   while scalar mean/CVaR can badly violate held-out group constraints
+```

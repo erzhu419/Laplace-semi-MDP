@@ -1,0 +1,1442 @@
+[
+  {
+    "map": "maze_9",
+    "m_train": 1,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.215378649008926,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 1,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.2167969710426405,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 1,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.2215288960142061,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 2,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.42176432901760563,
+    "train_bits_mean": 2.733267432683696e-07,
+    "train_bits_max": 5.466534865367392e-07,
+    "train_bits_cvar": 5.466534865367392e-07,
+    "test_bits_mean": 223.50618370151108,
+    "test_bits_max": 357.57009085151446,
+    "test_bits_cvar": 357.57009085151446,
+    "test_minus_train_mean": 223.50618342818433,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 2,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.4252805070136674,
+    "train_bits_mean": 2.733267432683696e-07,
+    "train_bits_max": 5.466534865367392e-07,
+    "train_bits_cvar": 5.466534865367392e-07,
+    "test_bits_mean": 223.50618370151108,
+    "test_bits_max": 357.57009085151446,
+    "test_bits_cvar": 357.57009085151446,
+    "test_minus_train_mean": 223.50618342818433,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 2,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.42985835002036765,
+    "train_bits_mean": 2.733267432683696e-07,
+    "train_bits_max": 5.466534865367392e-07,
+    "train_bits_cvar": 5.466534865367392e-07,
+    "test_bits_mean": 223.50618370151108,
+    "test_bits_max": 357.57009085151446,
+    "test_bits_cvar": 357.57009085151446,
+    "test_minus_train_mean": 223.50618342818433,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 3,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.6336092440178618,
+    "train_bits_mean": 3.644356576911595e-07,
+    "train_bits_max": 5.466534865367392e-07,
+    "train_bits_cvar": 5.466534865367392e-07,
+    "test_bits_mean": 298.00824475313027,
+    "test_bits_max": 357.57009085151446,
+    "test_bits_cvar": 357.57009085151446,
+    "test_minus_train_mean": 298.0082443886946,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 3,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.6386208690237254,
+    "train_bits_mean": 3.644356576911595e-07,
+    "train_bits_max": 5.466534865367392e-07,
+    "train_bits_cvar": 5.466534865367392e-07,
+    "test_bits_mean": 298.00824475313027,
+    "test_bits_max": 357.57009085151446,
+    "test_bits_cvar": 357.57009085151446,
+    "test_minus_train_mean": 298.0082443886946,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 3,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.6327042019693181,
+    "train_bits_mean": 3.644356576911595e-07,
+    "train_bits_max": 5.466534865367392e-07,
+    "train_bits_cvar": 5.466534865367392e-07,
+    "test_bits_mean": 298.00824475313027,
+    "test_bits_max": 357.57009085151446,
+    "test_bits_cvar": 357.57009085151446,
+    "test_minus_train_mean": 298.0082443886946,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 4,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.8797275620163418,
+    "train_bits_mean": 44.721574732462955,
+    "train_bits_max": 178.88629783654486,
+    "train_bits_cvar": 178.88629783654486,
+    "test_bits_mean": 357.569218211423,
+    "test_bits_max": 357.57009085151446,
+    "test_bits_cvar": 357.57009085151446,
+    "test_minus_train_mean": 312.84764347896004,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 4,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.889348873985,
+    "train_bits_mean": 44.721574732462955,
+    "train_bits_max": 178.88629783654486,
+    "train_bits_cvar": 178.88629783654486,
+    "test_bits_mean": 357.569218211423,
+    "test_bits_max": 357.57009085151446,
+    "test_bits_cvar": 357.57009085151446,
+    "test_minus_train_mean": 312.84764347896004,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 4,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 0.8819602829753421,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      3,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 5,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 1.1355459810001776,
+    "train_bits_mean": 107.29127795627326,
+    "train_bits_max": 357.57009085151446,
+    "train_bits_cvar": 357.57009085151446,
+    "test_bits_mean": 357.5683455713315,
+    "test_bits_max": 357.5683455713315,
+    "test_bits_cvar": 357.5683455713315,
+    "test_minus_train_mean": 250.27706761505826,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 5,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 1.15565092000179,
+    "train_bits_mean": 107.29127795627326,
+    "train_bits_max": 357.57009085151446,
+    "train_bits_cvar": 357.57009085151446,
+    "test_bits_mean": 357.5683455713315,
+    "test_bits_max": 357.5683455713315,
+    "test_bits_cvar": 357.5683455713315,
+    "test_minus_train_mean": 250.27706761505826,
+    "boundary": [
+      0,
+      2,
+      17,
+      21,
+      30
+    ]
+  },
+  {
+    "map": "maze_9",
+    "m_train": 5,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 17,
+    "n_boundary": 5,
+    "selection_time_sec": 1.2433620640076697,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      3,
+      30
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 1,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 0.5584134039818309,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 1,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 0.5672655829694122,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 1,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 0.5682155399699695,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 2,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 1.2233761769603007,
+    "train_bits_mean": 145.8318503054705,
+    "train_bits_max": 208.5490607708113,
+    "train_bits_cvar": 208.5490607708113,
+    "test_bits_mean": 137.38830094368785,
+    "test_bits_max": 171.12556120575994,
+    "test_bits_cvar": 171.12556120575994,
+    "test_minus_train_mean": -8.443549361782658,
+    "boundary": [
+      0,
+      1,
+      21,
+      29,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 2,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 1.206020146026276,
+    "train_bits_mean": 226.44972369844817,
+    "train_bits_max": 340.56468930642916,
+    "train_bits_cvar": 340.56468930642916,
+    "test_bits_mean": 159.77235866191137,
+    "test_bits_max": 198.2666114234737,
+    "test_bits_cvar": 198.2666114234737,
+    "test_minus_train_mean": -66.6773650365368,
+    "boundary": [
+      0,
+      1,
+      9,
+      29,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 2,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 1.5719190399977379,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 3,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 1.99008718598634,
+    "train_bits_mean": 279.8253280128992,
+    "train_bits_max": 501.6545533033334,
+    "train_bits_cvar": 501.6545533033334,
+    "test_bits_mean": 396.4461033903553,
+    "test_bits_max": 396.6004946015297,
+    "test_bits_cvar": 396.6004946015297,
+    "test_minus_train_mean": 116.62077537745608,
+    "boundary": [
+      0,
+      1,
+      29,
+      42,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 3,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 1.947405876009725,
+    "train_bits_mean": 215.19313194053703,
+    "train_bits_max": 340.56468930642916,
+    "train_bits_cvar": 340.56468930642916,
+    "test_bits_mean": 331.75231604479274,
+    "test_bits_max": 331.7523160451258,
+    "test_bits_cvar": 331.7523160451258,
+    "test_minus_train_mean": 116.5591841042557,
+    "boundary": [
+      0,
+      1,
+      9,
+      42,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 3,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 1.840343579009641,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 4,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 3.078287193959113,
+    "train_bits_mean": 308.9612173959539,
+    "train_bits_max": 501.6545533033334,
+    "train_bits_cvar": 501.6545533033334,
+    "test_bits_mean": 396.48471231297384,
+    "test_bits_max": 396.6004946015297,
+    "test_bits_cvar": 396.6004946015297,
+    "test_minus_train_mean": 87.52349491701995,
+    "boundary": [
+      0,
+      1,
+      29,
+      42,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 4,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 2.62078214797657,
+    "train_bits_mean": 308.9612173959539,
+    "train_bits_max": 501.6545533033334,
+    "train_bits_cvar": 501.6545533033334,
+    "test_bits_mean": 396.48471231297384,
+    "test_bits_max": 396.6004946015297,
+    "test_bits_cvar": 396.6004946015297,
+    "test_minus_train_mean": 87.52349491701995,
+    "boundary": [
+      0,
+      1,
+      29,
+      42,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 4,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 2.451709963963367,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 5,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 3.193152147985529,
+    "train_bits_mean": 326.48907283706905,
+    "train_bits_max": 501.6545533033334,
+    "train_bits_cvar": 501.6545533033334,
+    "test_bits_mean": 396.368930024418,
+    "test_bits_max": 396.368930024418,
+    "test_bits_cvar": 396.368930024418,
+    "test_minus_train_mean": 69.87985718734893,
+    "boundary": [
+      0,
+      1,
+      29,
+      42,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 5,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 3.1325384289957583,
+    "train_bits_mean": 326.48907283706905,
+    "train_bits_max": 501.6545533033334,
+    "train_bits_cvar": 501.6545533033334,
+    "test_bits_mean": 396.368930024418,
+    "test_bits_max": 396.368930024418,
+    "test_bits_cvar": 396.368930024418,
+    "test_minus_train_mean": 69.87985718734893,
+    "boundary": [
+      0,
+      1,
+      29,
+      42,
+      67
+    ]
+  },
+  {
+    "map": "four_rooms_9",
+    "m_train": 5,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 28,
+    "n_boundary": 5,
+    "selection_time_sec": 3.1576236450346187,
+    "train_bits_mean": 0.0,
+    "train_bits_max": 0.0,
+    "train_bits_cvar": 0.0,
+    "test_bits_mean": 0.0,
+    "test_bits_max": 0.0,
+    "test_bits_cvar": 0.0,
+    "test_minus_train_mean": 0.0,
+    "boundary": [
+      0,
+      1,
+      2,
+      9,
+      67
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 1,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 0.3484372209641151,
+    "train_bits_mean": 4.93196715778488,
+    "train_bits_max": 4.93196715778488,
+    "train_bits_cvar": 4.93196715778488,
+    "test_bits_mean": 0.9863965936057042,
+    "test_bits_max": 4.93196715778488,
+    "test_bits_cvar": 4.93196715778488,
+    "test_minus_train_mean": -3.9455705641791754,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 1,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 0.3641518919612281,
+    "train_bits_mean": 4.93196715778488,
+    "train_bits_max": 4.93196715778488,
+    "train_bits_cvar": 4.93196715778488,
+    "test_bits_mean": 0.9863965936057042,
+    "test_bits_max": 4.93196715778488,
+    "test_bits_cvar": 4.93196715778488,
+    "test_minus_train_mean": -3.9455705641791754,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 1,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction"
+    ],
+    "test_probes": [
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 0.36368972196942195,
+    "train_bits_mean": 4.93196715778488,
+    "train_bits_max": 4.93196715778488,
+    "train_bits_cvar": 4.93196715778488,
+    "test_bits_mean": 0.9863965936057042,
+    "test_bits_max": 4.93196715778488,
+    "test_bits_cvar": 4.93196715778488,
+    "test_minus_train_mean": -3.9455705641791754,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 2,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 0.6990398250054568,
+    "train_bits_mean": 4.93196715778488,
+    "train_bits_max": 4.93196715778488,
+    "train_bits_cvar": 4.93196715778488,
+    "test_bits_mean": 3.952560910514212e-06,
+    "test_bits_max": 8.017796861141765e-06,
+    "test_bits_cvar": 8.017796861141765e-06,
+    "test_minus_train_mean": -4.931963205223969,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 2,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 0.7145033440319821,
+    "train_bits_mean": 4.93196715778488,
+    "train_bits_max": 4.93196715778488,
+    "train_bits_cvar": 4.93196715778488,
+    "test_bits_mean": 3.952560910514212e-06,
+    "test_bits_max": 8.017796861141765e-06,
+    "test_bits_cvar": 8.017796861141765e-06,
+    "test_minus_train_mean": -4.931963205223969,
+    "boundary": [
+      0,
+      7,
+      8,
+      15,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 2,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck"
+    ],
+    "test_probes": [
+      "turn_articulation",
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 0.698929545993451,
+    "train_bits_mean": 196.89662995791372,
+    "train_bits_max": 202.81313284358265,
+    "train_bits_cvar": 202.81313284358265,
+    "test_bits_mean": 133.17441037811,
+    "test_bits_max": 173.00311381340234,
+    "test_bits_cvar": 173.00311381340234,
+    "test_minus_train_mean": -63.72221957980372,
+    "boundary": [
+      0,
+      3,
+      4,
+      7,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 3,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.059137026022654,
+    "train_bits_mean": 255.62833103376417,
+    "train_bits_max": 484.15588326108866,
+    "train_bits_cvar": 484.15588326108866,
+    "test_bits_mean": 186.6245030837655,
+    "test_bits_max": 190.67959045774634,
+    "test_bits_cvar": 190.67959045774634,
+    "test_minus_train_mean": -69.00382794999868,
+    "boundary": [
+      0,
+      4,
+      6,
+      7,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 3,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.096337957016658,
+    "train_bits_mean": 255.62833103376417,
+    "train_bits_max": 484.15588326108866,
+    "train_bits_cvar": 484.15588326108866,
+    "test_bits_mean": 186.6245030837655,
+    "test_bits_max": 190.67959045774634,
+    "test_bits_cvar": 190.67959045774634,
+    "test_minus_train_mean": -69.00382794999868,
+    "boundary": [
+      0,
+      4,
+      6,
+      7,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 3,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation"
+    ],
+    "test_probes": [
+      "combined",
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.059991389978677,
+    "train_bits_mean": 135.82809901125415,
+    "train_bits_max": 202.81313284358265,
+    "train_bits_cvar": 202.81313284358265,
+    "test_bits_mean": 173.002201464835,
+    "test_bits_max": 173.00311381340234,
+    "test_bits_cvar": 173.00311381340234,
+    "test_minus_train_mean": 37.17410245358084,
+    "boundary": [
+      0,
+      3,
+      4,
+      7,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 4,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.5253355110180564,
+    "train_bits_mean": 237.87048615372746,
+    "train_bits_max": 484.15588326108866,
+    "train_bits_cvar": 484.15588326108866,
+    "test_bits_mean": 187.63827886883954,
+    "test_bits_max": 190.67959045774634,
+    "test_bits_cvar": 190.67959045774634,
+    "test_minus_train_mean": -50.23220728488792,
+    "boundary": [
+      0,
+      4,
+      6,
+      7,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 4,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.5251845570164733,
+    "train_bits_mean": 237.87048615372746,
+    "train_bits_max": 484.15588326108866,
+    "train_bits_cvar": 484.15588326108866,
+    "test_bits_mean": 187.63827886883954,
+    "test_bits_max": 190.67959045774634,
+    "test_bits_cvar": 190.67959045774634,
+    "test_minus_train_mean": -50.23220728488792,
+    "boundary": [
+      0,
+      4,
+      6,
+      7,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 4,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined"
+    ],
+    "test_probes": [
+      "value_gradient",
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.5418241020524874,
+    "train_bits_mean": 145.1215086572099,
+    "train_bits_max": 202.81313284358265,
+    "train_bits_cvar": 202.81313284358265,
+    "test_bits_mean": 173.00243339971394,
+    "test_bits_max": 173.00311381340234,
+    "test_bits_cvar": 173.00311381340234,
+    "test_minus_train_mean": 27.88092474250405,
+    "boundary": [
+      0,
+      3,
+      4,
+      7,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 5,
+    "risk_kind": "mean",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.9820147880236618,
+    "train_bits_mean": 143.46855560531117,
+    "train_bits_max": 191.21884477824653,
+    "train_bits_cvar": 191.21884477824653,
+    "test_bits_mean": 172.72618501037644,
+    "test_bits_max": 172.72618501037644,
+    "test_bits_cvar": 172.72618501037644,
+    "test_minus_train_mean": 29.257629405065273,
+    "boundary": [
+      0,
+      7,
+      36,
+      43,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 5,
+    "risk_kind": "mean_cvar",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.9588361430214718,
+    "train_bits_mean": 143.46855560531117,
+    "train_bits_max": 191.21884477824653,
+    "train_bits_cvar": 191.21884477824653,
+    "test_bits_mean": 172.72618501037644,
+    "test_bits_max": 172.72618501037644,
+    "test_bits_cvar": 172.72618501037644,
+    "test_minus_train_mean": 29.257629405065273,
+    "boundary": [
+      0,
+      7,
+      36,
+      43,
+      48
+    ]
+  },
+  {
+    "map": "open_room_7",
+    "m_train": 5,
+    "risk_kind": "max",
+    "train_probes": [
+      "junction",
+      "bottleneck",
+      "turn_articulation",
+      "combined",
+      "value_gradient"
+    ],
+    "test_probes": [
+      "transition_entropy"
+    ],
+    "n_basis": 14,
+    "n_boundary": 5,
+    "selection_time_sec": 1.9690318299690261,
+    "train_bits_mean": 150.6978296884484,
+    "train_bits_max": 202.81313284358265,
+    "train_bits_cvar": 202.81313284358265,
+    "test_bits_mean": 173.00175298602554,
+    "test_bits_max": 173.00175298602554,
+    "test_bits_cvar": 173.00175298602554,
+    "test_minus_train_mean": 22.303923297577143,
+    "boundary": [
+      0,
+      3,
+      4,
+      7,
+      48
+    ]
+  }
+]

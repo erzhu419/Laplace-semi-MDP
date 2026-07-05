@@ -1,0 +1,25 @@
+map,step,selected_state,stop_reason,n_boundary,selection_mode,beam_width,beam_expand,budget_frac,method,total_violation,max_violation,group_risks,group_violations
+maze_9,0,1,continue,2,beam,4,6,0.25,group_constrained,,,,
+maze_9,1,,feasible,3,beam,4,6,0.25,group_constrained,0.0,0.0,"{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}","{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}"
+maze_9,0,1,continue,2,beam,4,6,0.5,group_constrained,,,,
+maze_9,1,,feasible,3,beam,4,6,0.5,group_constrained,0.0,0.0,"{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}","{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}"
+four_rooms_9,0,1,continue,2,beam,4,6,0.25,group_constrained,,,,
+four_rooms_9,1,9,continue,3,beam,4,6,0.25,group_constrained,,,,
+four_rooms_9,2,2,continue,4,beam,4,6,0.25,group_constrained,,,,
+four_rooms_9,3,,feasible,5,beam,4,6,0.25,group_constrained,0.0,0.0,"{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}","{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}"
+four_rooms_9,0,1,continue,2,beam,4,6,0.5,group_constrained,,,,
+four_rooms_9,1,9,continue,3,beam,4,6,0.5,group_constrained,,,,
+four_rooms_9,2,2,continue,4,beam,4,6,0.5,group_constrained,,,,
+four_rooms_9,3,,feasible,5,beam,4,6,0.5,group_constrained,0.0,0.0,"{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}","{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}"
+open_room_7,0,36,continue,2,beam,4,6,0.25,group_constrained,,,,
+open_room_7,1,7,continue,3,beam,4,6,0.25,group_constrained,,,,
+open_room_7,2,43,continue,4,beam,4,6,0.25,group_constrained,,,,
+open_room_7,3,8,continue,5,beam,4,6,0.25,group_constrained,,,,
+open_room_7,4,15,continue,6,beam,4,6,0.25,group_constrained,,,,
+open_room_7,5,,feasible,7,beam,4,6,0.25,group_constrained,0.0,0.0,"{""stochastic"": 7.769556235739366e-06, ""topology"": 4.93196715778488, ""value"": 6.016733322324146e-10}","{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}"
+open_room_7,0,36,continue,2,beam,4,6,0.5,group_constrained,,,,
+open_room_7,1,7,continue,3,beam,4,6,0.5,group_constrained,,,,
+open_room_7,2,43,continue,4,beam,4,6,0.5,group_constrained,,,,
+open_room_7,3,8,continue,5,beam,4,6,0.5,group_constrained,,,,
+open_room_7,4,15,continue,6,beam,4,6,0.5,group_constrained,,,,
+open_room_7,5,,feasible,7,beam,4,6,0.5,group_constrained,0.0,0.0,"{""stochastic"": 7.769556235739366e-06, ""topology"": 4.93196715778488, ""value"": 6.016733322324146e-10}","{""stochastic"": 0.0, ""topology"": 0.0, ""value"": 0.0}"

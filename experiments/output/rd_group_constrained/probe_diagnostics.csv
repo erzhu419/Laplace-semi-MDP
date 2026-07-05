@@ -1,0 +1,373 @@
+map,step,probe,n_boundary,n_basis,distortion_before_bits,n_candidates,beam_id,path,budget_frac
+maze_9,0,betweenness,2,17,77.72630619236912,15,0,[],0.25
+maze_9,0,bottleneck,2,17,77.72630619236912,15,0,[],0.25
+maze_9,0,junction,2,17,77.72630619236912,15,0,[],0.25
+maze_9,0,transition_entropy,2,17,77.72630619236912,15,0,[],0.25
+maze_9,0,turn_articulation,2,17,77.72630619236912,15,0,[],0.25
+maze_9,0,value_gradient,2,17,77.72630619236912,15,0,[],0.25
+maze_9,1,betweenness,3,17,0.0,14,0,[1],0.25
+maze_9,1,bottleneck,3,17,0.0,14,0,[1],0.25
+maze_9,1,junction,3,17,0.0,14,0,[1],0.25
+maze_9,1,transition_entropy,3,17,0.0,14,0,[1],0.25
+maze_9,1,turn_articulation,3,17,0.0,14,0,[1],0.25
+maze_9,1,value_gradient,3,17,0.0,14,0,[1],0.25
+maze_9,0,betweenness,2,17,77.72630619236912,15,0,[],0.5
+maze_9,0,bottleneck,2,17,77.72630619236912,15,0,[],0.5
+maze_9,0,junction,2,17,77.72630619236912,15,0,[],0.5
+maze_9,0,transition_entropy,2,17,77.72630619236912,15,0,[],0.5
+maze_9,0,turn_articulation,2,17,77.72630619236912,15,0,[],0.5
+maze_9,0,value_gradient,2,17,77.72630619236912,15,0,[],0.5
+maze_9,1,betweenness,3,17,0.0,14,0,[1],0.5
+maze_9,1,bottleneck,3,17,0.0,14,0,[1],0.5
+maze_9,1,junction,3,17,0.0,14,0,[1],0.5
+maze_9,1,transition_entropy,3,17,0.0,14,0,[1],0.5
+maze_9,1,turn_articulation,3,17,0.0,14,0,[1],0.5
+maze_9,1,value_gradient,3,17,0.0,14,0,[1],0.5
+four_rooms_9,0,betweenness,2,28,77.72630619236912,26,0,[],0.25
+four_rooms_9,0,bottleneck,2,28,55.538411782468955,26,0,[],0.25
+four_rooms_9,0,junction,2,28,77.72630619236912,26,0,[],0.25
+four_rooms_9,0,transition_entropy,2,28,77.72630619236912,26,0,[],0.25
+four_rooms_9,0,turn_articulation,2,28,18.757803825699625,26,0,[],0.25
+four_rooms_9,0,value_gradient,2,28,77.72630619236912,26,0,[],0.25
+four_rooms_9,1,betweenness,3,28,119.08090120494047,25,0,[40],0.25
+four_rooms_9,1,bottleneck,3,28,83.38232575787164,25,0,[40],0.25
+four_rooms_9,1,junction,3,28,233.17891857710737,25,0,[40],0.25
+four_rooms_9,1,transition_entropy,3,28,122.51928948231597,25,0,[40],0.25
+four_rooms_9,1,turn_articulation,3,28,29.149731101137224,25,0,[40],0.25
+four_rooms_9,1,value_gradient,3,28,233.17891857710737,25,0,[40],0.25
+four_rooms_9,1,betweenness,3,28,89.3728533246141,25,1,[1],0.25
+four_rooms_9,1,bottleneck,3,28,55.39693925218464,25,1,[1],0.25
+four_rooms_9,1,junction,3,28,89.5417742528467,25,1,[1],0.25
+four_rooms_9,1,transition_entropy,3,28,89.3691391521038,25,1,[1],0.25
+four_rooms_9,1,turn_articulation,3,28,28.92274374691329,25,1,[1],0.25
+four_rooms_9,1,value_gradient,3,28,89.36913915210823,25,1,[1],0.25
+four_rooms_9,1,betweenness,3,28,101.13978456051292,25,2,[2],0.25
+four_rooms_9,1,bottleneck,3,28,103.19058040317304,25,2,[2],0.25
+four_rooms_9,1,junction,3,28,233.17891857710737,25,2,[2],0.25
+four_rooms_9,1,transition_entropy,3,28,100.9664028360582,25,2,[2],0.25
+four_rooms_9,1,turn_articulation,3,28,32.90290894136707,25,2,[2],0.25
+four_rooms_9,1,value_gradient,3,28,100.96640283648553,25,2,[2],0.25
+four_rooms_9,1,betweenness,3,28,112.88171663719717,25,3,[3],0.25
+four_rooms_9,1,bottleneck,3,28,199.92092725628683,25,3,[3],0.25
+four_rooms_9,1,junction,3,28,233.17891857710737,25,3,[3],0.25
+four_rooms_9,1,transition_entropy,3,28,111.58505704646117,25,3,[3],0.25
+four_rooms_9,1,turn_articulation,3,28,24.232940747547488,25,3,[3],0.25
+four_rooms_9,1,value_gradient,3,28,111.58505723453126,25,3,[3],0.25
+four_rooms_9,2,betweenness,4,28,94.06041581150463,24,0,"[1, 40]",0.25
+four_rooms_9,2,bottleneck,4,28,88.03036045940169,24,0,"[1, 40]",0.25
+four_rooms_9,2,junction,4,28,256.7350106819056,24,0,"[1, 40]",0.25
+four_rooms_9,2,transition_entropy,4,28,165.24182626657415,24,0,"[1, 40]",0.25
+four_rooms_9,2,turn_articulation,4,28,43.136321939967786,24,0,"[1, 40]",0.25
+four_rooms_9,2,value_gradient,4,28,256.4413791256924,24,0,"[1, 40]",0.25
+four_rooms_9,2,betweenness,4,28,133.18092584436846,24,1,"[1, 2]",0.25
+four_rooms_9,2,bottleneck,4,28,67.34392592344221,24,1,"[1, 2]",0.25
+four_rooms_9,2,junction,4,28,133.3628503572682,24,1,"[1, 2]",0.25
+four_rooms_9,2,transition_entropy,4,28,133.06604224590006,24,1,"[1, 2]",0.25
+four_rooms_9,2,turn_articulation,4,28,42.246497483830474,24,1,"[1, 2]",0.25
+four_rooms_9,2,value_gradient,4,28,133.0660422461563,24,1,"[1, 2]",0.25
+four_rooms_9,2,betweenness,4,28,127.46454808672308,24,2,"[1, 9]",0.25
+four_rooms_9,2,bottleneck,4,28,71.52028455141769,24,2,"[1, 9]",0.25
+four_rooms_9,2,junction,4,28,134.45939018070771,24,2,"[1, 9]",0.25
+four_rooms_9,2,transition_entropy,4,28,127.2925165562371,24,2,"[1, 9]",0.25
+four_rooms_9,2,turn_articulation,4,28,32.525322980014764,24,2,"[1, 9]",0.25
+four_rooms_9,2,value_gradient,4,28,127.29251655660067,24,2,"[1, 9]",0.25
+four_rooms_9,2,betweenness,4,28,140.0055328701416,24,3,"[1, 3]",0.25
+four_rooms_9,2,bottleneck,4,28,199.70873449394975,24,3,"[1, 3]",0.25
+four_rooms_9,2,junction,4,28,250.90212066782303,24,3,"[1, 3]",0.25
+four_rooms_9,2,transition_entropy,4,28,139.82496351493512,24,3,"[1, 3]",0.25
+four_rooms_9,2,turn_articulation,4,28,29.447957866328196,24,3,"[1, 3]",0.25
+four_rooms_9,2,value_gradient,4,28,139.8249635208418,24,3,"[1, 3]",0.25
+four_rooms_9,3,betweenness,5,28,121.80984979010294,23,0,"[1, 9, 40]",0.25
+four_rooms_9,3,bottleneck,5,28,103.27021925516776,23,0,"[1, 9, 40]",0.25
+four_rooms_9,3,junction,5,28,340.56468930642916,23,0,"[1, 9, 40]",0.25
+four_rooms_9,3,transition_entropy,5,28,203.66663513115049,23,0,"[1, 9, 40]",0.25
+four_rooms_9,3,turn_articulation,5,28,45.7966358980458,23,0,"[1, 9, 40]",0.25
+four_rooms_9,3,value_gradient,5,28,331.7523160451258,23,0,"[1, 9, 40]",0.25
+four_rooms_9,3,betweenness,5,28,0.0,23,1,"[1, 9, 2]",0.25
+four_rooms_9,3,bottleneck,5,28,0.0,23,1,"[1, 9, 2]",0.25
+four_rooms_9,3,junction,5,28,0.0,23,1,"[1, 9, 2]",0.25
+four_rooms_9,3,transition_entropy,5,28,0.0,23,1,"[1, 9, 2]",0.25
+four_rooms_9,3,turn_articulation,5,28,0.0,23,1,"[1, 9, 2]",0.25
+four_rooms_9,3,value_gradient,5,28,0.0,23,1,"[1, 9, 2]",0.25
+four_rooms_9,0,betweenness,2,28,77.72630619236912,26,0,[],0.5
+four_rooms_9,0,bottleneck,2,28,55.538411782468955,26,0,[],0.5
+four_rooms_9,0,junction,2,28,77.72630619236912,26,0,[],0.5
+four_rooms_9,0,transition_entropy,2,28,77.72630619236912,26,0,[],0.5
+four_rooms_9,0,turn_articulation,2,28,18.757803825699625,26,0,[],0.5
+four_rooms_9,0,value_gradient,2,28,77.72630619236912,26,0,[],0.5
+four_rooms_9,1,betweenness,3,28,119.08090120494047,25,0,[40],0.5
+four_rooms_9,1,bottleneck,3,28,83.38232575787164,25,0,[40],0.5
+four_rooms_9,1,junction,3,28,233.17891857710737,25,0,[40],0.5
+four_rooms_9,1,transition_entropy,3,28,122.51928948231597,25,0,[40],0.5
+four_rooms_9,1,turn_articulation,3,28,29.149731101137224,25,0,[40],0.5
+four_rooms_9,1,value_gradient,3,28,233.17891857710737,25,0,[40],0.5
+four_rooms_9,1,betweenness,3,28,89.3728533246141,25,1,[1],0.5
+four_rooms_9,1,bottleneck,3,28,55.39693925218464,25,1,[1],0.5
+four_rooms_9,1,junction,3,28,89.5417742528467,25,1,[1],0.5
+four_rooms_9,1,transition_entropy,3,28,89.3691391521038,25,1,[1],0.5
+four_rooms_9,1,turn_articulation,3,28,28.92274374691329,25,1,[1],0.5
+four_rooms_9,1,value_gradient,3,28,89.36913915210823,25,1,[1],0.5
+four_rooms_9,1,betweenness,3,28,101.13978456051292,25,2,[2],0.5
+four_rooms_9,1,bottleneck,3,28,103.19058040317304,25,2,[2],0.5
+four_rooms_9,1,junction,3,28,233.17891857710737,25,2,[2],0.5
+four_rooms_9,1,transition_entropy,3,28,100.9664028360582,25,2,[2],0.5
+four_rooms_9,1,turn_articulation,3,28,32.90290894136707,25,2,[2],0.5
+four_rooms_9,1,value_gradient,3,28,100.96640283648553,25,2,[2],0.5
+four_rooms_9,1,betweenness,3,28,112.88171663719717,25,3,[3],0.5
+four_rooms_9,1,bottleneck,3,28,199.92092725628683,25,3,[3],0.5
+four_rooms_9,1,junction,3,28,233.17891857710737,25,3,[3],0.5
+four_rooms_9,1,transition_entropy,3,28,111.58505704646117,25,3,[3],0.5
+four_rooms_9,1,turn_articulation,3,28,24.232940747547488,25,3,[3],0.5
+four_rooms_9,1,value_gradient,3,28,111.58505723453126,25,3,[3],0.5
+four_rooms_9,2,betweenness,4,28,94.06041581150463,24,0,"[1, 40]",0.5
+four_rooms_9,2,bottleneck,4,28,88.03036045940169,24,0,"[1, 40]",0.5
+four_rooms_9,2,junction,4,28,256.7350106819056,24,0,"[1, 40]",0.5
+four_rooms_9,2,transition_entropy,4,28,165.24182626657415,24,0,"[1, 40]",0.5
+four_rooms_9,2,turn_articulation,4,28,43.136321939967786,24,0,"[1, 40]",0.5
+four_rooms_9,2,value_gradient,4,28,256.4413791256924,24,0,"[1, 40]",0.5
+four_rooms_9,2,betweenness,4,28,133.18092584436846,24,1,"[1, 2]",0.5
+four_rooms_9,2,bottleneck,4,28,67.34392592344221,24,1,"[1, 2]",0.5
+four_rooms_9,2,junction,4,28,133.3628503572682,24,1,"[1, 2]",0.5
+four_rooms_9,2,transition_entropy,4,28,133.06604224590006,24,1,"[1, 2]",0.5
+four_rooms_9,2,turn_articulation,4,28,42.246497483830474,24,1,"[1, 2]",0.5
+four_rooms_9,2,value_gradient,4,28,133.0660422461563,24,1,"[1, 2]",0.5
+four_rooms_9,2,betweenness,4,28,127.46454808672308,24,2,"[1, 9]",0.5
+four_rooms_9,2,bottleneck,4,28,71.52028455141769,24,2,"[1, 9]",0.5
+four_rooms_9,2,junction,4,28,134.45939018070771,24,2,"[1, 9]",0.5
+four_rooms_9,2,transition_entropy,4,28,127.2925165562371,24,2,"[1, 9]",0.5
+four_rooms_9,2,turn_articulation,4,28,32.525322980014764,24,2,"[1, 9]",0.5
+four_rooms_9,2,value_gradient,4,28,127.29251655660067,24,2,"[1, 9]",0.5
+four_rooms_9,2,betweenness,4,28,140.0055328701416,24,3,"[1, 3]",0.5
+four_rooms_9,2,bottleneck,4,28,199.70873449394975,24,3,"[1, 3]",0.5
+four_rooms_9,2,junction,4,28,250.90212066782303,24,3,"[1, 3]",0.5
+four_rooms_9,2,transition_entropy,4,28,139.82496351493512,24,3,"[1, 3]",0.5
+four_rooms_9,2,turn_articulation,4,28,29.447957866328196,24,3,"[1, 3]",0.5
+four_rooms_9,2,value_gradient,4,28,139.8249635208418,24,3,"[1, 3]",0.5
+four_rooms_9,3,betweenness,5,28,121.80984979010294,23,0,"[1, 9, 40]",0.5
+four_rooms_9,3,bottleneck,5,28,103.27021925516776,23,0,"[1, 9, 40]",0.5
+four_rooms_9,3,junction,5,28,340.56468930642916,23,0,"[1, 9, 40]",0.5
+four_rooms_9,3,transition_entropy,5,28,203.66663513115049,23,0,"[1, 9, 40]",0.5
+four_rooms_9,3,turn_articulation,5,28,45.7966358980458,23,0,"[1, 9, 40]",0.5
+four_rooms_9,3,value_gradient,5,28,331.7523160451258,23,0,"[1, 9, 40]",0.5
+four_rooms_9,3,betweenness,5,28,0.0,23,1,"[1, 9, 2]",0.5
+four_rooms_9,3,bottleneck,5,28,0.0,23,1,"[1, 9, 2]",0.5
+four_rooms_9,3,junction,5,28,0.0,23,1,"[1, 9, 2]",0.5
+four_rooms_9,3,transition_entropy,5,28,0.0,23,1,"[1, 9, 2]",0.5
+four_rooms_9,3,turn_articulation,5,28,0.0,23,1,"[1, 9, 2]",0.5
+four_rooms_9,3,value_gradient,5,28,0.0,23,1,"[1, 9, 2]",0.5
+open_room_7,0,betweenness,2,14,0.3332096327592139,12,0,[],0.25
+open_room_7,0,bottleneck,2,14,77.72630619236912,12,0,[],0.25
+open_room_7,0,junction,2,14,77.72630619236912,12,0,[],0.25
+open_room_7,0,transition_entropy,2,14,77.72630619236912,12,0,[],0.25
+open_room_7,0,turn_articulation,2,14,6.8441007995161005,12,0,[],0.25
+open_room_7,0,value_gradient,2,14,77.72630619236912,12,0,[],0.25
+open_room_7,1,betweenness,3,14,5.521310615269351,11,0,[43],0.25
+open_room_7,1,bottleneck,3,14,135.02438329363144,11,0,[43],0.25
+open_room_7,1,junction,3,14,233.17891857710737,11,0,[43],0.25
+open_room_7,1,transition_entropy,3,14,233.17891857710737,11,0,[43],0.25
+open_room_7,1,turn_articulation,3,14,10.268721466557867,11,0,[43],0.25
+open_room_7,1,value_gradient,3,14,115.60496016002807,11,0,[43],0.25
+open_room_7,1,betweenness,3,14,34.916777548217034,11,1,[36],0.25
+open_room_7,1,bottleneck,3,14,131.24539012916404,11,1,[36],0.25
+open_room_7,1,junction,3,14,233.17891857710737,11,1,[36],0.25
+open_room_7,1,transition_entropy,3,14,118.17289292122746,11,1,[36],0.25
+open_room_7,1,turn_articulation,3,14,6.870132428471273,11,1,[36],0.25
+open_room_7,1,value_gradient,3,14,113.81871892669915,11,1,[36],0.25
+open_room_7,1,betweenness,3,14,14.901317066990343,11,2,[3],0.25
+open_room_7,1,bottleneck,3,14,171.61948419411385,11,2,[3],0.25
+open_room_7,1,junction,3,14,233.17891857710737,11,2,[3],0.25
+open_room_7,1,transition_entropy,3,14,112.56718394421011,11,2,[3],0.25
+open_room_7,1,turn_articulation,3,14,10.266671843950808,11,2,[3],0.25
+open_room_7,1,value_gradient,3,14,112.56716555888693,11,2,[3],0.25
+open_room_7,1,betweenness,3,14,10.027276593880869,11,3,[4],0.25
+open_room_7,1,bottleneck,3,14,194.8636821839225,11,3,[4],0.25
+open_room_7,1,junction,3,14,233.17891857710737,11,3,[4],0.25
+open_room_7,1,transition_entropy,3,14,124.10018038218278,11,3,[4],0.25
+open_room_7,1,turn_articulation,3,14,10.266160570814558,11,3,[4],0.25
+open_room_7,1,value_gradient,3,14,124.1001520982408,11,3,[4],0.25
+open_room_7,2,betweenness,4,14,34.12357451334724,10,0,"[36, 43]",0.25
+open_room_7,2,bottleneck,4,14,145.79692174094146,10,0,"[36, 43]",0.25
+open_room_7,2,junction,4,14,245.19088288874843,10,0,"[36, 43]",0.25
+open_room_7,2,transition_entropy,4,14,133.8650130173361,10,0,"[36, 43]",0.25
+open_room_7,2,turn_articulation,4,14,10.317200404829897,10,0,"[36, 43]",0.25
+open_room_7,2,value_gradient,4,14,122.55850456087727,10,0,"[36, 43]",0.25
+open_room_7,2,betweenness,4,14,58.622724603801686,10,1,"[36, 7]",0.25
+open_room_7,2,bottleneck,4,14,162.33132504885242,10,1,"[36, 7]",0.25
+open_room_7,2,junction,4,14,245.06923065374048,10,1,"[36, 7]",0.25
+open_room_7,2,transition_entropy,4,14,151.5124429281518,10,1,"[36, 7]",0.25
+open_room_7,2,turn_articulation,4,14,6.880450069587218,10,1,"[36, 7]",0.25
+open_room_7,2,value_gradient,4,14,147.0731975727698,10,1,"[36, 7]",0.25
+open_room_7,2,betweenness,4,14,12.196700003438654,10,2,"[3, 4]",0.25
+open_room_7,2,bottleneck,4,14,204.47691105495846,10,2,"[3, 4]",0.25
+open_room_7,2,junction,4,14,250.97610683052432,10,2,"[3, 4]",0.25
+open_room_7,2,transition_entropy,4,14,145.66481025066022,10,2,"[3, 4]",0.25
+open_room_7,2,turn_articulation,4,14,13.688706957255986,10,2,"[3, 4]",0.25
+open_room_7,2,value_gradient,4,14,145.66484708889465,10,2,"[3, 4]",0.25
+open_room_7,2,betweenness,4,14,32.63652645595522,10,3,"[3, 7]",0.25
+open_room_7,2,bottleneck,4,14,169.62075974440845,10,3,"[3, 7]",0.25
+open_room_7,2,junction,4,14,245.0692306537419,10,3,"[3, 7]",0.25
+open_room_7,2,transition_entropy,4,14,138.0005742344673,10,3,"[3, 7]",0.25
+open_room_7,2,turn_articulation,4,14,10.268566004456709,10,3,"[3, 7]",0.25
+open_room_7,2,value_gradient,4,14,138.00049692005234,10,3,"[3, 7]",0.25
+open_room_7,3,betweenness,5,14,56.86147532684497,9,0,"[36, 7, 43]",0.25
+open_room_7,3,bottleneck,5,14,181.66435897510763,9,0,"[36, 7, 43]",0.25
+open_room_7,3,junction,5,14,191.21884477824653,9,0,"[36, 7, 43]",0.25
+open_room_7,3,transition_entropy,5,14,172.72618501037644,9,0,"[36, 7, 43]",0.25
+open_room_7,3,turn_articulation,5,14,10.337292116066694,9,0,"[36, 7, 43]",0.25
+open_room_7,3,value_gradient,5,14,161.4471192193369,9,0,"[36, 7, 43]",0.25
+open_room_7,3,betweenness,5,14,28.93032421079107,9,1,"[3, 7, 4]",0.25
+open_room_7,3,bottleneck,5,14,190.9801270722448,9,1,"[3, 7, 4]",0.25
+open_room_7,3,junction,5,14,202.81313284358265,9,1,"[3, 7, 4]",0.25
+open_room_7,3,transition_entropy,5,14,173.00175298602554,9,1,"[3, 7, 4]",0.25
+open_room_7,3,turn_articulation,5,14,13.691037117935048,9,1,"[3, 7, 4]",0.25
+open_room_7,3,value_gradient,5,14,173.00311381340234,9,1,"[3, 7, 4]",0.25
+open_room_7,3,betweenness,5,14,83.46141762713626,9,2,"[36, 43, 3]",0.25
+open_room_7,3,bottleneck,5,14,252.59097035570977,9,2,"[36, 43, 3]",0.25
+open_room_7,3,junction,5,14,484.3260234408517,9,2,"[36, 43, 3]",0.25
+open_room_7,3,transition_entropy,5,14,198.78296610600847,9,2,"[36, 43, 3]",0.25
+open_room_7,3,turn_articulation,5,14,13.764800503018552,9,2,"[36, 43, 3]",0.25
+open_room_7,3,value_gradient,5,14,180.40508293309395,9,2,"[36, 43, 3]",0.25
+open_room_7,3,betweenness,5,14,73.70654969588732,9,3,"[36, 43, 4]",0.25
+open_room_7,3,bottleneck,5,14,273.7976772854518,9,3,"[36, 43, 4]",0.25
+open_room_7,3,junction,5,14,484.3260234408517,9,3,"[36, 43, 4]",0.25
+open_room_7,3,transition_entropy,5,14,213.34142004593306,9,3,"[36, 43, 4]",0.25
+open_room_7,3,turn_articulation,5,14,13.765252979672475,9,3,"[36, 43, 4]",0.25
+open_room_7,3,value_gradient,5,14,193.99704210739438,9,3,"[36, 43, 4]",0.25
+open_room_7,4,betweenness,6,14,94.2153755095654,8,0,"[36, 7, 43, 8]",0.25
+open_room_7,4,bottleneck,6,14,221.99629555499763,8,0,"[36, 7, 43, 8]",0.25
+open_room_7,4,junction,6,14,256.7644448673163,8,0,"[36, 7, 43, 8]",0.25
+open_room_7,4,transition_entropy,6,14,212.09000516699595,8,0,"[36, 7, 43, 8]",0.25
+open_room_7,4,turn_articulation,6,14,10.487478035994746,8,0,"[36, 7, 43, 8]",0.25
+open_room_7,4,value_gradient,6,14,200.52026742438028,8,0,"[36, 7, 43, 8]",0.25
+open_room_7,4,betweenness,6,14,106.11870496763503,8,1,"[36, 7, 43, 3]",0.25
+open_room_7,4,bottleneck,6,14,270.93644080206536,8,1,"[36, 7, 43, 3]",0.25
+open_room_7,4,junction,6,14,436.2617193605894,8,1,"[36, 7, 43, 3]",0.25
+open_room_7,4,transition_entropy,6,14,237.6193729446046,8,1,"[36, 7, 43, 3]",0.25
+open_room_7,4,turn_articulation,6,14,13.784858884956037,8,1,"[36, 7, 43, 3]",0.25
+open_room_7,4,value_gradient,6,14,219.29370752957288,8,1,"[36, 7, 43, 3]",0.25
+open_room_7,4,betweenness,6,14,96.44401121839454,8,2,"[36, 7, 43, 4]",0.25
+open_room_7,4,bottleneck,6,14,286.37738801824645,8,2,"[36, 7, 43, 4]",0.25
+open_room_7,4,junction,6,14,436.2617193605894,8,2,"[36, 7, 43, 4]",0.25
+open_room_7,4,transition_entropy,6,14,252.18531896716405,8,2,"[36, 7, 43, 4]",0.25
+open_room_7,4,turn_articulation,6,14,13.785787903059884,8,2,"[36, 7, 43, 4]",0.25
+open_room_7,4,value_gradient,6,14,232.88698847504185,8,2,"[36, 7, 43, 4]",0.25
+open_room_7,4,betweenness,6,14,73.3429447694452,8,3,"[36, 7, 43, 6]",0.25
+open_room_7,4,bottleneck,6,14,323.47137385277097,8,3,"[36, 7, 43, 6]",0.25
+open_room_7,4,junction,6,14,436.2617193605894,8,3,"[36, 7, 43, 6]",0.25
+open_room_7,4,transition_entropy,6,14,282.6689357500584,8,3,"[36, 7, 43, 6]",0.25
+open_room_7,4,turn_articulation,6,14,6.916394567530427,8,3,"[36, 7, 43, 6]",0.25
+open_room_7,4,value_gradient,6,14,271.15958475011934,8,3,"[36, 7, 43, 6]",0.25
+open_room_7,5,betweenness,7,14,0.0004434378674278896,7,0,"[36, 7, 43, 8, 15]",0.25
+open_room_7,5,bottleneck,7,14,4.93196715778488,7,0,"[36, 7, 43, 8, 15]",0.25
+open_room_7,5,junction,7,14,4.93196715778488,7,0,"[36, 7, 43, 8, 15]",0.25
+open_room_7,5,transition_entropy,7,14,7.769556235739366e-06,7,0,"[36, 7, 43, 8, 15]",0.25
+open_room_7,5,turn_articulation,7,14,1.2740438618576403e-07,7,0,"[36, 7, 43, 8, 15]",0.25
+open_room_7,5,value_gradient,7,14,6.016733322324146e-10,7,0,"[36, 7, 43, 8, 15]",0.25
+open_room_7,0,betweenness,2,14,0.3332096327592139,12,0,[],0.5
+open_room_7,0,bottleneck,2,14,77.72630619236912,12,0,[],0.5
+open_room_7,0,junction,2,14,77.72630619236912,12,0,[],0.5
+open_room_7,0,transition_entropy,2,14,77.72630619236912,12,0,[],0.5
+open_room_7,0,turn_articulation,2,14,6.8441007995161005,12,0,[],0.5
+open_room_7,0,value_gradient,2,14,77.72630619236912,12,0,[],0.5
+open_room_7,1,betweenness,3,14,5.521310615269351,11,0,[43],0.5
+open_room_7,1,bottleneck,3,14,135.02438329363144,11,0,[43],0.5
+open_room_7,1,junction,3,14,233.17891857710737,11,0,[43],0.5
+open_room_7,1,transition_entropy,3,14,233.17891857710737,11,0,[43],0.5
+open_room_7,1,turn_articulation,3,14,10.268721466557867,11,0,[43],0.5
+open_room_7,1,value_gradient,3,14,115.60496016002807,11,0,[43],0.5
+open_room_7,1,betweenness,3,14,34.916777548217034,11,1,[36],0.5
+open_room_7,1,bottleneck,3,14,131.24539012916404,11,1,[36],0.5
+open_room_7,1,junction,3,14,233.17891857710737,11,1,[36],0.5
+open_room_7,1,transition_entropy,3,14,118.17289292122746,11,1,[36],0.5
+open_room_7,1,turn_articulation,3,14,6.870132428471273,11,1,[36],0.5
+open_room_7,1,value_gradient,3,14,113.81871892669915,11,1,[36],0.5
+open_room_7,1,betweenness,3,14,14.901317066990343,11,2,[3],0.5
+open_room_7,1,bottleneck,3,14,171.61948419411385,11,2,[3],0.5
+open_room_7,1,junction,3,14,233.17891857710737,11,2,[3],0.5
+open_room_7,1,transition_entropy,3,14,112.56718394421011,11,2,[3],0.5
+open_room_7,1,turn_articulation,3,14,10.266671843950808,11,2,[3],0.5
+open_room_7,1,value_gradient,3,14,112.56716555888693,11,2,[3],0.5
+open_room_7,1,betweenness,3,14,10.027276593880869,11,3,[4],0.5
+open_room_7,1,bottleneck,3,14,194.8636821839225,11,3,[4],0.5
+open_room_7,1,junction,3,14,233.17891857710737,11,3,[4],0.5
+open_room_7,1,transition_entropy,3,14,124.10018038218278,11,3,[4],0.5
+open_room_7,1,turn_articulation,3,14,10.266160570814558,11,3,[4],0.5
+open_room_7,1,value_gradient,3,14,124.1001520982408,11,3,[4],0.5
+open_room_7,2,betweenness,4,14,34.12357451334724,10,0,"[36, 43]",0.5
+open_room_7,2,bottleneck,4,14,145.79692174094146,10,0,"[36, 43]",0.5
+open_room_7,2,junction,4,14,245.19088288874843,10,0,"[36, 43]",0.5
+open_room_7,2,transition_entropy,4,14,133.8650130173361,10,0,"[36, 43]",0.5
+open_room_7,2,turn_articulation,4,14,10.317200404829897,10,0,"[36, 43]",0.5
+open_room_7,2,value_gradient,4,14,122.55850456087727,10,0,"[36, 43]",0.5
+open_room_7,2,betweenness,4,14,58.622724603801686,10,1,"[36, 7]",0.5
+open_room_7,2,bottleneck,4,14,162.33132504885242,10,1,"[36, 7]",0.5
+open_room_7,2,junction,4,14,245.06923065374048,10,1,"[36, 7]",0.5
+open_room_7,2,transition_entropy,4,14,151.5124429281518,10,1,"[36, 7]",0.5
+open_room_7,2,turn_articulation,4,14,6.880450069587218,10,1,"[36, 7]",0.5
+open_room_7,2,value_gradient,4,14,147.0731975727698,10,1,"[36, 7]",0.5
+open_room_7,2,betweenness,4,14,12.196700003438654,10,2,"[3, 4]",0.5
+open_room_7,2,bottleneck,4,14,204.47691105495846,10,2,"[3, 4]",0.5
+open_room_7,2,junction,4,14,250.97610683052432,10,2,"[3, 4]",0.5
+open_room_7,2,transition_entropy,4,14,145.66481025066022,10,2,"[3, 4]",0.5
+open_room_7,2,turn_articulation,4,14,13.688706957255986,10,2,"[3, 4]",0.5
+open_room_7,2,value_gradient,4,14,145.66484708889465,10,2,"[3, 4]",0.5
+open_room_7,2,betweenness,4,14,32.63652645595522,10,3,"[3, 7]",0.5
+open_room_7,2,bottleneck,4,14,169.62075974440845,10,3,"[3, 7]",0.5
+open_room_7,2,junction,4,14,245.0692306537419,10,3,"[3, 7]",0.5
+open_room_7,2,transition_entropy,4,14,138.0005742344673,10,3,"[3, 7]",0.5
+open_room_7,2,turn_articulation,4,14,10.268566004456709,10,3,"[3, 7]",0.5
+open_room_7,2,value_gradient,4,14,138.00049692005234,10,3,"[3, 7]",0.5
+open_room_7,3,betweenness,5,14,56.86147532684497,9,0,"[36, 7, 43]",0.5
+open_room_7,3,bottleneck,5,14,181.66435897510763,9,0,"[36, 7, 43]",0.5
+open_room_7,3,junction,5,14,191.21884477824653,9,0,"[36, 7, 43]",0.5
+open_room_7,3,transition_entropy,5,14,172.72618501037644,9,0,"[36, 7, 43]",0.5
+open_room_7,3,turn_articulation,5,14,10.337292116066694,9,0,"[36, 7, 43]",0.5
+open_room_7,3,value_gradient,5,14,161.4471192193369,9,0,"[36, 7, 43]",0.5
+open_room_7,3,betweenness,5,14,28.93032421079107,9,1,"[3, 7, 4]",0.5
+open_room_7,3,bottleneck,5,14,190.9801270722448,9,1,"[3, 7, 4]",0.5
+open_room_7,3,junction,5,14,202.81313284358265,9,1,"[3, 7, 4]",0.5
+open_room_7,3,transition_entropy,5,14,173.00175298602554,9,1,"[3, 7, 4]",0.5
+open_room_7,3,turn_articulation,5,14,13.691037117935048,9,1,"[3, 7, 4]",0.5
+open_room_7,3,value_gradient,5,14,173.00311381340234,9,1,"[3, 7, 4]",0.5
+open_room_7,3,betweenness,5,14,83.46141762713626,9,2,"[36, 43, 3]",0.5
+open_room_7,3,bottleneck,5,14,252.59097035570977,9,2,"[36, 43, 3]",0.5
+open_room_7,3,junction,5,14,484.3260234408517,9,2,"[36, 43, 3]",0.5
+open_room_7,3,transition_entropy,5,14,198.78296610600847,9,2,"[36, 43, 3]",0.5
+open_room_7,3,turn_articulation,5,14,13.764800503018552,9,2,"[36, 43, 3]",0.5
+open_room_7,3,value_gradient,5,14,180.40508293309395,9,2,"[36, 43, 3]",0.5
+open_room_7,3,betweenness,5,14,73.70654969588732,9,3,"[36, 43, 4]",0.5
+open_room_7,3,bottleneck,5,14,273.7976772854518,9,3,"[36, 43, 4]",0.5
+open_room_7,3,junction,5,14,484.3260234408517,9,3,"[36, 43, 4]",0.5
+open_room_7,3,transition_entropy,5,14,213.34142004593306,9,3,"[36, 43, 4]",0.5
+open_room_7,3,turn_articulation,5,14,13.765252979672475,9,3,"[36, 43, 4]",0.5
+open_room_7,3,value_gradient,5,14,193.99704210739438,9,3,"[36, 43, 4]",0.5
+open_room_7,4,betweenness,6,14,94.2153755095654,8,0,"[36, 7, 43, 8]",0.5
+open_room_7,4,bottleneck,6,14,221.99629555499763,8,0,"[36, 7, 43, 8]",0.5
+open_room_7,4,junction,6,14,256.7644448673163,8,0,"[36, 7, 43, 8]",0.5
+open_room_7,4,transition_entropy,6,14,212.09000516699595,8,0,"[36, 7, 43, 8]",0.5
+open_room_7,4,turn_articulation,6,14,10.487478035994746,8,0,"[36, 7, 43, 8]",0.5
+open_room_7,4,value_gradient,6,14,200.52026742438028,8,0,"[36, 7, 43, 8]",0.5
+open_room_7,4,betweenness,6,14,106.11870496763503,8,1,"[36, 7, 43, 3]",0.5
+open_room_7,4,bottleneck,6,14,270.93644080206536,8,1,"[36, 7, 43, 3]",0.5
+open_room_7,4,junction,6,14,436.2617193605894,8,1,"[36, 7, 43, 3]",0.5
+open_room_7,4,transition_entropy,6,14,237.6193729446046,8,1,"[36, 7, 43, 3]",0.5
+open_room_7,4,turn_articulation,6,14,13.784858884956037,8,1,"[36, 7, 43, 3]",0.5
+open_room_7,4,value_gradient,6,14,219.29370752957288,8,1,"[36, 7, 43, 3]",0.5
+open_room_7,4,betweenness,6,14,96.44401121839454,8,2,"[36, 7, 43, 4]",0.5
+open_room_7,4,bottleneck,6,14,286.37738801824645,8,2,"[36, 7, 43, 4]",0.5
+open_room_7,4,junction,6,14,436.2617193605894,8,2,"[36, 7, 43, 4]",0.5
+open_room_7,4,transition_entropy,6,14,252.18531896716405,8,2,"[36, 7, 43, 4]",0.5
+open_room_7,4,turn_articulation,6,14,13.785787903059884,8,2,"[36, 7, 43, 4]",0.5
+open_room_7,4,value_gradient,6,14,232.88698847504185,8,2,"[36, 7, 43, 4]",0.5
+open_room_7,4,betweenness,6,14,73.3429447694452,8,3,"[36, 7, 43, 6]",0.5
+open_room_7,4,bottleneck,6,14,323.47137385277097,8,3,"[36, 7, 43, 6]",0.5
+open_room_7,4,junction,6,14,436.2617193605894,8,3,"[36, 7, 43, 6]",0.5
+open_room_7,4,transition_entropy,6,14,282.6689357500584,8,3,"[36, 7, 43, 6]",0.5
+open_room_7,4,turn_articulation,6,14,6.916394567530427,8,3,"[36, 7, 43, 6]",0.5
+open_room_7,4,value_gradient,6,14,271.15958475011934,8,3,"[36, 7, 43, 6]",0.5
+open_room_7,5,betweenness,7,14,0.0004434378674278896,7,0,"[36, 7, 43, 8, 15]",0.5
+open_room_7,5,bottleneck,7,14,4.93196715778488,7,0,"[36, 7, 43, 8, 15]",0.5
+open_room_7,5,junction,7,14,4.93196715778488,7,0,"[36, 7, 43, 8, 15]",0.5
+open_room_7,5,transition_entropy,7,14,7.769556235739366e-06,7,0,"[36, 7, 43, 8, 15]",0.5
+open_room_7,5,turn_articulation,7,14,1.2740438618576403e-07,7,0,"[36, 7, 43, 8, 15]",0.5
+open_room_7,5,value_gradient,7,14,6.016733322324146e-10,7,0,"[36, 7, 43, 8, 15]",0.5
