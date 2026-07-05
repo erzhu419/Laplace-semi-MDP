@@ -5833,3 +5833,61 @@ through the group-constrained beam, replacing child probe recomputation where
 the fixed-policy/fixed-residual semantics match the theorem assumptions. The
 frontier-pruning layer should come after that, because now pruning can reduce
 the number of parent-to-child updates rather than just cheap candidate rows.
+
+## 37. Incremental Green Wired into Group-Constrained Beam
+
+The diagnostic-only score update is now connected to the actual
+group-constrained boundary selector.
+
+New controls:
+
+```text
+experiments/run_rd_group_constrained.py --delta-backend {operator,insertion_score}
+experiments/run_group_constrained_adaptive_table.py methods:
+  group_constrained              # robust operator backend
+  group_constrained_incremental  # insertion_score backend
+```
+
+The larger adaptive table now includes both backends:
+
+```text
+experiments/output/group_constrained_adaptive_large/summary.md
+experiments/output/submission_main_table/summary.md
+```
+
+Current larger-table summary:
+
+```text
+group_constrained / operator:
+  feasible rows = 6 / 6
+  median selection time ≈ 10.7s
+  median total speedup ≈ 0.0064x
+
+group_constrained_incremental / insertion_score:
+  feasible rows = 5 / 6
+  median selection time ≈ 3.25s
+  median total speedup ≈ 0.0196x
+  median probe Green time drops from ≈ 3.13s to ≈ 0.354s
+```
+
+Interpretation:
+
+```text
+The incremental backend is now a real solver path, not just a diagnostic.
+It gives the expected cost reduction, but it is not yet the robust default:
+deterministic open_room_12 stops with one group violation. This likely means
+the current exact insertion score is optimizing the fixed-policy residual
+semantics while the robust operator/beam objective still benefits from its
+old edge/validity/occupancy conventions.
+```
+
+So the next useful step is not more profiling. It is a semantic alignment pass:
+
+```text
+compare operator vs insertion_score on the failing open_room_12 slip=0 row
+decompose differences into:
+  active-edge validity set
+  residual terminal universe
+  occupancy weighting vs uniform fallback
+  beam tie handling / max_splits
+```

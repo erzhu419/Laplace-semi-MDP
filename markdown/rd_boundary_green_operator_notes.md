@@ -1204,3 +1204,43 @@ The expensive part was solving a fresh child Green problem.
 Parent-to-child insertion removes that solve while preserving the exact
 direct-child score under fixed policy semantics.
 ```
+
+## Group-Constrained Beam Uses the Incremental Backend
+
+The insertion score is now wired into the real group-constrained selector:
+
+```text
+--delta-backend insertion_score
+method = group_constrained_incremental
+```
+
+The larger adaptive table now reports the robust operator backend and the new
+incremental backend side by side.
+
+Current result:
+
+```text
+operator backend:
+  feasible = 6 / 6
+  median selection time ≈ 10.7s
+
+incremental insertion_score backend:
+  feasible = 5 / 6
+  median selection time ≈ 3.25s
+  median total-speedup improves from ≈ 0.0064x to ≈ 0.0196x
+```
+
+The one miss is `open_room_12, slip=0.0`, where the incremental backend stops
+with one group violation. This is not a proof failure: the insertion update was
+already checked against direct child recomputation. It is a solver semantics
+alignment issue between:
+
+```text
+exact fixed-policy residual insertion score
+old operator backend's edge validity / occupancy / fallback conventions
+```
+
+The robust paper-facing row should still use the operator backend for now, while
+the incremental row is the right ablation showing that the parent-to-child Green
+update can become the main runtime path after the open-room alignment issue is
+fixed.

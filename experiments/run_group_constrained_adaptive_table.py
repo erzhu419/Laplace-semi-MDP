@@ -93,6 +93,7 @@ def construct_group_boundary(
     basis: Sequence[int],
     budgets: Mapping[str, float],
     args: argparse.Namespace,
+    delta_backend: str,
 ) -> Tuple[List[int], Dict[str, object], float]:
     probe_cache = ProbeDeltaCache(enabled=not args.disable_probe_cache)
     boundary, trace, _candidates, _probes, selection_time = select_group_constrained_boundary(
@@ -115,12 +116,14 @@ def construct_group_boundary(
         beam_width=args.beam_width,
         beam_expand=args.beam_expand,
         probe_cache=probe_cache,
+        delta_backend=delta_backend,
     )
     selection_profile = probe_cache.summary()
     return sorted(set(boundary)), {
         "selection_trace": trace,
         "constructor_stop_reason": trace[-1]["stop_reason"] if trace else "none",
         "selection_profile": selection_profile,
+        "delta_backend": delta_backend,
     }, selection_time
 
 
@@ -202,7 +205,13 @@ def run_method(
         constructor = {"constructor_method": "endpoints"}
         selection_time = 0.0
         group_eval = dict(context_info["endpoint_eval"])  # type: ignore[arg-type]
-    elif method == "group_constrained":
+    elif method in {"group_constrained", "group_constrained_operator", "group_constrained_incremental"}:
+        if method == "group_constrained_incremental":
+            delta_backend = "insertion_score"
+        elif method == "group_constrained_operator":
+            delta_backend = "operator"
+        else:
+            delta_backend = args.delta_backend
         boundary, constructor, selection_time = construct_group_boundary(
             map_label=map_label,
             rows=rows,
@@ -212,6 +221,7 @@ def run_method(
             basis=basis,
             budgets=budgets,
             args=args,
+            delta_backend=delta_backend,
         )
         group_eval = group_eval_from_trace(constructor.get("selection_trace", []))  # type: ignore[arg-type]
         if group_eval is None or args.include_test_probes:
@@ -281,6 +291,7 @@ def run_method(
         "group_test_bits_mean": float(group_eval["test_bits_mean"]),
         "group_test_bits_cvar": float(group_eval["test_bits_cvar"]),
         "selection_time_sec": float(model["construction_time_sec"]),
+        "delta_backend": constructor.get("delta_backend", ""),
         "kernel_time_sec": float(model["kernel_time_sec"]),
         "upfront_time_sec": selection_kernel_time,
         "smdp_solve_time_sec": float(smdp["time_sec"]),
@@ -352,6 +363,7 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "group_max_violation",
         "group_test_bits_cvar",
         "selection_time_sec",
+        "delta_backend",
         "probe_green_kernel_time_sec",
         "probe_operator_delta_time_sec",
         "candidate_score_time_sec",
@@ -467,7 +479,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Larger group-constrained RD table with adaptive Green graph kernels.")
     parser.add_argument("--map-specs", nargs="+", default=["open_room:12", "four_rooms:11", "maze:13"])
     parser.add_argument("--slips", nargs="+", type=float, default=[0.0, 0.05])
-    parser.add_argument("--methods", nargs="+", choices=["endpoints", "group_constrained"], default=["endpoints", "group_constrained"])
+    parser.add_argument(
+        "--methods",
+        nargs="+",
+        choices=[
+            "endpoints",
+            "group_constrained",
+            "group_constrained_operator",
+            "group_constrained_incremental",
+        ],
+        default=["endpoints", "group_constrained", "group_constrained_incremental"],
+    )
     parser.add_argument("--recipe", default="learned_rd_surrogate_joint_occ2_audit2")
     parser.add_argument(
         "--lens-groups",
@@ -508,6 +530,7 @@ def main() -> None:
     parser.add_argument("--beam-width", type=int, default=2)
     parser.add_argument("--beam-expand", type=int, default=4)
     parser.add_argument("--disable-probe-cache", action="store_true")
+    parser.add_argument("--delta-backend", choices=["operator", "insertion_score"], default="operator")
     parser.add_argument("--first-hit-mode", choices=["exact", "truncated", "adaptive"], default="adaptive")
     parser.add_argument("--first-hit-truncation-steps", type=int, default=512)
     parser.add_argument("--first-hit-tail-tol", type=float, default=1e-6)
