@@ -49,6 +49,14 @@ What is formalized now:
   `q < 1`, then `P_II^n P_IC` and finite Neumann tails get the sharper weighted
   geometric bounds.  This is the Collatz-Wielandt style certificate behind the
   spectral-radius claim;
+- signed weighted spectral tail layer:
+  the same `P_II w <= q w` certificate also bounds arbitrary signed downstream
+  feature/reward blocks in weighted sup-norm, so this is not limited to
+  nonnegative hit probabilities;
+- weighted downstream score layer:
+  for any fixed nonnegative edge/objective weights, entrywise Green-tail bounds
+  imply a weighted score interval, and separated approximate score intervals
+  formally certify that the approximate top choice is also the exact top choice;
 - bits-curvature layer:
   the derivative of `bitsPhiDeriv` is `bitsPhiSecond`, a positive margin
   `delta <= 1 - h + eps` bounds `|bitsPhiSecond|`, and Mathlib Taylor gives the

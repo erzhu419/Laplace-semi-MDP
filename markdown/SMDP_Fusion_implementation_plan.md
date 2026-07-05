@@ -5204,3 +5204,91 @@ adaptive Green benchmark:
 score certification table:
   shows when the adaptive implementation preserves the exact-Green RD decision
 ```
+
+### 31.8 First attempt at the fully weighted spectral certificate
+
+Even though GPT said it is not a blocker, I tried the fully weighted route
+because it is the stronger mathematical object.
+
+The Lean layer now has three extra real theorems in:
+
+```text
+proof/RDOperatorReal.lean
+```
+
+They cover:
+
+```text
+1. signed weighted spectral tail:
+   if P_II w <= q w and q < 1, then signed Neumann tails are bounded in
+   weighted sup-norm, not only nonnegative hit-probability tails
+
+2. weighted downstream score interval:
+   for fixed nonnegative edge/objective weights a_e,
+   |S(K) - S(Khat)| <= sum_e a_e T_e
+
+3. interval-certified top choice:
+   if approximate score intervals separate top-1 from runner-up, the top
+   choice is also exact under the weighted score
+```
+
+I also added a diagnostic:
+
+```text
+experiments/run_weighted_spectral_certificate.py
+experiments/output/weighted_spectral_certificate/summary.md
+```
+
+This computes a Collatz-style positive-vector certificate:
+
+```text
+P_II w <= q w, q < 1
+tail <= c * w_start * q^(K+1)/(1-q)
+```
+
+The result is mixed in an informative way:
+
+```text
+row q < 1:
+  0 / 16 edge-basis rows
+
+weighted q < 1:
+  16 / 16 edge-basis rows
+```
+
+So the spectral route does prove what the raw row-substochastic certificate
+cannot: even when some rows have mass exactly 1, the interior block can still
+have a valid weighted contraction certificate.
+
+But the optimized floating-point certificates are badly conditioned:
+
+```text
+weight_dynamic_range can reach 1e12 - 1e20
+```
+
+and the resulting corridor tail bound is still very conservative:
+
+```text
+corridor_128 K=128:
+  certified weighted row tail <= about 125
+  actual row tail             <= about 0.976
+```
+
+For open rooms / four rooms / maze the optimized spectral bound becomes tiny,
+but the giant weight dynamic range means we should not make this the default
+runtime certificate yet. The right interpretation is:
+
+```text
+formal claim:
+  weighted spectral certificate exists and can certify signed weighted tails
+
+implementation claim:
+  frontier-tail / score-interval certificate is still the practical default
+
+next proof/engineering target:
+  conditioned weighted certificate or interval/rational verification of w
+```
+
+This is useful for the paper: the fully weighted certificate is no longer just
+future work in principle. We have a Lean-backed theorem and a diagnostic showing
+exactly why it is stronger but numerically delicate.

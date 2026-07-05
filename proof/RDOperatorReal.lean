@@ -392,6 +392,154 @@ theorem spectral_certificate_finite_neumann_tail_entry_le
       ring
 
 /-!
+The preceding theorem handles nonnegative boundary blocks.  For a genuinely
+weighted operator-norm certificate we also need the signed version: arbitrary
+real downstream rewards/features may be propagated through the same
+nonnegative transition kernel, and the weighted sup-norm controls the absolute
+tail.
+-/
+
+/-- A signed Neumann term is bounded in weighted sup-norm form. -/
+theorem spectral_certificate_signed_neumann_term_entry_abs_le
+    {I C : Type} [Fintype I] [Fintype C] [DecidableEq I]
+    (P : Matrix I I ℝ) (B : Matrix I C ℝ) (w : I -> ℝ) (q coeffBound : ℝ)
+    (hPnonneg : ∀ i j, 0 ≤ P i j)
+    (hWeightedRow : ∀ i, weightedRowMass P w i ≤ q * w i)
+    (hqNonneg : 0 ≤ q)
+    (hBEntry : ∀ i c, |B i c| ≤ coeffBound * w i)
+    (hCoeffNonneg : 0 ≤ coeffBound)
+    (n : Nat) (i : I) (c : C) :
+    |((P ^ n) * B) i c| ≤ q ^ n * (coeffBound * w i) := by
+  have hPowNonneg := matrix_power_nonnegative P hPnonneg n
+  rw [Matrix.mul_apply]
+  calc
+    |∑ k : I, (P ^ n) i k * B k c|
+        ≤ ∑ k : I, |(P ^ n) i k * B k c| := by
+          exact Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ k : I, (P ^ n) i k * |B k c| := by
+          apply Finset.sum_congr rfl
+          intro k _hk
+          rw [abs_mul, abs_of_nonneg (hPowNonneg i k)]
+    _ ≤ ∑ k : I, (P ^ n) i k * (coeffBound * w k) := by
+          apply Finset.sum_le_sum
+          intro k _hk
+          exact mul_le_mul_of_nonneg_left (hBEntry k c) (hPowNonneg i k)
+    _ = coeffBound * weightedRowMass (P ^ n) w i := by
+          unfold weightedRowMass
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro k _hk
+          ring
+    _ ≤ coeffBound * (q ^ n * w i) := by
+          exact mul_le_mul_of_nonneg_left
+            (weighted_power_rowMass_bound P w q hPnonneg hWeightedRow hqNonneg n i)
+            hCoeffNonneg
+    _ = q ^ n * (coeffBound * w i) := by
+          ring
+
+/-- Weighted spectral certificate gives an absolute finite-tail bound for signed blocks. -/
+theorem spectral_certificate_signed_finite_neumann_tail_entry_abs_le
+    {I C : Type} [Fintype I] [Fintype C] [DecidableEq I]
+    (P : Matrix I I ℝ) (B : Matrix I C ℝ) (w : I -> ℝ) (q coeffBound : ℝ)
+    (hPnonneg : ∀ i j, 0 ≤ P i j)
+    (hWeightedRow : ∀ i, weightedRowMass P w i ≤ q * w i)
+    (hqNonneg : 0 ≤ q)
+    (hqLt : q < 1)
+    (hBEntry : ∀ i c, |B i c| ≤ coeffBound * w i)
+    (hCoeffNonneg : 0 ≤ coeffBound)
+    (hWNonneg : ∀ i, 0 ≤ w i)
+    (K N : Nat) (i : I) (c : C) :
+    |(NeumannTailIco P B K N) i c| ≤
+      coeffBound * w i * (q ^ (K + 1) / (1 - q)) := by
+  unfold NeumannTailIco
+  simp only [Matrix.sum_apply]
+  have hScaleNonneg : 0 ≤ coeffBound * w i := mul_nonneg hCoeffNonneg (hWNonneg i)
+  calc
+    |∑ x ∈ Finset.Ico (K + 1) N, ((P ^ x) * B) i c|
+        ≤ ∑ x ∈ Finset.Ico (K + 1) N, |((P ^ x) * B) i c| := by
+          exact Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ x ∈ Finset.Ico (K + 1) N, q ^ x * (coeffBound * w i) := by
+          apply Finset.sum_le_sum
+          intro t _ht
+          exact spectral_certificate_signed_neumann_term_entry_abs_le P B w q coeffBound
+            hPnonneg hWeightedRow hqNonneg hBEntry hCoeffNonneg t i c
+    _ = (∑ x ∈ Finset.Ico (K + 1) N, q ^ x) * (coeffBound * w i) := by
+          rw [Finset.sum_mul]
+    _ ≤ (q ^ (K + 1) / (1 - q)) * (coeffBound * w i) := by
+          exact mul_le_mul_of_nonneg_right
+            (geom_sum_Ico_le_of_lt_one hqNonneg hqLt) hScaleNonneg
+    _ = coeffBound * w i * (q ^ (K + 1) / (1 - q)) := by
+          ring
+
+/-!
+## Weighted downstream score certificates
+
+These lemmas connect kernel approximation errors to RD scores.  They are the
+formal version of the paper sentence: for any fixed nonnegative downstream
+weights, an entrywise/spectral Green-tail certificate induces a finite score
+interval, and separated intervals certify that the adaptive implementation
+preserves the exact top choice.
+-/
+
+/-- A fixed weighted downstream score over edge/features. -/
+def WeightedScore {E X : Type} [Fintype E]
+    (a : E -> ℝ) (K : E -> X -> ℝ) (x : X) : ℝ :=
+  ∑ e : E, a e * K e x
+
+/-- Weighted sum of per-entry kernel error bounds. -/
+def WeightedErrorBound {E X : Type} [Fintype E]
+    (a : E -> ℝ) (T : E -> X -> ℝ) (x : X) : ℝ :=
+  ∑ e : E, a e * T e x
+
+/-- Entrywise Green-tail bounds imply a weighted downstream score interval. -/
+theorem weightedScore_error_le
+    {E X : Type} [Fintype E]
+    (a : E -> ℝ) (K Khat T : E -> X -> ℝ) (x : X)
+    (hWeightNonneg : ∀ e, 0 ≤ a e)
+    (hEntry : ∀ e, |K e x - Khat e x| ≤ T e x) :
+    |WeightedScore a K x - WeightedScore a Khat x| ≤
+      WeightedErrorBound a T x := by
+  unfold WeightedScore WeightedErrorBound
+  have hdiff :
+      (∑ e : E, a e * K e x) - (∑ e : E, a e * Khat e x) =
+        ∑ e : E, a e * (K e x - Khat e x) := by
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro e _he
+    ring
+  rw [hdiff]
+  calc
+    |∑ e : E, a e * (K e x - Khat e x)|
+        ≤ ∑ e : E, |a e * (K e x - Khat e x)| := by
+          exact Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ e : E, a e * |K e x - Khat e x| := by
+          apply Finset.sum_congr rfl
+          intro e _he
+          rw [abs_mul, abs_of_nonneg (hWeightNonneg e)]
+    _ ≤ ∑ e : E, a e * T e x := by
+          apply Finset.sum_le_sum
+          intro e _he
+          exact mul_le_mul_of_nonneg_left (hEntry e) (hWeightNonneg e)
+
+/-- Separated score intervals certify that the approximate top choice is exact. -/
+theorem interval_certified_top_choice
+    {X : Type} {exact approx err : X -> ℝ} {xBest xRunner y : X}
+    (hRunner :
+      ∀ z, z ≠ xBest -> approx z + err z ≤ approx xRunner + err xRunner)
+    (hSeparated : approx xRunner + err xRunner < approx xBest - err xBest)
+    (hErr : ∀ z, |exact z - approx z| ≤ err z)
+    (hy : y ≠ xBest) :
+    exact y < exact xBest := by
+  have hyUpper : exact y ≤ approx y + err y := by
+    have h := (abs_sub_le_iff.mp (hErr y)).1
+    linarith
+  have hbestLower : approx xBest - err xBest ≤ exact xBest := by
+    have h := (abs_sub_le_iff.mp (hErr xBest)).2
+    linarith
+  have hyRunner := hRunner y hy
+  linarith
+
+/-!
 ## Truncated Green / Neumann convergence
 
 The exact analytic fact needed by the paper is: if the Neumann tail is bounded

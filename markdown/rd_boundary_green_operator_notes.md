@@ -683,3 +683,79 @@ not:
 adaptive Green is spectrally certified for every possible downstream weighted
 objective
 ```
+
+## Fully Weighted Spectral Certificate Attempt
+
+I also tried the stronger route rather than leaving it only as future work.
+The real Lean layer now contains:
+
+```text
+spectral_certificate_signed_neumann_term_entry_abs_le
+spectral_certificate_signed_finite_neumann_tail_entry_abs_le
+weightedScore_error_le
+interval_certified_top_choice
+```
+
+The important upgrade is that the weighted certificate is not restricted to
+nonnegative hit-probability blocks. If:
+
+\[
+P_{II}w \le q w,\qquad q<1,
+\]
+
+then signed downstream feature/reward tails are bounded in weighted sup-norm.
+For fixed nonnegative downstream weights \(a_e\), entrywise tail bounds imply:
+
+\[
+|S(K)-S(\hat K)| \le \sum_e a_e T_e.
+\]
+
+This is the formal bridge from a spectral/weighted Green tail to an RD score
+interval.
+
+The executable diagnostic is:
+
+```text
+experiments/run_weighted_spectral_certificate.py
+experiments/output/weighted_spectral_certificate/summary.md
+```
+
+It checks a Collatz-style certificate on the current endpoint suite:
+
+```text
+P_II w <= q w, q < 1
+tail <= c * w_start * q^(K+1)/(1-q)
+```
+
+Main observation:
+
+```text
+raw row q < 1:
+  0 / 16 edge-basis rows
+
+weighted q < 1:
+  16 / 16 edge-basis rows
+```
+
+So the weighted spectral theorem really does certify cases that the plain
+row-substochastic theorem cannot certify.
+
+The catch is conditioning. The optimized floating-point weights can have
+dynamic range from about \(10^{12}\) to \(10^{20}\). Corridor also remains very
+conservative:
+
+```text
+corridor_128, K=128:
+  weighted certified row tail <= about 125
+  actual row tail             <= about 0.976
+```
+
+This means the fully weighted spectral certificate is now mathematically
+plausible and Lean-backed, but not yet a good default numerical implementation.
+For the paper, the careful wording is:
+
+```text
+We provide a weighted spectral sufficient certificate in the proof layer.
+The scalable implementation uses frontier-tail / score-interval certification,
+which is tighter and numerically better conditioned in the current experiments.
+```
