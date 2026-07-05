@@ -24,6 +24,7 @@ It aligns the large-scale certified adaptive result, compact baselines, exhausti
 - `experiments/`: executable benchmark and diagnostic scripts.
 - `experiments/output/`: checked-in CSV/JSON/Markdown experiment artifacts.
 - `proof/`: Lean 4 proof layer for the frozen RD operator, Green/Neumann certificates, Bellman contraction/value-gap statements, top-set fallback, and bits-curvature bounds.
+- `paper/`: paper-facing claim, terminology, related-work, theorem, experiment, figure, and reviewer-risk planning docs.
 - `markdown/`: working research notes and GPT critique/advice logs.
 - `reference/`: ignored local papers and cloned repositories.
 
@@ -78,5 +79,7 @@ python3 experiments/run_linear_solver_thread_scaling.py --threads 1 2 4 8 16 32 
 - Discovery profiling is now separated from planning: `experiments/output/discovery_profile_cache/summary.md` decomposes probe construction, Green kernels, vectorized frozen scoring, full candidate recompute, and cache-hit reuse.
 - Incremental Green diagnostics now check parent-to-child boundary insertion, and `group_constrained_incremental` wires the score-level update into beam selection as an ablation. The semantic diff identified the open-room issue as edge-uniform versus occupancy-weighted accounting; the insertion backend now honors and caches the production active-edge weights and is feasible on the larger group suite.
 - Weighted spectral certificates are reported as sufficient appendix certificates; conditioned/rational audits expose the conditioning-vs-tightness tradeoff.
+- Paper-facing scaffolding now lives under `paper/`, including the main claim, related-work matrix, theorem stack, experiment matrix, and figure plan.
+- `experiments/run_random_maze_generalization.py`, `experiments/run_fair_budget_frontier.py`, `experiments/plot_graph_abstraction_figures.py`, and `experiments/run_theorem_experiment_bridge.py` add random-topology stress tests, shared budget-frontier aggregation, interpretability figures, and theorem/proof/experiment alignment.
 
 Use `experiments/output/submission_main_table/summary.md` as the first reviewer-facing artifact rather than reading every historical output directory.

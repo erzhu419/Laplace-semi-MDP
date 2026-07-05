@@ -37,6 +37,13 @@ python3 experiments/run_group_constrained_adaptive_table.py \
   --methods endpoints group_constrained group_constrained_incremental \
   --out-dir experiments/output/group_constrained_adaptive_large
 
+python3 experiments/run_random_maze_generalization.py \
+  --sizes 9 \
+  --maze-seeds 0 1 \
+  --slips 0.05 \
+  --methods endpoints group_constrained_operator group_constrained_incremental \
+  --out-dir experiments/output/random_maze_generalization
+
 python3 experiments/run_group_incremental_semantic_diff.py \
   --out-dir experiments/output/group_incremental_semantic_diff
 
@@ -49,5 +56,14 @@ python3 experiments/run_incremental_green_update_check.py \
   --map-specs open_room:7 four_rooms:7 maze:9 \
   --slips 0.0 0.05 \
   --out-dir experiments/output/incremental_green_update
+
+python3 experiments/run_fair_budget_frontier.py \
+  --out-dir experiments/output/fair_budget_frontier
+
+python3 experiments/plot_graph_abstraction_figures.py \
+  --out-dir experiments/output/graph_abstraction_figures
+
+python3 experiments/run_theorem_experiment_bridge.py \
+  --out-dir experiments/output/theorem_experiment_bridge
 
 python3 experiments/run_submission_main_table.py

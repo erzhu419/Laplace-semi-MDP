@@ -839,6 +839,151 @@
       "first_hit_tail_bound_max": 7.72983612726032e-07
     }
   ],
+  "random_maze_generalization_aggregate": [
+    {
+      "method": "endpoints",
+      "n_rows": 2,
+      "feasible_rate": 0.0,
+      "median_n_boundary": 2.0,
+      "median_state_compression": 15.5,
+      "median_selection_time_sec": 0.0,
+      "median_total_speedup": 2.494083738945595,
+      "max_start_gap": 3.332447384707393e-08,
+      "max_group_total_violation": 233.17891857710737
+    },
+    {
+      "method": "group_constrained_incremental",
+      "n_rows": 2,
+      "feasible_rate": 1.0,
+      "median_n_boundary": 3.0,
+      "median_state_compression": 10.333333333333334,
+      "median_selection_time_sec": 0.30345606297487393,
+      "median_total_speedup": 0.05423734233068492,
+      "max_start_gap": 2.1673040428993318e-07,
+      "max_group_total_violation": 0.0
+    },
+    {
+      "method": "group_constrained_operator",
+      "n_rows": 2,
+      "feasible_rate": 0.5,
+      "median_n_boundary": 3.0,
+      "median_state_compression": 10.333333333333334,
+      "median_selection_time_sec": 3.323089514480671,
+      "median_total_speedup": 0.00823829269925586,
+      "max_start_gap": 1.632646995375353e-07,
+      "max_group_total_violation": 116.58945928855368
+    }
+  ],
+  "fair_budget_frontier_aggregate": [
+    {
+      "method_group": "baseline:dense_turn",
+      "n_rows": "1",
+      "pareto_rows": "1",
+      "median_rate_budget_boundary_frac": 0.37037037037037035,
+      "median_state_compression_ratio": 2.7,
+      "median_start_gap": 2.901501261476369e-11,
+      "median_hidden_audit": 0.0,
+      "mean_group_feasible_rate": 1.0,
+      "median_total_speedup": NaN,
+      "median_success_rate": 1.0
+    },
+    {
+      "method_group": "baseline:endpoints",
+      "n_rows": "7",
+      "pareto_rows": "7",
+      "median_rate_budget_boundary_frac": 0.019230769230769232,
+      "median_state_compression_ratio": 52.0,
+      "median_start_gap": 2.921041186709772e-11,
+      "median_hidden_audit": 155.45261238473825,
+      "mean_group_feasible_rate": 0.14285714285714285,
+      "median_total_speedup": 2.759301182621115,
+      "median_success_rate": 1.0
+    },
+    {
+      "method_group": "full_mdp",
+      "n_rows": "10",
+      "pareto_rows": "5",
+      "median_rate_budget_boundary_frac": 1.0,
+      "median_state_compression_ratio": 1.0,
+      "median_start_gap": 0.0,
+      "median_hidden_audit": 0.0,
+      "mean_group_feasible_rate": NaN,
+      "median_total_speedup": 1.0,
+      "median_success_rate": 1.0
+    },
+    {
+      "method_group": "option_baseline:bottleneck",
+      "n_rows": "15",
+      "pareto_rows": "8",
+      "median_rate_budget_boundary_frac": 0.1875,
+      "median_state_compression_ratio": 5.333333333333333,
+      "median_start_gap": 1.4097167877480388e-11,
+      "median_hidden_audit": 2.0,
+      "mean_group_feasible_rate": 1.0,
+      "median_total_speedup": 0.3402242065395214,
+      "median_success_rate": 1.0
+    },
+    {
+      "method_group": "option_baseline:coverage",
+      "n_rows": "15",
+      "pareto_rows": "1",
+      "median_rate_budget_boundary_frac": 0.1875,
+      "median_state_compression_ratio": 5.333333333333333,
+      "median_start_gap": 2.9125146738806507e-11,
+      "median_hidden_audit": 2.0,
+      "mean_group_feasible_rate": 1.0,
+      "median_total_speedup": 0.4021443366732887,
+      "median_success_rate": 1.0
+    },
+    {
+      "method_group": "option_baseline:eigen",
+      "n_rows": "15",
+      "pareto_rows": "3",
+      "median_rate_budget_boundary_frac": 0.1875,
+      "median_state_compression_ratio": 5.333333333333333,
+      "median_start_gap": 2.332356530132529e-11,
+      "median_hidden_audit": 2.1,
+      "mean_group_feasible_rate": 1.0,
+      "median_total_speedup": 0.3368243722255218,
+      "median_success_rate": 1.0
+    },
+    {
+      "method_group": "option_baseline:random",
+      "n_rows": "15",
+      "pareto_rows": "1",
+      "median_rate_budget_boundary_frac": 0.1875,
+      "median_state_compression_ratio": 5.333333333333333,
+      "median_start_gap": 2.1433521624203422e-11,
+      "median_hidden_audit": 2.0,
+      "mean_group_feasible_rate": 1.0,
+      "median_total_speedup": 0.34653423760438384,
+      "median_success_rate": 1.0
+    },
+    {
+      "method_group": "ours:group_rd",
+      "n_rows": "22",
+      "pareto_rows": "14",
+      "median_rate_budget_boundary_frac": 0.05220747562296858,
+      "median_state_compression_ratio": 19.275,
+      "median_start_gap": 1.7967849430533533e-12,
+      "median_hidden_audit": 0.0,
+      "mean_group_feasible_rate": 0.9545454545454546,
+      "median_total_speedup": 0.015162867929298662,
+      "median_success_rate": 1.0
+    },
+    {
+      "method_group": "ours:rd_graph",
+      "n_rows": "21",
+      "pareto_rows": "19",
+      "median_rate_budget_boundary_frac": 0.125,
+      "median_state_compression_ratio": 8.0,
+      "median_start_gap": 1.9127810446661897e-11,
+      "median_hidden_audit": 0.0,
+      "mean_group_feasible_rate": 1.0,
+      "median_total_speedup": 0.1836481420149601,
+      "median_success_rate": 1.0
+    }
+  ],
   "solver_validity_aggregate": [
     {
       "solver": "actual_refine",
@@ -1021,6 +1166,71 @@
       "median_n_green_solves": "12.0",
       "median_n_green_updates": "0.0",
       "median_parent_update_rate": "0.0"
+    }
+  ],
+  "theorem_experiment_bridge": [
+    {
+      "paper_claim": "The frozen split score is an exact finite difference of a fixed local RD objective.",
+      "proof_status": "proved_symbol_present",
+      "experiment_status": "rows=9, margin_condition=1, stable_when_checked=1",
+      "manuscript_location": "Method theorem, not adaptive solver guarantee",
+      "remaining_gap": "State frozen candidate universe/options/weights explicitly."
+    },
+    {
+      "paper_claim": "First-hit Green kernels define legal compressed edge models on finite absorbing interiors.",
+      "proof_status": "proved_symbol_present",
+      "experiment_status": "rows=80, graph_rows=70, max_start_gap=0.04973",
+      "manuscript_location": "Graph-SMDP construction",
+      "remaining_gap": "Use exact Green as reference operator; adaptive/truncated variants are certified implementations."
+    },
+    {
+      "paper_claim": "Truncated/adaptive Green scores are certified by Neumann tail bounds.",
+      "proof_status": "proved_symbol_present",
+      "experiment_status": "rows=20, final=20, tie_aware_final=20",
+      "manuscript_location": "Implementation theorem and appendix certificate",
+      "remaining_gap": "Report when tie/top-set exact fallback is used rather than hiding it as speed."
+    },
+    {
+      "paper_claim": "Bits distortion admits a controlled finite-difference/Taylor approximation.",
+      "proof_status": "proved_symbol_present",
+      "experiment_status": "rows=9, margin_condition=1, stable_when_checked=1",
+      "manuscript_location": "Operator approximation and ablation",
+      "remaining_gap": "Keep finite-difference score as the main theorem; gradient score is an approximation."
+    },
+    {
+      "paper_claim": "The graph-SMDP Bellman backup is a sup-norm contraction under finite options and gamma<1.",
+      "proof_status": "proved_symbol_present",
+      "experiment_status": "rows=80, graph_rows=70, max_start_gap=0.04973",
+      "manuscript_location": "Planning correctness lemma",
+      "remaining_gap": "Tie value-gap reporting to residual diagnostics in each benchmark table."
+    },
+    {
+      "paper_claim": "Margin and top-set certificates separate stable operator decisions from ambiguous ties.",
+      "proof_status": "proved_symbol_present",
+      "experiment_status": "rows=20, final=20, tie_aware_final=20",
+      "manuscript_location": "Certificate table",
+      "remaining_gap": "Use tie-aware timing as the conservative runtime accounting."
+    },
+    {
+      "paper_claim": "Group-constrained RD makes robustness constraints explicit instead of hiding them in a scalar risk.",
+      "proof_status": "proved_symbol_present",
+      "experiment_status": "rows=18, feasible=12",
+      "manuscript_location": "Robust objective and main ablation",
+      "remaining_gap": "Use random-maze and held-out probes to show robustness is not hand-tuned to one map."
+    },
+    {
+      "paper_claim": "Incremental insertion scoring is an implementation optimization, not a new theorem yet.",
+      "proof_status": "lean_pending",
+      "experiment_status": "rows=30, selected_match=26, max_score_error=233.2",
+      "manuscript_location": "Runtime ablation, not core correctness theorem",
+      "remaining_gap": "Formalize the insertion algebra only if it becomes a central claim."
+    },
+    {
+      "paper_claim": "The extracted graph should generalize across maze instances, not only fixed toy layouts.",
+      "proof_status": "empirical_stress_test",
+      "experiment_status": "rows=6, feasible=3",
+      "manuscript_location": "Generalization/stress-test section",
+      "remaining_gap": "Scale to larger random maps on node001-node006 for final paper numbers."
     }
   ],
   "certificate_appendix_summary": [

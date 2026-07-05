@@ -1,0 +1,92 @@
+[
+  {
+    "paper_claim": "The frozen split score is an exact finite difference of a fixed local RD objective.",
+    "math_object": "S_FD(x|B)=L_theta(B)-L_theta(B union {x})",
+    "proof_symbols": "FrozenObjective.fd_exact; MultiProbeObjective.fd_exact",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/rd_operator_theorem_checks_actual_small/summary.csv",
+    "experiment_status": "rows=9, margin_condition=1, stable_when_checked=1",
+    "manuscript_location": "Method theorem, not adaptive solver guarantee",
+    "remaining_gap": "State frozen candidate universe/options/weights explicitly."
+  },
+  {
+    "paper_claim": "First-hit Green kernels define legal compressed edge models on finite absorbing interiors.",
+    "math_object": "K=e_b^T (I-P_II)^(-1) P_IC",
+    "proof_symbols": "green_formula_solves_linear_system; green_formula_entry_nonnegative; green_entry_le_rowBound",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/core_benchmark/core_benchmark.csv",
+    "experiment_status": "rows=80, graph_rows=70, max_start_gap=0.04973",
+    "manuscript_location": "Graph-SMDP construction",
+    "remaining_gap": "Use exact Green as reference operator; adaptive/truncated variants are certified implementations."
+  },
+  {
+    "paper_claim": "Truncated/adaptive Green scores are certified by Neumann tail bounds.",
+    "math_object": "sum_{t<=K} P_II^t P_IC with tail <= epsilon",
+    "proof_symbols": "finite_neumann_tail_entry_le_geometric; error_le_tailBound; spectral_certificate_signed_finite_neumann_tail_entry_abs_le",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/adaptive_green_certification/certification_summary.csv",
+    "experiment_status": "rows=20, final=20, tie_aware_final=20",
+    "manuscript_location": "Implementation theorem and appendix certificate",
+    "remaining_gap": "Report when tie/top-set exact fallback is used rather than hiding it as speed."
+  },
+  {
+    "paper_claim": "Bits distortion admits a controlled finite-difference/Taylor approximation.",
+    "math_object": "phi(h)=-log2(1-h+eps)",
+    "proof_symbols": "bitsPhi_iteratedDerivWithin_two_eq; bitsPhi_taylor_remainder_bound_from_delta_auto; finite_difference_taylor_error",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/rd_operator_theorem_checks_actual_small/summary.csv",
+    "experiment_status": "rows=9, margin_condition=1, stable_when_checked=1",
+    "manuscript_location": "Operator approximation and ablation",
+    "remaining_gap": "Keep finite-difference score as the main theorem; gradient score is an approximation."
+  },
+  {
+    "paper_claim": "The graph-SMDP Bellman backup is a sup-norm contraction under finite options and gamma<1.",
+    "math_object": "||T V - T W||_infty <= gamma ||V-W||_infty",
+    "proof_symbols": "optionQ_lipschitz; bellmanMax_lipschitz; residual_to_value_gap_real_budget",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/core_benchmark/core_benchmark.csv",
+    "experiment_status": "rows=80, graph_rows=70, max_start_gap=0.04973",
+    "manuscript_location": "Planning correctness lemma",
+    "remaining_gap": "Tie value-gap reporting to residual diagnostics in each benchmark table."
+  },
+  {
+    "paper_claim": "Margin and top-set certificates separate stable operator decisions from ambiguous ties.",
+    "math_object": "m>2 epsilon_adapt implies stable top choice",
+    "proof_symbols": "margin_stability; interval_certified_top_choice; top_set_exact_fallback_global_optimal",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/adaptive_green_certification/certification_summary.csv",
+    "experiment_status": "rows=20, final=20, tie_aware_final=20",
+    "manuscript_location": "Certificate table",
+    "remaining_gap": "Use tie-aware timing as the conservative runtime accounting."
+  },
+  {
+    "paper_claim": "Group-constrained RD makes robustness constraints explicit instead of hiding them in a scalar risk.",
+    "math_object": "forall group, risk_g(B) <= budget_g",
+    "proof_symbols": "GroupConstraints; feasible_of_zero_violations",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv",
+    "experiment_status": "rows=18, feasible=12",
+    "manuscript_location": "Robust objective and main ablation",
+    "remaining_gap": "Use random-maze and held-out probes to show robustness is not hand-tuned to one map."
+  },
+  {
+    "paper_claim": "Incremental insertion scoring is an implementation optimization, not a new theorem yet.",
+    "math_object": "parent-to-child boundary insertion update",
+    "proof_symbols": "none",
+    "proof_status": "lean_pending",
+    "experiment_artifact": "experiments/output/incremental_green_update/incremental_green_update.csv",
+    "experiment_status": "rows=30, selected_match=26, max_score_error=233.2",
+    "manuscript_location": "Runtime ablation, not core correctness theorem",
+    "remaining_gap": "Formalize the insertion algebra only if it becomes a central claim."
+  },
+  {
+    "paper_claim": "The extracted graph should generalize across maze instances, not only fixed toy layouts.",
+    "math_object": "same objective on held-out DFS maze family",
+    "proof_symbols": "not_a_theorem",
+    "proof_status": "empirical_stress_test",
+    "experiment_artifact": "experiments/output/random_maze_generalization/random_maze_generalization.csv",
+    "experiment_status": "rows=6, feasible=3",
+    "manuscript_location": "Generalization/stress-test section",
+    "remaining_gap": "Scale to larger random maps on node001-node006 for final paper numbers."
+  }
+]

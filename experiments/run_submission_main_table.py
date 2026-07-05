@@ -360,15 +360,76 @@ def build_discovery_profile_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict
     return sorted(out, key=lambda row: str(row["mode"]))
 
 
+def build_random_maze_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for (method,), group in sorted(group_rows(rows, ["method"]).items()):
+        ok = [row for row in group if not row.get("error")]
+        out.append(
+            {
+                "method": method,
+                "n_rows": len(ok),
+                "feasible_rate": rate(parse_bool(row.get("group_all_feasible")) for row in ok),
+                "median_n_boundary": median(finite_float(row.get("n_boundary")) for row in ok),
+                "median_state_compression": median(finite_float(row.get("state_compression_ratio")) for row in ok),
+                "median_selection_time_sec": median(finite_float(row.get("selection_time_sec")) for row in ok),
+                "median_total_speedup": median(finite_float(row.get("total_speedup")) for row in ok),
+                "max_start_gap": max((finite_float(row.get("start_gap"), 0.0) for row in ok), default=float("nan")),
+                "max_group_total_violation": max(
+                    (finite_float(row.get("group_total_violation"), 0.0) for row in ok),
+                    default=float("nan"),
+                ),
+            }
+        )
+    return out
+
+
+def build_fair_frontier_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for row in rows:
+        out.append(
+            {
+                "method_group": row.get("method_group", ""),
+                "n_rows": row.get("n_rows", ""),
+                "pareto_rows": row.get("pareto_rows", ""),
+                "median_rate_budget_boundary_frac": finite_float(row.get("median_rate_budget_boundary_frac")),
+                "median_state_compression_ratio": finite_float(row.get("median_state_compression_ratio")),
+                "median_start_gap": finite_float(row.get("median_start_gap")),
+                "median_hidden_audit": finite_float(row.get("median_hidden_audit")),
+                "mean_group_feasible_rate": finite_float(row.get("mean_group_feasible_rate")),
+                "median_total_speedup": finite_float(row.get("median_total_speedup")),
+                "median_success_rate": finite_float(row.get("median_success_rate")),
+            }
+        )
+    return out
+
+
+def build_theorem_bridge_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for row in rows:
+        out.append(
+            {
+                "paper_claim": row.get("paper_claim", ""),
+                "proof_status": row.get("proof_status", ""),
+                "experiment_status": row.get("experiment_status", ""),
+                "manuscript_location": row.get("manuscript_location", ""),
+                "remaining_gap": row.get("remaining_gap", ""),
+            }
+        )
+    return out
+
+
 def write_report(
     out_path: Path,
     main_rows: Sequence[Mapping[str, object]],
     compact_rows: Sequence[Mapping[str, object]],
     group_adaptive_rows: Sequence[Mapping[str, object]],
+    random_maze_rows: Sequence[Mapping[str, object]],
+    fair_frontier_rows: Sequence[Mapping[str, object]],
     solver_rows: Sequence[Mapping[str, object]],
     certificate_rows: Sequence[Mapping[str, object]],
     discovery_profile_rows: Sequence[Mapping[str, object]],
     incremental_green_rows: Sequence[Mapping[str, object]],
+    theorem_bridge_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
 ) -> None:
     main_columns = [
@@ -437,6 +498,29 @@ def write_report(
         "start_gap",
         "first_hit_tail_bound_max",
     ]
+    random_maze_columns = [
+        "method",
+        "n_rows",
+        "feasible_rate",
+        "median_n_boundary",
+        "median_state_compression",
+        "median_selection_time_sec",
+        "median_total_speedup",
+        "max_start_gap",
+        "max_group_total_violation",
+    ]
+    fair_frontier_columns = [
+        "method_group",
+        "n_rows",
+        "pareto_rows",
+        "median_rate_budget_boundary_frac",
+        "median_state_compression_ratio",
+        "median_start_gap",
+        "median_hidden_audit",
+        "mean_group_feasible_rate",
+        "median_total_speedup",
+        "median_success_rate",
+    ]
     solver_columns = [
         "solver",
         "beam_width",
@@ -490,6 +574,13 @@ def write_report(
         "median_n_green_updates",
         "median_parent_update_rate",
     ]
+    theorem_bridge_columns = [
+        "paper_claim",
+        "proof_status",
+        "experiment_status",
+        "manuscript_location",
+        "remaining_gap",
+    ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
     worst_gap = max((finite_float(row.get("start_gap")) for row in main_rows), default=float("nan"))
@@ -531,6 +622,24 @@ def write_report(
         "",
         markdown_table(group_adaptive_display, group_adaptive_columns) if group_adaptive_display else "_No larger group-constrained adaptive rows found._",
         "",
+        "## Random Maze Generalization",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in random_maze_columns} for row in random_maze_rows],
+            random_maze_columns,
+        )
+        if random_maze_rows
+        else "_No random-maze rows found._",
+        "",
+        "## Fair Budget Frontier",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in fair_frontier_columns} for row in fair_frontier_rows],
+            fair_frontier_columns,
+        )
+        if fair_frontier_rows
+        else "_No fair-budget frontier rows found._",
+        "",
         "## Solver Validity Aggregate",
         "",
         markdown_table(solver_display, solver_columns) if solver_display else "_No solver-validity rows found._",
@@ -553,6 +662,15 @@ def write_report(
         if incremental_green_rows
         else "_No incremental-Green rows found._",
         "",
+        "## Theorem-To-Experiment Bridge",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in theorem_bridge_columns} for row in theorem_bridge_rows],
+            theorem_bridge_columns,
+        )
+        if theorem_bridge_rows
+        else "_No theorem bridge rows found._",
+        "",
         "## Certificate Appendix Summary",
         "",
         markdown_table(certificate_display, certificate_columns) if certificate_display else "_No certificate rows found._",
@@ -563,10 +681,14 @@ def write_report(
         f"- core benchmark: `{args.core_csv}`",
         f"- adaptive certification: `{args.adaptive_cert_csv}`",
         f"- larger group-constrained adaptive: `{args.group_adaptive_csv}`",
+        f"- random maze generalization: `{args.random_maze_csv}`",
+        f"- fair budget frontier: `{args.fair_frontier_csv}`",
         f"- solver validity: `{args.solver_csv}`",
         f"- discovery profile/cache: `{args.discovery_profile_csv}`",
         f"- incremental Green update: `{args.incremental_green_csv}`",
         f"- incremental group semantic diff: `{args.incremental_semantic_summary}`",
+        f"- graph abstraction figures: `{args.figure_summary}`",
+        f"- theorem/experiment bridge: `{args.theorem_bridge_csv}`",
         f"- linear solver thread scaling: `{args.thread_scaling_summary}`",
         f"- weighted spectral certificate: `{args.weighted_cert_csv}`",
         f"- conditioned rational certificate: `{args.conditioned_cert_csv}`",
@@ -580,10 +702,14 @@ def main() -> None:
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
     parser.add_argument("--adaptive-cert-csv", type=Path, default=Path("experiments/output/adaptive_green_certification/certification_summary.csv"))
     parser.add_argument("--group-adaptive-csv", type=Path, default=Path("experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv"))
+    parser.add_argument("--random-maze-csv", type=Path, default=Path("experiments/output/random_maze_generalization/random_maze_generalization.csv"))
+    parser.add_argument("--fair-frontier-csv", type=Path, default=Path("experiments/output/fair_budget_frontier/fair_budget_frontier_summary.csv"))
     parser.add_argument("--solver-csv", type=Path, default=Path("experiments/output/solver_validity/solver_validity.csv"))
     parser.add_argument("--discovery-profile-csv", type=Path, default=Path("experiments/output/discovery_profile_cache/discovery_profile_cache.csv"))
     parser.add_argument("--incremental-green-csv", type=Path, default=Path("experiments/output/incremental_green_update/incremental_green_update_aggregate.csv"))
     parser.add_argument("--incremental-semantic-summary", type=Path, default=Path("experiments/output/group_incremental_semantic_diff/summary.md"))
+    parser.add_argument("--figure-summary", type=Path, default=Path("experiments/output/graph_abstraction_figures/summary.md"))
+    parser.add_argument("--theorem-bridge-csv", type=Path, default=Path("experiments/output/theorem_experiment_bridge/theorem_experiment_bridge.csv"))
     parser.add_argument("--thread-scaling-summary", type=Path, default=Path("experiments/output/linear_solver_thread_scaling/summary.md"))
     parser.add_argument("--weighted-cert-csv", type=Path, default=Path("experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv"))
     parser.add_argument("--conditioned-cert-csv", type=Path, default=Path("experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv"))
@@ -594,26 +720,35 @@ def main() -> None:
     core_rows = read_csv_rows(args.core_csv)
     adaptive_rows = read_csv_rows(args.adaptive_cert_csv)
     group_adaptive_raw = read_csv_rows(args.group_adaptive_csv)
+    random_maze_raw = read_csv_rows(args.random_maze_csv)
+    fair_frontier_raw = read_csv_rows(args.fair_frontier_csv)
     solver_rows_raw = read_csv_rows(args.solver_csv)
     discovery_profile_raw = read_csv_rows(args.discovery_profile_csv)
     incremental_green_rows = read_csv_rows(args.incremental_green_csv)
+    theorem_bridge_raw = read_csv_rows(args.theorem_bridge_csv)
     weighted_rows = read_csv_rows(args.weighted_cert_csv)
     conditioned_rows = read_csv_rows(args.conditioned_cert_csv)
 
     main_rows = build_main_runtime_rows(large_rows, adaptive_rows)
     compact_rows = build_compact_baseline_rows(core_rows)
     group_adaptive_rows = build_group_adaptive_rows(group_adaptive_raw)
+    random_maze_rows = build_random_maze_rows(random_maze_raw)
+    fair_frontier_rows = build_fair_frontier_rows(fair_frontier_raw)
     solver_rows = build_solver_rows(solver_rows_raw)
     discovery_profile_rows = build_discovery_profile_rows(discovery_profile_raw)
+    theorem_bridge_rows = build_theorem_bridge_rows(theorem_bridge_raw)
     certificate_rows = build_certificate_rows(adaptive_rows, weighted_rows, conditioned_rows)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_csv_all_fields(args.out_dir / "submission_runtime_table.csv", main_rows)
     write_csv_all_fields(args.out_dir / "compact_baseline_aggregate.csv", compact_rows)
     write_csv_all_fields(args.out_dir / "group_constrained_adaptive_table.csv", group_adaptive_rows)
+    write_csv_all_fields(args.out_dir / "random_maze_generalization_aggregate.csv", random_maze_rows)
+    write_csv_all_fields(args.out_dir / "fair_budget_frontier_aggregate.csv", fair_frontier_rows)
     write_csv_all_fields(args.out_dir / "solver_validity_aggregate.csv", solver_rows)
     write_csv_all_fields(args.out_dir / "discovery_profile_aggregate.csv", discovery_profile_rows)
     write_csv_all_fields(args.out_dir / "incremental_green_update_aggregate.csv", incremental_green_rows)
+    write_csv_all_fields(args.out_dir / "theorem_experiment_bridge.csv", theorem_bridge_rows)
     write_csv_all_fields(args.out_dir / "certificate_appendix_summary.csv", certificate_rows)
     (args.out_dir / "submission_main_table.json").write_text(
         json.dumps(
@@ -621,9 +756,12 @@ def main() -> None:
                 "runtime_table": main_rows,
                 "compact_baseline_aggregate": compact_rows,
                 "group_constrained_adaptive_table": group_adaptive_rows,
+                "random_maze_generalization_aggregate": random_maze_rows,
+                "fair_budget_frontier_aggregate": fair_frontier_rows,
                 "solver_validity_aggregate": solver_rows,
                 "discovery_profile_aggregate": discovery_profile_rows,
                 "incremental_green_update_aggregate": incremental_green_rows,
+                "theorem_experiment_bridge": theorem_bridge_rows,
                 "certificate_appendix_summary": certificate_rows,
             },
             indent=2,
@@ -637,10 +775,13 @@ def main() -> None:
         main_rows,
         compact_rows,
         group_adaptive_rows,
+        random_maze_rows,
+        fair_frontier_rows,
         solver_rows,
         certificate_rows,
         discovery_profile_rows,
         incremental_green_rows,
+        theorem_bridge_rows,
         args,
     )
 

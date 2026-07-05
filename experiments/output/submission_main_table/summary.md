@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-05T19:22:30
+Generated: 2026-07-05T19:43:00
 
 This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.
 
@@ -61,6 +61,28 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 | maze_13 | 0.05 | group_constrained | 71 | 33 | 4 | True | 3 | 0.0 | 5.532 | operator | 1.962 | 1.623 | 0.0 | 0.002267 | 0.0 | 0.05175 | 0.002363 | 26.55 | 0.01123 | 93 | 4.297e-07 | 9.672e-07 |
 | maze_13 | 0.05 | group_constrained_incremental | 71 | 33 | 3 | True | 3 | 0.0 | 1.054 | insertion_score | 0.009619 | 0.01091 | 0.01226 | 0.001102 | 0.0 | 0.03094 | 0.001674 | 37.97 | 0.05848 | 18 | 2.733e-07 | 7.73e-07 |
 
+## Random Maze Generalization
+
+| method | n_rows | feasible_rate | median_n_boundary | median_state_compression | median_selection_time_sec | median_total_speedup | max_start_gap | max_group_total_violation |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| endpoints | 2 | 0.0 | 2 | 15.5 | 0.0 | 2.494 | 3.332e-08 | 233.2 |
+| group_constrained_incremental | 2 | 1 | 3 | 10.33 | 0.3035 | 0.05424 | 2.167e-07 | 0.0 |
+| group_constrained_operator | 2 | 0.5 | 3 | 10.33 | 3.323 | 0.008238 | 1.633e-07 | 116.6 |
+
+## Fair Budget Frontier
+
+| method_group | n_rows | pareto_rows | median_rate_budget_boundary_frac | median_state_compression_ratio | median_start_gap | median_hidden_audit | mean_group_feasible_rate | median_total_speedup | median_success_rate |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| baseline:dense_turn | 1 | 1 | 0.3704 | 2.7 | 2.901501261476369e-11 | 0.0 | 1 | nan | 1 |
+| baseline:endpoints | 7 | 7 | 0.01923 | 52 | 2.921041186709772e-11 | 155.5 | 0.1429 | 2.759 | 1 |
+| full_mdp | 10 | 5 | 1 | 1 | 0.0 | 0.0 | nan | 1 | 1 |
+| option_baseline:bottleneck | 15 | 8 | 0.1875 | 5.333 | 1.4097167877480388e-11 | 2 | 1 | 0.3402 | 1 |
+| option_baseline:coverage | 15 | 1 | 0.1875 | 5.333 | 2.9125146738806507e-11 | 2 | 1 | 0.4021 | 1 |
+| option_baseline:eigen | 15 | 3 | 0.1875 | 5.333 | 2.332356530132529e-11 | 2.1 | 1 | 0.3368 | 1 |
+| option_baseline:random | 15 | 1 | 0.1875 | 5.333 | 2.1433521624203422e-11 | 2 | 1 | 0.3465 | 1 |
+| ours:group_rd | 22 | 14 | 0.05221 | 19.27 | 1.7967849430533533e-12 | 0.0 | 0.9545 | 0.01516 | 1 |
+| ours:rd_graph | 21 | 19 | 0.125 | 8 | 1.9127810446661897e-11 | 0.0 | 1 | 0.1836 | 1 |
+
 ## Solver Validity Aggregate
 
 | solver | beam_width | n_rows | boundary_match_rate | zero_total_violation_gap_rate | feasible_decision_match_rate | median_selection_time_sec | median_oracle_time_sec |
@@ -91,6 +113,20 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 | full_recompute | 6 | 1.0 | 0.012428781890776008 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | 151.0 | 0.0 | 0.0 |
 | static_basis_reuse | 6 | 1.0 | 0.005115150706842542 | 2.344762869362868 | 2.515053120630627 | 233.17891857711604 | nan | 1.0 | 12.0 | 0.0 | 0.0 |
 
+## Theorem-To-Experiment Bridge
+
+| paper_claim | proof_status | experiment_status | manuscript_location | remaining_gap |
+| --- | --- | --- | --- | --- |
+| The frozen split score is an exact finite difference of a fixed local RD objective. | proved_symbol_present | rows=9, margin_condition=1, stable_when_checked=1 | Method theorem, not adaptive solver guarantee | State frozen candidate universe/options/weights explicitly. |
+| First-hit Green kernels define legal compressed edge models on finite absorbing interiors. | proved_symbol_present | rows=80, graph_rows=70, max_start_gap=0.04973 | Graph-SMDP construction | Use exact Green as reference operator; adaptive/truncated variants are certified implementations. |
+| Truncated/adaptive Green scores are certified by Neumann tail bounds. | proved_symbol_present | rows=20, final=20, tie_aware_final=20 | Implementation theorem and appendix certificate | Report when tie/top-set exact fallback is used rather than hiding it as speed. |
+| Bits distortion admits a controlled finite-difference/Taylor approximation. | proved_symbol_present | rows=9, margin_condition=1, stable_when_checked=1 | Operator approximation and ablation | Keep finite-difference score as the main theorem; gradient score is an approximation. |
+| The graph-SMDP Bellman backup is a sup-norm contraction under finite options and gamma<1. | proved_symbol_present | rows=80, graph_rows=70, max_start_gap=0.04973 | Planning correctness lemma | Tie value-gap reporting to residual diagnostics in each benchmark table. |
+| Margin and top-set certificates separate stable operator decisions from ambiguous ties. | proved_symbol_present | rows=20, final=20, tie_aware_final=20 | Certificate table | Use tie-aware timing as the conservative runtime accounting. |
+| Group-constrained RD makes robustness constraints explicit instead of hiding them in a scalar risk. | proved_symbol_present | rows=18, feasible=12 | Robust objective and main ablation | Use random-maze and held-out probes to show robustness is not hand-tuned to one map. |
+| Incremental insertion scoring is an implementation optimization, not a new theorem yet. | lean_pending | rows=30, selected_match=26, max_score_error=233.2 | Runtime ablation, not core correctness theorem | Formalize the insertion algebra only if it becomes a central claim. |
+| The extracted graph should generalize across maze instances, not only fixed toy layouts. | empirical_stress_test | rows=6, feasible=3 | Generalization/stress-test section | Scale to larger random maps on node001-node006 for final paper numbers. |
+
 ## Certificate Appendix Summary
 
 | certificate | rows | interval_certified | fallback_used | tie_fallback_used | curvature_fallback_used | tie_set_certified | epsilon_optimal_certified | final_certified | tie_aware_final_certified | row_q_lt_1_edges | weighted_q_lt_1_edges | certificates_found | rational_verified | status |
@@ -105,10 +141,14 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 - core benchmark: `experiments/output/core_benchmark/core_benchmark.csv`
 - adaptive certification: `experiments/output/adaptive_green_certification/certification_summary.csv`
 - larger group-constrained adaptive: `experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv`
+- random maze generalization: `experiments/output/random_maze_generalization/random_maze_generalization.csv`
+- fair budget frontier: `experiments/output/fair_budget_frontier/fair_budget_frontier_summary.csv`
 - solver validity: `experiments/output/solver_validity/solver_validity.csv`
 - discovery profile/cache: `experiments/output/discovery_profile_cache/discovery_profile_cache.csv`
 - incremental Green update: `experiments/output/incremental_green_update/incremental_green_update_aggregate.csv`
 - incremental group semantic diff: `experiments/output/group_incremental_semantic_diff/summary.md`
+- graph abstraction figures: `experiments/output/graph_abstraction_figures/summary.md`
+- theorem/experiment bridge: `experiments/output/theorem_experiment_bridge/theorem_experiment_bridge.csv`
 - linear solver thread scaling: `experiments/output/linear_solver_thread_scaling/summary.md`
 - weighted spectral certificate: `experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv`
 - conditioned rational certificate: `experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv`
