@@ -5758,3 +5758,78 @@ The paper should distinguish:
   kernel/probe construction: still expensive
   fixed-B planning: very cheap
 ```
+
+## 36. Incremental Green Boundary-Insertion Pass
+
+GPT answer 15 recommended making the next main contribution a true
+parent-to-child Green update rather than a learned surrogate. I implemented the
+first exact check.
+
+New code/output:
+
+```text
+experiments/bellman_kron.py
+experiments/run_incremental_green_update_check.py
+experiments/output/incremental_green_update/summary.md
+experiments/output/submission_main_table/incremental_green_update_aggregate.csv
+```
+
+Core implementation:
+
+```text
+first_hit_green_state(P, terminals)
+insert_first_hit_terminal(parent_state, x)
+```
+
+The matrix-level update uses:
+
+```text
+N' = N_JJ - N_Jx N_xJ / N_xx
+H'(i, x) = N(i, x) / N(x, x)
+H'(i, c) = H(i, c) - H'(i, x) H(x, c)
+```
+
+For scoring we also use the cheaper exact scalar form:
+
+```text
+h_{B union x}(i)
+  = h_B(i) - Pr_i[tau_x < tau_C] * h_B(x)
+```
+
+where `h_B(x)` is the old hidden mass from the newly inserted state to the old
+hidden terminals. This is the useful runtime path: it gives the exact score
+without materializing a full child Green matrix for every candidate.
+
+Current check on `open_room_7`, `four_rooms_7`, `maze_9`, slip `0` and `0.05`:
+
+```text
+boundary_insertion_score_update:
+  selected_state_match_rate = 1.0
+  max hidden error vs direct child recompute ≈ 8.9e-16
+  median speedup vs full child recompute ≈ 6.1x
+  max speedup ≈ 7.4x
+  median parent_update_rate = 1.0
+
+boundary_insertion_update full matrix:
+  kernel error ≈ 1e-15
+  slower in Python because it materializes every child matrix
+
+current_frozen_operator:
+  selected_state_match_rate = 0.333
+```
+
+This is an important correction to the previous profile:
+
+```text
+memo cache:
+  only helps repeated identical boundary/probe queries
+
+incremental insertion:
+  helps fresh child boundaries because every child is updated from its parent
+```
+
+The next implementation step is to thread `boundary_insertion_score_update`
+through the group-constrained beam, replacing child probe recomputation where
+the fixed-policy/fixed-residual semantics match the theorem assumptions. The
+frontier-pruning layer should come after that, because now pruning can reduce
+the number of parent-to-child updates rather than just cheap candidate rows.

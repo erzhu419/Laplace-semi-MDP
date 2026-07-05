@@ -366,6 +366,7 @@ def write_report(
     solver_rows: Sequence[Mapping[str, object]],
     certificate_rows: Sequence[Mapping[str, object]],
     discovery_profile_rows: Sequence[Mapping[str, object]],
+    incremental_green_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
 ) -> None:
     main_columns = [
@@ -471,6 +472,20 @@ def write_report(
         "median_candidate_score_time_sec",
         "median_probe_cache_hit_rate",
     ]
+    incremental_columns = [
+        "mode",
+        "n_rows",
+        "selected_state_match_rate",
+        "median_wall_time_sec",
+        "median_speedup_vs_full_recompute",
+        "max_speedup_vs_full_recompute",
+        "max_score_error_vs_exact",
+        "max_kernel_error_vs_exact",
+        "max_hidden_error_vs_exact",
+        "median_n_green_solves",
+        "median_n_green_updates",
+        "median_parent_update_rate",
+    ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
     worst_gap = max((finite_float(row.get("start_gap")) for row in main_rows), default=float("nan"))
@@ -525,6 +540,15 @@ def write_report(
         if discovery_profile_rows
         else "_No discovery-profile rows found._",
         "",
+        "## Incremental Green Update Aggregate",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in incremental_columns} for row in incremental_green_rows],
+            incremental_columns,
+        )
+        if incremental_green_rows
+        else "_No incremental-Green rows found._",
+        "",
         "## Certificate Appendix Summary",
         "",
         markdown_table(certificate_display, certificate_columns) if certificate_display else "_No certificate rows found._",
@@ -537,6 +561,7 @@ def write_report(
         f"- larger group-constrained adaptive: `{args.group_adaptive_csv}`",
         f"- solver validity: `{args.solver_csv}`",
         f"- discovery profile/cache: `{args.discovery_profile_csv}`",
+        f"- incremental Green update: `{args.incremental_green_csv}`",
         f"- weighted spectral certificate: `{args.weighted_cert_csv}`",
         f"- conditioned rational certificate: `{args.conditioned_cert_csv}`",
     ]
@@ -551,6 +576,7 @@ def main() -> None:
     parser.add_argument("--group-adaptive-csv", type=Path, default=Path("experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv"))
     parser.add_argument("--solver-csv", type=Path, default=Path("experiments/output/solver_validity/solver_validity.csv"))
     parser.add_argument("--discovery-profile-csv", type=Path, default=Path("experiments/output/discovery_profile_cache/discovery_profile_cache.csv"))
+    parser.add_argument("--incremental-green-csv", type=Path, default=Path("experiments/output/incremental_green_update/incremental_green_update_aggregate.csv"))
     parser.add_argument("--weighted-cert-csv", type=Path, default=Path("experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv"))
     parser.add_argument("--conditioned-cert-csv", type=Path, default=Path("experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv"))
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/submission_main_table"))
@@ -562,6 +588,7 @@ def main() -> None:
     group_adaptive_raw = read_csv_rows(args.group_adaptive_csv)
     solver_rows_raw = read_csv_rows(args.solver_csv)
     discovery_profile_raw = read_csv_rows(args.discovery_profile_csv)
+    incremental_green_rows = read_csv_rows(args.incremental_green_csv)
     weighted_rows = read_csv_rows(args.weighted_cert_csv)
     conditioned_rows = read_csv_rows(args.conditioned_cert_csv)
 
@@ -578,6 +605,7 @@ def main() -> None:
     write_csv_all_fields(args.out_dir / "group_constrained_adaptive_table.csv", group_adaptive_rows)
     write_csv_all_fields(args.out_dir / "solver_validity_aggregate.csv", solver_rows)
     write_csv_all_fields(args.out_dir / "discovery_profile_aggregate.csv", discovery_profile_rows)
+    write_csv_all_fields(args.out_dir / "incremental_green_update_aggregate.csv", incremental_green_rows)
     write_csv_all_fields(args.out_dir / "certificate_appendix_summary.csv", certificate_rows)
     (args.out_dir / "submission_main_table.json").write_text(
         json.dumps(
@@ -587,6 +615,7 @@ def main() -> None:
                 "group_constrained_adaptive_table": group_adaptive_rows,
                 "solver_validity_aggregate": solver_rows,
                 "discovery_profile_aggregate": discovery_profile_rows,
+                "incremental_green_update_aggregate": incremental_green_rows,
                 "certificate_appendix_summary": certificate_rows,
             },
             indent=2,
@@ -603,6 +632,7 @@ def main() -> None:
         solver_rows,
         certificate_rows,
         discovery_profile_rows,
+        incremental_green_rows,
         args,
     )
 

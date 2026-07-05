@@ -120,6 +120,14 @@ class FirstHitReduction:
     q_bound: float = 1.0
 
 
+@dataclass(frozen=True)
+class FirstHitGreenState:
+    terminals: np.ndarray
+    interior: np.ndarray
+    fundamental: np.ndarray
+    hit_probability: np.ndarray
+
+
 def default_map() -> Tuple[str, ...]:
     return (
         "#####################",
@@ -765,6 +773,94 @@ def first_hit_reduce(
         reward=reward,
         hit_probability=hit_probability[start_pos],
         expected_tau=expected_tau[start_pos],
+    )
+
+
+def first_hit_green_state(P: np.ndarray, terminals: Sequence[State]) -> FirstHitGreenState:
+    """Exact non-discounted first-hit Green state for a terminal set.
+
+    ``fundamental`` is ``(I - P_II)^-1`` and ``hit_probability`` is
+    ``fundamental @ P_IT``. This state is intentionally policy-local: callers
+    supply the transition matrix for one fixed option policy.
+    """
+
+    n = P.shape[0]
+    T = np.array(sorted(set(int(state) for state in terminals)), dtype=int)
+    terminal_set = set(T.tolist())
+    I = np.array([state for state in range(n) if state not in terminal_set], dtype=int)
+    if len(I) == 0:
+        return FirstHitGreenState(
+            terminals=T,
+            interior=I,
+            fundamental=np.zeros((0, 0), dtype=float),
+            hit_probability=np.zeros((0, len(T)), dtype=float),
+        )
+    P_II = P[np.ix_(I, I)]
+    P_IT = P[np.ix_(I, T)]
+    N = _solve_or_pinv(np.eye(len(I)) - P_II, np.eye(len(I)))
+    return FirstHitGreenState(
+        terminals=T,
+        interior=I,
+        fundamental=N,
+        hit_probability=N @ P_IT,
+    )
+
+
+def insert_first_hit_terminal(
+    state: FirstHitGreenState,
+    inserted_state: State,
+    min_pivot: float = 1e-12,
+) -> FirstHitGreenState:
+    """Exact parent-to-child update when one interior state becomes terminal.
+
+    If ``C`` is the old terminal set and ``x`` is an interior state, the child
+    terminal set is ``C ∪ {x}``.  The fundamental matrix update is the Schur
+    complement deletion identity
+
+    ``N' = N_JJ - N_Jx N_xJ / N_xx``.
+
+    The first-hit kernel update is
+
+    ``H'(i, x) = N(i, x) / N(x, x)`` and
+    ``H'(i, c) = H(i, c) - H'(i, x) H(x, c)`` for old terminals ``c``.
+    """
+
+    x = int(inserted_state)
+    terminal_set = set(int(term) for term in state.terminals.tolist())
+    if x in terminal_set:
+        return state
+    interior_positions = {int(s): pos for pos, s in enumerate(state.interior.tolist())}
+    if x not in interior_positions:
+        raise ValueError(f"inserted_state {x} is neither terminal nor interior.")
+    x_pos = interior_positions[x]
+    n_xx = float(state.fundamental[x_pos, x_pos])
+    if abs(n_xx) <= min_pivot:
+        raise np.linalg.LinAlgError(f"Boundary insertion pivot too small: {n_xx}")
+    keep_positions = [pos for pos in range(len(state.interior)) if pos != x_pos]
+    child_interior = state.interior[np.array(keep_positions, dtype=int)]
+    n_jj = state.fundamental[np.ix_(keep_positions, keep_positions)]
+    n_jx = state.fundamental[np.ix_(keep_positions, [x_pos])]
+    n_xj = state.fundamental[np.ix_([x_pos], keep_positions)]
+    child_fundamental = n_jj - (n_jx @ n_xj) / n_xx
+
+    old_terminals = [int(term) for term in state.terminals.tolist()]
+    child_terminals = sorted(terminal_set.union({x}))
+    child_hit = np.zeros((len(child_interior), len(child_terminals)), dtype=float)
+    p_hit_x = state.fundamental[keep_positions, x_pos] / n_xx
+    h_x_old = state.hit_probability[x_pos]
+    old_col = {term: pos for pos, term in enumerate(old_terminals)}
+    child_col = {term: pos for pos, term in enumerate(child_terminals)}
+    for term in old_terminals:
+        child_hit[:, child_col[term]] = (
+            state.hit_probability[keep_positions, old_col[term]]
+            - p_hit_x * h_x_old[old_col[term]]
+        )
+    child_hit[:, child_col[x]] = p_hit_x
+    return FirstHitGreenState(
+        terminals=np.array(child_terminals, dtype=int),
+        interior=child_interior,
+        fundamental=child_fundamental,
+        hit_probability=child_hit,
     )
 
 

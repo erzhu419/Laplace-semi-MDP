@@ -36,4 +36,9 @@ python3 experiments/run_discovery_profile_cache.py \
   --slips 0.0 0.05 \
   --out-dir experiments/output/discovery_profile_cache
 
+python3 experiments/run_incremental_green_update_check.py \
+  --map-specs open_room:7 four_rooms:7 maze:9 \
+  --slips 0.0 0.05 \
+  --out-dir experiments/output/incremental_green_update
+
 python3 experiments/run_submission_main_table.py

@@ -1142,3 +1142,65 @@ beam search mostly evaluates fresh boundaries. The next real improvement is
 incremental Green updates, frontier-local candidate pruning, or a symbolic /
 learned surrogate that predicts the Green-delta matrix before solving it.
 ```
+
+## Incremental First-Hit Green Update
+
+GPT answer 15 recommends making parent-to-child Green insertion the next main
+contribution. The first exact diagnostic is implemented.
+
+New files:
+
+```text
+experiments/run_incremental_green_update_check.py
+experiments/output/incremental_green_update/summary.md
+```
+
+The code now has a reusable exact Green state:
+
+```text
+FirstHitGreenState
+first_hit_green_state
+insert_first_hit_terminal
+```
+
+The checked identity is the boundary-insertion formula:
+
+```text
+N' = N_JJ - N_Jx N_xJ / N_xx
+H'(i, x) = N(i, x) / N(x, x)
+H'(i, c) = H(i, c) - H'(i, x) H(x, c)
+```
+
+The full child-matrix update matches direct recomputation to about `1e-15`.
+However, materializing every child matrix in Python is slower on the small
+suite. The useful runtime path is the score-level exact update:
+
+```text
+h_after(i; x) = h_before(i) - Pr_i[tau_x < tau_C] * h_before(x)
+```
+
+This gives exact hidden-mass and score deltas without a child solve.
+
+Current aggregate:
+
+```text
+boundary_insertion_score_update:
+  selected_state_match_rate = 1.0
+  median speedup vs full recompute ≈ 6.1x
+  max speedup ≈ 7.4x
+  max hidden error ≈ 8.9e-16
+  parent_update_rate = 1.0
+
+current_frozen_operator:
+  selected_state_match_rate = 0.333
+```
+
+This is now the strongest answer to the "direct operator is still expensive?"
+question:
+
+```text
+The exact score update is cheap once the parent Green state exists.
+The expensive part was solving a fresh child Green problem.
+Parent-to-child insertion removes that solve while preserving the exact
+direct-child score under fixed policy semantics.
+```
