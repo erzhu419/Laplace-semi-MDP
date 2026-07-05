@@ -5679,3 +5679,82 @@ certification:
 group-constrained discovery:
   gives robust feasible boundaries, but currently has expensive upfront search
 ```
+
+## 35. Discovery Profile, Cache, and Vectorized Frozen Scoring
+
+I added the first profiling pass for the expensive part of discovery:
+
+```text
+experiments/run_discovery_profile_cache.py
+experiments/output/discovery_profile_cache/summary.md
+experiments/run_rd_group_constrained.py
+experiments/run_rd_operator_theorem_checks.py
+```
+
+What is now instrumented:
+
+```text
+probe/context build
+Green-kernel evaluation
+frozen finite-difference operator scoring
+group candidate scoring
+beam expansion
+probe cache hits/misses
+full adaptive candidate recompute
+```
+
+Two implementation changes matter:
+
+```text
+1. ProbeDeltaCache:
+   key = (map, slip, boundary, basis, probe, recipe, edge_weight, lambda, top_fraction)
+   value = frozen bits-before and candidate bits-deltas
+
+2. Vectorized scoring:
+   operator_marginal_rows now builds an edge-by-candidate probability matrix and
+   computes linear / finite-difference bits / gradient scores with NumPy ops.
+   score_candidates also evaluates group risks in a matrix pass.
+```
+
+Current one-step profile:
+
+```text
+current frozen operator vs full adaptive candidate recompute:
+  median speedup ≈ 5.3x
+
+cached repeat of the same boundary/probe:
+  speedup ≈ 3.3e3x to 7.5e3x
+
+group candidate scoring:
+  about 2e-4 to 6e-4 seconds in the one-step profile
+```
+
+The larger group-constrained table now includes profile columns. Its main
+diagnostic is blunt:
+
+```text
+group_constrained median selection time ≈ 11.3s
+median Green-kernel time ≈ 3.53s
+median operator-delta time ≈ 3.57s
+median group candidate-score time ≈ 0.0033s
+cache hit rate = 0 in the default beam run
+```
+
+So the problem is not the outer scalar/group scoring loop. The expensive part is
+repeated Green/operator probe evaluation for new boundary states. The cache is
+valuable for repeated boundary/probe queries and multitask reuse, but the default
+beam mostly visits fresh boundaries; this means true incremental Green updates
+or a learned/symbolic surrogate operator are still the right next cost target.
+
+Answer to the direct-cost question:
+
+```text
+Directly using the operator is cheap only after the boundary/probe kernel is
+available. During discovery, every new candidate boundary still forces new
+first-hit Green evaluations, so "operator" does not automatically mean "free".
+The paper should distinguish:
+
+  frozen score application: cheap/vectorized
+  kernel/probe construction: still expensive
+  fixed-B planning: very cheap
+```

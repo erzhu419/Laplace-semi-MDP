@@ -31,4 +31,9 @@ python3 experiments/run_group_constrained_adaptive_table.py \
   --methods endpoints group_constrained \
   --out-dir experiments/output/group_constrained_adaptive_large
 
+python3 experiments/run_discovery_profile_cache.py \
+  --map-specs open_room:7 four_rooms:7 maze:9 \
+  --slips 0.0 0.05 \
+  --out-dir experiments/output/discovery_profile_cache
+
 python3 experiments/run_submission_main_table.py

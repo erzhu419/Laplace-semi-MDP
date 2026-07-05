@@ -15,6 +15,7 @@ from run_first_boundary_targeted import markdown_table
 from run_graph_baseline_comparison import LEARNED_RECIPES
 from run_option_algorithm_comparison import json_default, write_csv_all_fields
 from run_rd_group_constrained import (
+    ProbeDeltaCache,
     evaluate_boundary_on_groups,
     fixed_basis,
     parse_group_specs,
@@ -93,6 +94,7 @@ def construct_group_boundary(
     budgets: Mapping[str, float],
     args: argparse.Namespace,
 ) -> Tuple[List[int], Dict[str, object], float]:
+    probe_cache = ProbeDeltaCache(enabled=not args.disable_probe_cache)
     boundary, trace, _candidates, _probes, selection_time = select_group_constrained_boundary(
         map_name=map_label,
         rows=rows,
@@ -112,10 +114,13 @@ def construct_group_boundary(
         rate_tie_break=args.rate_tie_break,
         beam_width=args.beam_width,
         beam_expand=args.beam_expand,
+        probe_cache=probe_cache,
     )
+    selection_profile = probe_cache.summary()
     return sorted(set(boundary)), {
         "selection_trace": trace,
         "constructor_stop_reason": trace[-1]["stop_reason"] if trace else "none",
+        "selection_profile": selection_profile,
     }, selection_time
 
 
@@ -223,6 +228,9 @@ def run_method(
             )
     else:
         raise ValueError(f"Unknown method: {method}")
+    selection_profile = constructor.get("selection_profile", {})
+    if not isinstance(selection_profile, Mapping):
+        selection_profile = {}
     constructor = {
         **constructor,
         "budget_frac": args.budget_frac,
@@ -290,6 +298,19 @@ def run_method(
         "first_hit_used_steps_max": model.get("first_hit_used_steps_max", ""),
         "first_hit_tail_bound_max": model.get("first_hit_tail_bound_max", ""),
         "stop_reason": constructor.get("constructor_stop_reason", ""),
+        "probe_cache_hits": int(finite_float(selection_profile.get("probe_cache_hits"), 0.0)),
+        "probe_cache_misses": int(finite_float(selection_profile.get("probe_cache_misses"), 0.0)),
+        "probe_cache_hit_rate": float(finite_float(selection_profile.get("probe_cache_hit_rate"), 0.0)),
+        "probe_calls": int(finite_float(selection_profile.get("probe_calls"), 0.0)),
+        "unique_probe_evals": int(finite_float(selection_profile.get("unique_probe_evals"), 0.0)),
+        "probe_context_build_time_sec": float(finite_float(selection_profile.get("probe_context_build_time_sec"), 0.0)),
+        "probe_green_kernel_time_sec": float(finite_float(selection_profile.get("probe_green_kernel_time_sec"), 0.0)),
+        "probe_operator_delta_time_sec": float(finite_float(selection_profile.get("probe_operator_delta_time_sec"), 0.0)),
+        "probe_call_overhead_time_sec": float(finite_float(selection_profile.get("probe_call_overhead_time_sec"), 0.0)),
+        "candidate_score_time_sec": float(finite_float(selection_profile.get("candidate_score_time_sec"), 0.0)),
+        "beam_expansion_time_sec": float(finite_float(selection_profile.get("beam_expansion_time_sec"), 0.0)),
+        "profiled_selection_time_sec": float(finite_float(selection_profile.get("profiled_selection_time_sec"), 0.0)),
+        "uncached_probe_eval_time_sec": float(finite_float(selection_profile.get("uncached_probe_eval_time_sec"), 0.0)),
         "boundary": list(model["boundary"]),
         "error": "",
     }
@@ -331,6 +352,10 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "group_max_violation",
         "group_test_bits_cvar",
         "selection_time_sec",
+        "probe_green_kernel_time_sec",
+        "probe_operator_delta_time_sec",
+        "candidate_score_time_sec",
+        "probe_cache_hit_rate",
         "kernel_time_sec",
         "smdp_solve_time_sec",
         "planning_speedup",
@@ -357,12 +382,25 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "feasible_rows",
         "feasible_rate",
         "median_n_boundary",
+        "median_selection_time_sec",
+        "median_probe_green_kernel_time_sec",
+        "median_candidate_score_time_sec",
+        "median_probe_cache_hit_rate",
         "best_planning_speedup",
         "best_total_speedup",
         "median_break_even_tasks",
         "max_group_total_violation",
     ]
     method_rows: List[Dict[str, object]] = []
+    def median(values: Sequence[float]) -> object:
+        finite = sorted(value for value in values if math.isfinite(value))
+        if not finite:
+            return ""
+        mid = len(finite) // 2
+        if len(finite) % 2 == 1:
+            return finite[mid]
+        return 0.5 * (finite[mid - 1] + finite[mid])
+
     for method in sorted({str(row.get("method", "")) for row in ok_rows}):
         group = [row for row in ok_rows if str(row.get("method", "")) == method]
         break_evens = sorted(
@@ -384,6 +422,10 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
                 "feasible_rows": sum(1 for row in group if bool(row.get("group_all_feasible", False))),
                 "feasible_rate": sum(1 for row in group if bool(row.get("group_all_feasible", False))) / max(1, len(group)),
                 "median_n_boundary": sorted(int(row["n_boundary"]) for row in group)[len(group) // 2] if group else "",
+                "median_selection_time_sec": median(finite_float(row.get("selection_time_sec")) for row in group),
+                "median_probe_green_kernel_time_sec": median(finite_float(row.get("probe_green_kernel_time_sec")) for row in group),
+                "median_candidate_score_time_sec": median(finite_float(row.get("candidate_score_time_sec")) for row in group),
+                "median_probe_cache_hit_rate": median(finite_float(row.get("probe_cache_hit_rate")) for row in group),
                 "best_planning_speedup": max((finite_float(row.get("planning_speedup")) for row in group), default=float("nan")),
                 "best_total_speedup": max((finite_float(row.get("total_speedup")) for row in group), default=float("nan")),
                 "median_break_even_tasks": median_break_even,
@@ -465,6 +507,7 @@ def main() -> None:
     parser.add_argument("--max-splits", type=int, default=5)
     parser.add_argument("--beam-width", type=int, default=2)
     parser.add_argument("--beam-expand", type=int, default=4)
+    parser.add_argument("--disable-probe-cache", action="store_true")
     parser.add_argument("--first-hit-mode", choices=["exact", "truncated", "adaptive"], default="adaptive")
     parser.add_argument("--first-hit-truncation-steps", type=int, default=512)
     parser.add_argument("--first-hit-tail-tol", type=float, default=1e-6)

@@ -307,6 +307,10 @@ def build_group_adaptive_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[st
                 "n_groups_feasible": row.get("n_groups_feasible", ""),
                 "group_total_violation": finite_float(row.get("group_total_violation")),
                 "selection_time_sec": finite_float(row.get("selection_time_sec")),
+                "probe_green_kernel_time_sec": finite_float(row.get("probe_green_kernel_time_sec")),
+                "probe_operator_delta_time_sec": finite_float(row.get("probe_operator_delta_time_sec")),
+                "candidate_score_time_sec": finite_float(row.get("candidate_score_time_sec")),
+                "probe_cache_hit_rate": finite_float(row.get("probe_cache_hit_rate")),
                 "kernel_time_sec": finite_float(row.get("kernel_time_sec")),
                 "smdp_solve_time_sec": finite_float(row.get("smdp_solve_time_sec")),
                 "planning_speedup": finite_float(row.get("planning_speedup")),
@@ -319,6 +323,41 @@ def build_group_adaptive_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[st
     return out
 
 
+def build_discovery_profile_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for (mode,), group in group_rows(rows, ["mode"]).items():
+        out.append(
+            {
+                "mode": mode,
+                "n_rows": len(group),
+                "median_wall_time_sec": median(finite_float(row.get("wall_time_sec")) for row in group),
+                "median_speedup_vs_full_recompute": median(
+                    finite_float(row.get("speedup_vs_full_recompute")) for row in group
+                ),
+                "max_speedup_vs_full_recompute": max(
+                    (finite_float(row.get("speedup_vs_full_recompute")) for row in group),
+                    default=float("nan"),
+                ),
+                "median_probe_green_kernel_time_sec": median(
+                    finite_float(row.get("probe_green_kernel_time_sec")) for row in group
+                ),
+                "median_probe_operator_delta_time_sec": median(
+                    finite_float(row.get("probe_operator_delta_time_sec")) for row in group
+                ),
+                "median_full_recompute_time_sec": median(
+                    finite_float(row.get("full_recompute_time_sec")) for row in group
+                ),
+                "median_candidate_score_time_sec": median(
+                    finite_float(row.get("candidate_score_time_sec")) for row in group
+                ),
+                "median_probe_cache_hit_rate": median(
+                    finite_float(row.get("probe_cache_hit_rate")) for row in group
+                ),
+            }
+        )
+    return sorted(out, key=lambda row: str(row["mode"]))
+
+
 def write_report(
     out_path: Path,
     main_rows: Sequence[Mapping[str, object]],
@@ -326,6 +365,7 @@ def write_report(
     group_adaptive_rows: Sequence[Mapping[str, object]],
     solver_rows: Sequence[Mapping[str, object]],
     certificate_rows: Sequence[Mapping[str, object]],
+    discovery_profile_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
 ) -> None:
     main_columns = [
@@ -380,6 +420,10 @@ def write_report(
         "n_groups_feasible",
         "group_total_violation",
         "selection_time_sec",
+        "probe_green_kernel_time_sec",
+        "probe_operator_delta_time_sec",
+        "candidate_score_time_sec",
+        "probe_cache_hit_rate",
         "kernel_time_sec",
         "smdp_solve_time_sec",
         "planning_speedup",
@@ -414,6 +458,18 @@ def write_report(
         "certificates_found",
         "rational_verified",
         "status",
+    ]
+    discovery_columns = [
+        "mode",
+        "n_rows",
+        "median_wall_time_sec",
+        "median_speedup_vs_full_recompute",
+        "max_speedup_vs_full_recompute",
+        "median_probe_green_kernel_time_sec",
+        "median_probe_operator_delta_time_sec",
+        "median_full_recompute_time_sec",
+        "median_candidate_score_time_sec",
+        "median_probe_cache_hit_rate",
     ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
@@ -460,6 +516,15 @@ def write_report(
         "",
         markdown_table(solver_display, solver_columns) if solver_display else "_No solver-validity rows found._",
         "",
+        "## Discovery Profile Aggregate",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in discovery_columns} for row in discovery_profile_rows],
+            discovery_columns,
+        )
+        if discovery_profile_rows
+        else "_No discovery-profile rows found._",
+        "",
         "## Certificate Appendix Summary",
         "",
         markdown_table(certificate_display, certificate_columns) if certificate_display else "_No certificate rows found._",
@@ -471,6 +536,7 @@ def write_report(
         f"- adaptive certification: `{args.adaptive_cert_csv}`",
         f"- larger group-constrained adaptive: `{args.group_adaptive_csv}`",
         f"- solver validity: `{args.solver_csv}`",
+        f"- discovery profile/cache: `{args.discovery_profile_csv}`",
         f"- weighted spectral certificate: `{args.weighted_cert_csv}`",
         f"- conditioned rational certificate: `{args.conditioned_cert_csv}`",
     ]
@@ -484,6 +550,7 @@ def main() -> None:
     parser.add_argument("--adaptive-cert-csv", type=Path, default=Path("experiments/output/adaptive_green_certification/certification_summary.csv"))
     parser.add_argument("--group-adaptive-csv", type=Path, default=Path("experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv"))
     parser.add_argument("--solver-csv", type=Path, default=Path("experiments/output/solver_validity/solver_validity.csv"))
+    parser.add_argument("--discovery-profile-csv", type=Path, default=Path("experiments/output/discovery_profile_cache/discovery_profile_cache.csv"))
     parser.add_argument("--weighted-cert-csv", type=Path, default=Path("experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv"))
     parser.add_argument("--conditioned-cert-csv", type=Path, default=Path("experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv"))
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/submission_main_table"))
@@ -494,6 +561,7 @@ def main() -> None:
     adaptive_rows = read_csv_rows(args.adaptive_cert_csv)
     group_adaptive_raw = read_csv_rows(args.group_adaptive_csv)
     solver_rows_raw = read_csv_rows(args.solver_csv)
+    discovery_profile_raw = read_csv_rows(args.discovery_profile_csv)
     weighted_rows = read_csv_rows(args.weighted_cert_csv)
     conditioned_rows = read_csv_rows(args.conditioned_cert_csv)
 
@@ -501,6 +569,7 @@ def main() -> None:
     compact_rows = build_compact_baseline_rows(core_rows)
     group_adaptive_rows = build_group_adaptive_rows(group_adaptive_raw)
     solver_rows = build_solver_rows(solver_rows_raw)
+    discovery_profile_rows = build_discovery_profile_rows(discovery_profile_raw)
     certificate_rows = build_certificate_rows(adaptive_rows, weighted_rows, conditioned_rows)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -508,6 +577,7 @@ def main() -> None:
     write_csv_all_fields(args.out_dir / "compact_baseline_aggregate.csv", compact_rows)
     write_csv_all_fields(args.out_dir / "group_constrained_adaptive_table.csv", group_adaptive_rows)
     write_csv_all_fields(args.out_dir / "solver_validity_aggregate.csv", solver_rows)
+    write_csv_all_fields(args.out_dir / "discovery_profile_aggregate.csv", discovery_profile_rows)
     write_csv_all_fields(args.out_dir / "certificate_appendix_summary.csv", certificate_rows)
     (args.out_dir / "submission_main_table.json").write_text(
         json.dumps(
@@ -516,6 +586,7 @@ def main() -> None:
                 "compact_baseline_aggregate": compact_rows,
                 "group_constrained_adaptive_table": group_adaptive_rows,
                 "solver_validity_aggregate": solver_rows,
+                "discovery_profile_aggregate": discovery_profile_rows,
                 "certificate_appendix_summary": certificate_rows,
             },
             indent=2,
@@ -524,7 +595,16 @@ def main() -> None:
         + "\n",
         encoding="utf-8",
     )
-    write_report(args.out_dir / "summary.md", main_rows, compact_rows, group_adaptive_rows, solver_rows, certificate_rows, args)
+    write_report(
+        args.out_dir / "summary.md",
+        main_rows,
+        compact_rows,
+        group_adaptive_rows,
+        solver_rows,
+        certificate_rows,
+        discovery_profile_rows,
+        args,
+    )
 
 
 if __name__ == "__main__":

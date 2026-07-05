@@ -88,6 +88,22 @@ def phi_bits_second_upper(p: float, eps: float = 1e-12) -> float:
     return 1.0 / (math.log(2.0) * denom * denom)
 
 
+def phi_bits_array(values: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    clipped = np.minimum(np.maximum(np.asarray(values, dtype=float), 0.0), 1.0 - eps)
+    return -np.log2(np.maximum(eps, 1.0 - clipped + eps))
+
+
+def phi_bits_prime_array(values: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    clipped = np.minimum(np.maximum(np.asarray(values, dtype=float), 0.0), 1.0 - eps)
+    return 1.0 / (math.log(2.0) * np.maximum(eps, 1.0 - clipped + eps))
+
+
+def phi_bits_second_upper_array(values: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    clipped = np.minimum(np.maximum(np.asarray(values, dtype=float), 0.0), 1.0 - eps)
+    denom = np.maximum(eps, 1.0 - clipped + eps)
+    return 1.0 / (math.log(2.0) * denom * denom)
+
+
 def recipe_value(recipe: Mapping[str, object], name: str, default: object) -> object:
     return recipe[name] if name in recipe else default
 
@@ -382,19 +398,34 @@ def operator_marginal_rows(
     hidden_candidates = [state for state in universe if state not in set(boundary)]
     weighted_edges = active_edges(edge_rows, edge_weight=edge_weight)
 
-    pre_scores: Dict[int, float] = {state: 0.0 for state in hidden_candidates}
+    candidate_pos = {state: pos for pos, state in enumerate(hidden_candidates)}
+    edge_weights: List[float] = []
+    edge_hidden_masses: List[float] = []
+    prob_matrix = np.zeros((len(weighted_edges), len(hidden_candidates)), dtype=float)
     edge_kernels: List[Tuple[Mapping[str, object], float, Dict[int, float], float]] = []
-    for edge_row, weight in weighted_edges:
+    for edge_idx, (edge_row, weight) in enumerate(weighted_edges):
         probs = parse_prob_map(edge_row.get("residual_hidden_probs", "{}"))
         hidden_mass = sum(prob for state, prob in probs.items() if state not in set(boundary))
         edge_kernels.append((edge_row, weight, probs, hidden_mass))
+        edge_weights.append(float(weight))
+        edge_hidden_masses.append(float(hidden_mass))
         for state, prob in probs.items():
-            if state in pre_scores:
-                pre_scores[state] += weight * prob
+            pos = candidate_pos.get(int(state))
+            if pos is not None:
+                prob_matrix[edge_idx, pos] = finite_float(prob)
 
-    ranked_candidates = sorted(hidden_candidates, key=lambda s: (pre_scores.get(s, 0.0), -s), reverse=True)
+    if hidden_candidates and edge_weights:
+        pre_score_values = np.asarray(edge_weights, dtype=float) @ prob_matrix
+    else:
+        pre_score_values = np.zeros(len(hidden_candidates), dtype=float)
+    ranked_candidates = sorted(
+        hidden_candidates,
+        key=lambda s: (float(pre_score_values[candidate_pos[s]]), -s),
+        reverse=True,
+    )
     if max_candidates > 0:
         ranked_candidates = ranked_candidates[:max_candidates]
+    ranked_indices = [candidate_pos[state] for state in ranked_candidates]
 
     base_rate = boundary_rate(row, recipe)
     base_distortions = hidden_distortions(edge_rows, boundary=boundary, edge_weight=edge_weight)
@@ -402,31 +433,46 @@ def operator_marginal_rows(
     base_objective = base_rate + lambda_struct * base_distortions["bits"]
     base_uniform_objective = base_rate + lambda_struct * base_uniform_distortions["bits"]
     local_rate_delta = approximate_split_rate_delta(row, recipe)
+    edge_weights_array = np.asarray(edge_weights, dtype=float)
+    edge_hidden_array = np.asarray(edge_hidden_masses, dtype=float)
+    if ranked_candidates and edge_weights:
+        ranked_prob_matrix = prob_matrix[:, ranked_indices]
+        next_hidden_matrix = np.maximum(0.0, edge_hidden_array[:, None] - ranked_prob_matrix)
+        hidden_bits = phi_bits_array(edge_hidden_array)[:, None]
+        next_hidden_bits = phi_bits_array(next_hidden_matrix)
+        linear_delta_values = edge_weights_array @ ranked_prob_matrix
+        bits_fd_delta_values = edge_weights_array @ (hidden_bits - next_hidden_bits)
+        bits_grad_delta_values = edge_weights_array @ (
+            phi_bits_prime_array(edge_hidden_array)[:, None] * ranked_prob_matrix
+        )
+        grad_abs_error_bound_values = edge_weights_array @ (
+            0.5
+            * phi_bits_second_upper_array(edge_hidden_array)[:, None]
+            * ranked_prob_matrix
+            * ranked_prob_matrix
+        )
+        contributing_edges_values = np.sum(ranked_prob_matrix > 1e-12, axis=0)
+        frozen_linear_after_values = edge_weights_array @ next_hidden_matrix
+        frozen_bits_after_values = edge_weights_array @ next_hidden_bits
+    else:
+        width = len(ranked_candidates)
+        linear_delta_values = np.zeros(width, dtype=float)
+        bits_fd_delta_values = np.zeros(width, dtype=float)
+        bits_grad_delta_values = np.zeros(width, dtype=float)
+        grad_abs_error_bound_values = np.zeros(width, dtype=float)
+        contributing_edges_values = np.zeros(width, dtype=int)
+        frozen_linear_after_values = np.zeros(width, dtype=float)
+        frozen_bits_after_values = np.zeros(width, dtype=float)
     out: List[Dict[str, object]] = []
     recompute_time = 0.0
-    for candidate_state in ranked_candidates:
-        linear_delta = 0.0
-        bits_fd_delta = 0.0
-        bits_grad_delta = 0.0
-        grad_abs_error_bound = 0.0
-        contributing_edges = 0
-        frozen_linear_after_direct = 0.0
-        frozen_bits_after_direct = 0.0
-        for edge_row, weight, probs, hidden_mass in edge_kernels:
-            k_prob = finite_float(probs.get(candidate_state, 0.0))
-            next_hidden_mass = max(0.0, hidden_mass - k_prob)
-            frozen_linear_after_direct += weight * next_hidden_mass
-            frozen_bits_after_direct += weight * phi_bits(next_hidden_mass)
-            if k_prob <= 1e-12:
-                continue
-            contributing_edges += 1
-            linear_delta += weight * k_prob
-            fd_piece = phi_bits(hidden_mass) - phi_bits(max(0.0, hidden_mass - k_prob))
-            grad_piece = phi_bits_prime(hidden_mass) * k_prob
-            bits_fd_delta += weight * fd_piece
-            bits_grad_delta += weight * grad_piece
-            grad_abs_error_bound += weight * 0.5 * phi_bits_second_upper(hidden_mass) * k_prob * k_prob
-
+    for candidate_idx, candidate_state in enumerate(ranked_candidates):
+        linear_delta = float(linear_delta_values[candidate_idx])
+        bits_fd_delta = float(bits_fd_delta_values[candidate_idx])
+        bits_grad_delta = float(bits_grad_delta_values[candidate_idx])
+        grad_abs_error_bound = float(grad_abs_error_bound_values[candidate_idx])
+        contributing_edges = int(contributing_edges_values[candidate_idx])
+        frozen_linear_after_direct = float(frozen_linear_after_values[candidate_idx])
+        frozen_bits_after_direct = float(frozen_bits_after_values[candidate_idx])
         rate_delta = local_rate_delta
         frozen_recompute_score = float("nan")
         frozen_objective_after = float("nan")

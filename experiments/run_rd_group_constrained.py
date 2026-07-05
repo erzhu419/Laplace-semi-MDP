@@ -5,6 +5,7 @@ import argparse
 import json
 import math
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
 
@@ -24,6 +25,131 @@ from run_rd_multiprobe_basis import (
     write_csv,
 )
 from run_rd_operator_theorem_checks import finite_float, operator_marginal_rows
+
+
+def _round_key(value: float) -> float:
+    return round(float(value), 12)
+
+
+def _recipe_signature(recipe: Mapping[str, object]) -> str:
+    return json.dumps(recipe, sort_keys=True, default=json_default)
+
+
+@dataclass
+class ProbeDeltaRecord:
+    before_bits: float
+    deltas_by_state: Dict[int, float]
+    n_candidates: int
+    context_build_time_sec: float
+    green_kernel_time_sec: float
+    operator_delta_time_sec: float
+    recompute_time_sec: float
+    call_overhead_time_sec: float
+    total_uncached_time_sec: float
+
+
+@dataclass
+class ProbeDeltaCache:
+    enabled: bool = True
+    records: Dict[Tuple[object, ...], ProbeDeltaRecord] = field(default_factory=dict)
+    hits: int = 0
+    misses: int = 0
+    probe_calls: int = 0
+    context_build_time_sec: float = 0.0
+    green_kernel_time_sec: float = 0.0
+    operator_delta_time_sec: float = 0.0
+    recompute_time_sec: float = 0.0
+    call_overhead_time_sec: float = 0.0
+    candidate_score_time_sec: float = 0.0
+    beam_expansion_time_sec: float = 0.0
+
+    def key(
+        self,
+        *,
+        map_name: str,
+        rows: Tuple[str, ...],
+        recipe: Mapping[str, object],
+        basis: Sequence[int],
+        boundary: Sequence[int],
+        probe: str,
+        gamma: float,
+        slip: float,
+        lambda_struct: float,
+        edge_weight: str,
+        probe_top_fraction: float,
+        max_candidates: int,
+    ) -> Tuple[object, ...]:
+        return (
+            map_name,
+            tuple(rows),
+            _recipe_signature(recipe),
+            tuple(sorted(int(state) for state in basis)),
+            tuple(sorted(int(state) for state in boundary)),
+            str(probe),
+            _round_key(gamma),
+            _round_key(slip),
+            _round_key(lambda_struct),
+            str(edge_weight),
+            _round_key(probe_top_fraction),
+            int(max_candidates),
+        )
+
+    def get(self, key: Tuple[object, ...]) -> ProbeDeltaRecord | None:
+        self.probe_calls += 1
+        if not self.enabled:
+            self.misses += 1
+            return None
+        record = self.records.get(key)
+        if record is None:
+            self.misses += 1
+        else:
+            self.hits += 1
+        return record
+
+    def put(self, key: Tuple[object, ...], record: ProbeDeltaRecord) -> None:
+        if self.enabled:
+            self.records[key] = record
+        self.context_build_time_sec += float(record.context_build_time_sec)
+        self.green_kernel_time_sec += float(record.green_kernel_time_sec)
+        self.operator_delta_time_sec += float(record.operator_delta_time_sec)
+        self.recompute_time_sec += float(record.recompute_time_sec)
+        self.call_overhead_time_sec += float(record.call_overhead_time_sec)
+
+    def summary(self) -> Dict[str, object]:
+        hit_rate = self.hits / max(1, self.hits + self.misses)
+        profiled = (
+            self.context_build_time_sec
+            + self.green_kernel_time_sec
+            + self.operator_delta_time_sec
+            + self.recompute_time_sec
+            + self.call_overhead_time_sec
+            + self.candidate_score_time_sec
+            + self.beam_expansion_time_sec
+        )
+        uncached_probe = (
+            self.context_build_time_sec
+            + self.green_kernel_time_sec
+            + self.operator_delta_time_sec
+            + self.recompute_time_sec
+            + self.call_overhead_time_sec
+        )
+        return {
+            "probe_cache_enabled": bool(self.enabled),
+            "probe_cache_hits": int(self.hits),
+            "probe_cache_misses": int(self.misses),
+            "probe_cache_hit_rate": float(hit_rate),
+            "probe_calls": int(self.probe_calls),
+            "unique_probe_evals": int(len(self.records)) if self.enabled else int(self.misses),
+            "probe_context_build_time_sec": float(self.context_build_time_sec),
+            "probe_green_kernel_time_sec": float(self.green_kernel_time_sec),
+            "probe_operator_delta_time_sec": float(self.operator_delta_time_sec),
+            "probe_recompute_time_sec": float(self.recompute_time_sec),
+            "probe_call_overhead_time_sec": float(self.call_overhead_time_sec),
+            "candidate_score_time_sec": float(self.candidate_score_time_sec),
+            "beam_expansion_time_sec": float(self.beam_expansion_time_sec),
+            "profiled_selection_time_sec": float(profiled),
+            "uncached_probe_eval_time_sec": float(uncached_probe),
+        }
 
 
 def parse_group_specs(specs: Sequence[str]) -> Dict[str, List[str]]:
@@ -77,40 +203,87 @@ def probe_delta_table(
     lambda_struct: float,
     edge_weight: str,
     probe_top_fraction: float,
+    max_candidates: int = 0,
+    probe_cache: ProbeDeltaCache | None = None,
 ) -> Tuple[Dict[str, float], Dict[int, Dict[str, float]], List[Dict[str, object]]]:
     before_by_probe: Dict[str, float] = {}
     deltas_by_state: Dict[int, Dict[str, float]] = {}
     diagnostics: List[Dict[str, object]] = []
     for probe in probes:
-        context = build_probe_context(
-            rows,
-            recipe=recipe,
-            fixed_candidate_basis=basis,
-            residual_kind=probe,
-            gamma=gamma,
-            slip=slip,
-            probe_top_fraction=probe_top_fraction,
+        cache_key = (
+            probe_cache.key(
+                map_name=map_name,
+                rows=rows,
+                recipe=recipe,
+                basis=basis,
+                boundary=boundary,
+                probe=probe,
+                gamma=gamma,
+                slip=slip,
+                lambda_struct=lambda_struct,
+                edge_weight=edge_weight,
+                probe_top_fraction=probe_top_fraction,
+                max_candidates=max_candidates,
+            )
+            if probe_cache is not None
+            else None
         )
-        step_rows, _base_row, _edge_rows = operator_marginal_rows(
-            map_name=map_name,
-            step=step,
-            context=context,
-            recipe=recipe,
-            boundary=boundary,
-            gamma=gamma,
-            slip=slip,
-            lambda_struct=lambda_struct,
-            edge_weight=edge_weight,
-            max_candidates=0,
-            with_frozen_recompute=True,
-            with_actual_recompute=False,
-            with_recompute_modes=False,
-        )
-        before = finite_float(step_rows[0].get("frozen_bits_before")) if step_rows else 0.0
-        before_by_probe[probe] = max(0.0, before)
-        for row in step_rows:
-            state = int(row["candidate_state"])
-            deltas_by_state.setdefault(state, {})[probe] = max(0.0, finite_float(row.get("bits_fd_delta")))
+        record = probe_cache.get(cache_key) if probe_cache is not None and cache_key is not None else None
+        cache_hit = record is not None
+        if record is None:
+            context_start = time.perf_counter()
+            context = build_probe_context(
+                rows,
+                recipe=recipe,
+                fixed_candidate_basis=basis,
+                residual_kind=probe,
+                gamma=gamma,
+                slip=slip,
+                probe_top_fraction=probe_top_fraction,
+            )
+            context_time = time.perf_counter() - context_start
+            call_start = time.perf_counter()
+            step_rows, _base_row, _edge_rows = operator_marginal_rows(
+                map_name=map_name,
+                step=step,
+                context=context,
+                recipe=recipe,
+                boundary=boundary,
+                gamma=gamma,
+                slip=slip,
+                lambda_struct=lambda_struct,
+                edge_weight=edge_weight,
+                max_candidates=max_candidates,
+                with_frozen_recompute=True,
+                with_actual_recompute=False,
+                with_recompute_modes=False,
+            )
+            call_time = time.perf_counter() - call_start
+            before = finite_float(step_rows[0].get("frozen_bits_before")) if step_rows else 0.0
+            deltas = {
+                int(row["candidate_state"]): max(0.0, finite_float(row.get("bits_fd_delta")))
+                for row in step_rows
+            }
+            green_time = finite_float(step_rows[0].get("time_base_eval_sec")) if step_rows else call_time
+            operator_time = finite_float(step_rows[0].get("time_operator_score_sec")) if step_rows else 0.0
+            recompute_time = finite_float(step_rows[0].get("time_recompute_total_sec")) if step_rows else 0.0
+            overhead_time = max(0.0, call_time - green_time - operator_time - recompute_time)
+            record = ProbeDeltaRecord(
+                before_bits=max(0.0, before),
+                deltas_by_state=deltas,
+                n_candidates=len(step_rows),
+                context_build_time_sec=context_time,
+                green_kernel_time_sec=green_time,
+                operator_delta_time_sec=operator_time,
+                recompute_time_sec=recompute_time,
+                call_overhead_time_sec=overhead_time,
+                total_uncached_time_sec=context_time + call_time,
+            )
+            if probe_cache is not None and cache_key is not None:
+                probe_cache.put(cache_key, record)
+        before_by_probe[probe] = max(0.0, record.before_bits)
+        for state, delta in record.deltas_by_state.items():
+            deltas_by_state.setdefault(int(state), {})[probe] = max(0.0, float(delta))
         diagnostics.append(
             {
                 "map": map_name,
@@ -118,8 +291,13 @@ def probe_delta_table(
                 "probe": probe,
                 "n_boundary": len(boundary),
                 "n_basis": len(basis),
-                "distortion_before_bits": max(0.0, before),
-                "n_candidates": len(step_rows),
+                "distortion_before_bits": max(0.0, record.before_bits),
+                "n_candidates": int(record.n_candidates),
+                "cache_hit": bool(cache_hit),
+                "context_build_time_sec": float(record.context_build_time_sec) if not cache_hit else 0.0,
+                "green_kernel_time_sec": float(record.green_kernel_time_sec) if not cache_hit else 0.0,
+                "operator_delta_time_sec": float(record.operator_delta_time_sec) if not cache_hit else 0.0,
+                "probe_uncached_time_sec": float(record.total_uncached_time_sec) if not cache_hit else 0.0,
             }
         )
     return before_by_probe, deltas_by_state, diagnostics
@@ -151,29 +329,75 @@ def score_candidates(
     }
     candidate_rows: List[Dict[str, object]] = []
     candidate_states = sorted(set(basis) - set(boundary))
-    for state in candidate_states:
-        after_probe_values = {
-            probe: max(0.0, float(before) - float(deltas_by_state.get(state, {}).get(probe, 0.0)))
-            for probe, before in before_by_probe.items()
+    probe_order = sorted(before_by_probe)
+    probe_index = {probe: pos for pos, probe in enumerate(probe_order)}
+    before_vector = np.asarray([float(before_by_probe[probe]) for probe in probe_order], dtype=float)
+    delta_matrix = np.zeros((len(candidate_states), len(probe_order)), dtype=float)
+    for state_pos, state in enumerate(candidate_states):
+        for probe, delta in deltas_by_state.get(int(state), {}).items():
+            probe_pos = probe_index.get(probe)
+            if probe_pos is not None:
+                delta_matrix[state_pos, probe_pos] = float(delta)
+    after_matrix = np.maximum(0.0, before_vector[None, :] - delta_matrix) if candidate_states else np.zeros((0, len(probe_order)))
+
+    def group_risk_vector(probes: Sequence[str]) -> np.ndarray:
+        positions = [probe_index[probe] for probe in probes if probe in probe_index]
+        if not positions:
+            return np.zeros(len(candidate_states), dtype=float)
+        values = after_matrix[:, positions]
+        if group_risk_kind == "mean":
+            return np.mean(values, axis=1)
+        if group_risk_kind == "max":
+            return np.max(values, axis=1)
+        if group_risk_kind == "cvar":
+            sorted_values = np.sort(values, axis=1)
+            start = min(len(positions) - 1, int(np.floor(cvar_alpha * len(positions))))
+            return np.mean(sorted_values[:, start:], axis=1)
+        raise ValueError(f"Unknown group risk kind: {group_risk_kind}")
+
+    after_group_risk_arrays = {
+        group: group_risk_vector(probes)
+        for group, probes in lens_groups.items()
+    }
+    after_violation_arrays = {
+        group: np.maximum(0.0, risks - float(budgets[group]))
+        for group, risks in after_group_risk_arrays.items()
+    }
+    violation_before = sum(current_violations.values())
+    if after_violation_arrays:
+        violation_after_values = np.sum(np.vstack(list(after_violation_arrays.values())), axis=0)
+        max_after_violation_values = np.max(np.vstack(list(after_violation_arrays.values())), axis=0)
+    else:
+        violation_after_values = np.zeros(len(candidate_states), dtype=float)
+        max_after_violation_values = np.zeros(len(candidate_states), dtype=float)
+    if after_group_risk_arrays:
+        max_after_risk_values = np.max(np.vstack(list(after_group_risk_arrays.values())), axis=0)
+    else:
+        max_after_risk_values = np.zeros(len(candidate_states), dtype=float)
+    group_order = list(lens_groups.keys())
+    group_improved_matrix = [
+        after_violation_arrays[group] + 1e-12 < float(current_violations[group])
+        for group in group_order
+    ]
+    if group_improved_matrix:
+        groups_improved_values = np.sum(np.vstack(group_improved_matrix), axis=0)
+    else:
+        groups_improved_values = np.zeros(len(candidate_states), dtype=int)
+
+    for state_pos, state in enumerate(candidate_states):
+        after_group_risks = {
+            group: float(after_group_risk_arrays[group][state_pos])
+            for group in group_order
         }
-        after_group_risks = group_risks_from_probe_values(
-            after_probe_values,
-            lens_groups=lens_groups,
-            group_risk_kind=group_risk_kind,
-            cvar_alpha=cvar_alpha,
-        )
         after_violations = {
-            group: max(0.0, risk - float(budgets[group]))
-            for group, risk in after_group_risks.items()
+            group: float(after_violation_arrays[group][state_pos])
+            for group in group_order
         }
-        violation_before = sum(current_violations.values())
-        violation_after = sum(after_violations.values())
-        violation_reduction = violation_before - violation_after
-        groups_improved = sum(
-            1 for group in current_violations if after_violations[group] + 1e-12 < current_violations[group]
-        )
-        max_after_violation = max(after_violations.values(), default=0.0)
-        max_after_risk = max(after_group_risks.values(), default=0.0)
+        violation_after = float(violation_after_values[state_pos])
+        violation_reduction = float(violation_before - violation_after)
+        groups_improved = int(groups_improved_values[state_pos])
+        max_after_violation = float(max_after_violation_values[state_pos])
+        max_after_risk = float(max_after_risk_values[state_pos])
         approx_rate_delta = math.log2(max(2, len(basis))) + 2.0 * max(1, len(boundary))
         if score_mode == "reduction":
             score = violation_reduction - rate_tie_break * approx_rate_delta
@@ -202,6 +426,7 @@ def score_candidates(
                 "group_risks_before": json.dumps(current_group_risks, sort_keys=True),
                 "group_risks_after": json.dumps(after_group_risks, sort_keys=True),
                 "group_violations_after": json.dumps(after_violations, sort_keys=True),
+                "score_backend": "numpy_vectorized",
             }
         )
     candidate_rows.sort(
@@ -237,6 +462,7 @@ def select_group_constrained_boundary(
     rate_tie_break: float,
     beam_width: int,
     beam_expand: int,
+    probe_cache: ProbeDeltaCache | None = None,
 ) -> Tuple[List[int], List[Dict[str, object]], List[Dict[str, object]], List[Dict[str, object]], float]:
     if beam_width > 1:
         return select_group_constrained_boundary_beam(
@@ -258,6 +484,7 @@ def select_group_constrained_boundary(
             rate_tie_break=rate_tie_break,
             beam_width=beam_width,
             beam_expand=beam_expand,
+            probe_cache=probe_cache,
         )
     all_probes = sorted({probe for probes in lens_groups.values() for probe in probes})
     boundary = sorted(set(endpoint_boundary_states(GridWorld(rows))).intersection(set(basis)))
@@ -279,8 +506,10 @@ def select_group_constrained_boundary(
             lambda_struct=lambda_struct,
             edge_weight=edge_weight,
             probe_top_fraction=probe_top_fraction,
+            probe_cache=probe_cache,
         )
         probe_rows.extend(probe_diag)
+        score_started = time.perf_counter()
         scored, group_risks, group_violations = score_candidates(
             map_name=map_name,
             step=step,
@@ -295,6 +524,8 @@ def select_group_constrained_boundary(
             score_mode=score_mode,
             rate_tie_break=rate_tie_break,
         )
+        if probe_cache is not None:
+            probe_cache.candidate_score_time_sec += time.perf_counter() - score_started
         candidate_rows.extend(scored)
         total_violation = sum(group_violations.values())
         max_violation = max(group_violations.values(), default=0.0)
@@ -386,6 +617,7 @@ def select_group_constrained_boundary_beam(
     rate_tie_break: float,
     beam_width: int,
     beam_expand: int,
+    probe_cache: ProbeDeltaCache | None = None,
 ) -> Tuple[List[int], List[Dict[str, object]], List[Dict[str, object]], List[Dict[str, object]], float]:
     all_probes = sorted({probe for probes in lens_groups.values() for probe in probes})
     start_boundary = tuple(sorted(set(endpoint_boundary_states(GridWorld(rows))).intersection(set(basis))))
@@ -423,8 +655,10 @@ def select_group_constrained_boundary_beam(
                 lambda_struct=lambda_struct,
                 edge_weight=edge_weight,
                 probe_top_fraction=probe_top_fraction,
+                probe_cache=probe_cache,
             )
             probe_rows.extend({**row, "beam_id": beam_id, "path": list(node["path"])} for row in probe_diag)
+            score_started = time.perf_counter()
             scored, group_risks, group_violations = score_candidates(
                 map_name=map_name,
                 step=depth,
@@ -439,6 +673,8 @@ def select_group_constrained_boundary_beam(
                 score_mode=score_mode,
                 rate_tie_break=rate_tie_break,
             )
+            if probe_cache is not None:
+                probe_cache.candidate_score_time_sec += time.perf_counter() - score_started
             candidate_rows.extend(
                 {**row, "beam_id": beam_id, "path": list(node["path"])}
                 for row in scored
@@ -465,6 +701,7 @@ def select_group_constrained_boundary_beam(
                 break
             if depth >= max_splits:
                 continue
+            expand_started = time.perf_counter()
             for row in scored[: max(1, beam_expand)]:
                 state = int(row["candidate_state"])
                 if state in set(boundary):
@@ -484,6 +721,8 @@ def select_group_constrained_boundary_beam(
                         ),
                     }
                 )
+            if probe_cache is not None:
+                probe_cache.beam_expansion_time_sec += time.perf_counter() - expand_started
         if final_stop == "feasible":
             break
         if depth >= max_splits:
@@ -646,6 +885,7 @@ def main() -> None:
     parser.add_argument("--max-splits", type=int, default=8)
     parser.add_argument("--beam-width", type=int, default=1)
     parser.add_argument("--beam-expand", type=int, default=6)
+    parser.add_argument("--disable-probe-cache", action="store_true")
     parser.add_argument("--scalar-baselines", nargs="+", default=["mean_cvar", "max"])
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/rd_group_constrained"))
     args = parser.parse_args()
@@ -690,6 +930,7 @@ def main() -> None:
         )
         initial_group_risks: Dict[str, float] = endpoint_eval["group_risks"]  # type: ignore[assignment]
         for budget_frac in args.budget_fracs:
+            probe_cache = ProbeDeltaCache(enabled=not args.disable_probe_cache)
             budgets = {
                 group: float(budget_frac) * float(initial_group_risks.get(group, 0.0))
                 for group in lens_groups
@@ -713,7 +954,9 @@ def main() -> None:
                 rate_tie_break=args.rate_tie_break,
                 beam_width=args.beam_width,
                 beam_expand=args.beam_expand,
+                probe_cache=probe_cache,
             )
+            profile = probe_cache.summary()
             final_eval, final_eval_rows = evaluate_boundary_on_groups(
                 map_name=map_label,
                 rows=map_rows,
@@ -751,6 +994,7 @@ def main() -> None:
                     "test_bits_mean": final_eval["test_bits_mean"],
                     "test_bits_cvar": final_eval["test_bits_cvar"],
                     "boundary": list(boundary),
+                    **profile,
                 }
             )
             trace_rows.extend({**row, "budget_frac": budget_frac, "method": "group_constrained"} for row in trace)

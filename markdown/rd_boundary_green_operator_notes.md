@@ -1074,3 +1074,71 @@ This is useful but also candid: group-constrained discovery solves the group
 feasibility objective on the larger suite, but its upfront selection time is
 large.  In the paper this should be framed as robustness/control evidence, not
 as the primary wall-clock speed result.
+
+## Discovery Profile and Cache Pass
+
+The discovery bottleneck is now measured directly rather than inferred from
+total wall time.
+
+New artifact:
+
+```text
+experiments/run_discovery_profile_cache.py
+experiments/output/discovery_profile_cache/summary.md
+```
+
+The benchmark compares one boundary-selection step under:
+
+```text
+full_recompute:
+  recompute every candidate's adaptive boundary/kernel model
+
+current_frozen_operator:
+  build the probe Green kernel once, then score candidates by frozen FD deltas
+
+cached_incremental_first:
+  same frozen operator path, with cache population
+
+cached_incremental_hit:
+  repeated boundary/probe query served from cache
+```
+
+Current result on `open_room_7`, `four_rooms_7`, `maze_9` with slip `0` and
+`0.05`:
+
+```text
+current_frozen_operator median speedup over full recompute ≈ 5.3x
+cached_incremental_hit speedup ≈ 3.3e3x to 7.5e3x
+```
+
+The larger adaptive table now carries the same decomposition:
+
+```text
+selection_time_sec
+probe_green_kernel_time_sec
+probe_operator_delta_time_sec
+candidate_score_time_sec
+probe_cache_hit_rate
+```
+
+For the group-constrained rows:
+
+```text
+feasible rows = 6 / 6
+median selection time ≈ 11.3s
+median probe Green time ≈ 3.53s
+median operator-delta time ≈ 3.57s
+median candidate-score time ≈ 0.0033s
+cache hit rate = 0
+```
+
+Interpretation:
+
+```text
+The frozen RD score itself is already cheap and now vectorized.
+The remaining cost is repeatedly constructing probe-specific Green kernels for
+new boundary sets. Cache helps repeated boundary/probe queries, but the default
+beam search mostly evaluates fresh boundaries. The next real improvement is
+incremental Green updates, frontier-local candidate pruning, or a symbolic /
+learned surrogate that predicts the Green-delta matrix before solving it.
+```
