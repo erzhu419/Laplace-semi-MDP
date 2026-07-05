@@ -759,3 +759,82 @@ We provide a weighted spectral sufficient certificate in the proof layer.
 The scalable implementation uses frontier-tail / score-interval certification,
 which is tighter and numerically better conditioned in the current experiments.
 ```
+
+## Certified Adaptive Green With Top-Set Exact Fallback
+
+GPT answer 12 says the main implementation should not be "pure adaptive Green"
+without fallback. It should be:
+
+```text
+Certified Adaptive Green with top-set exact fallback
+```
+
+That is now implemented in:
+
+```text
+experiments/run_adaptive_green_certification.py
+```
+
+The decision rule is:
+
+```text
+if L_top > max_runner U:
+  accept adaptive top-1
+else:
+  A = {x : U_x >= max_z L_z}
+  exact-score candidates in A
+  accept exact best in A if it beats all outside upper bounds
+```
+
+The proof layer now includes:
+
+```text
+top_set_exact_fallback_global_optimal
+top_set_exact_fallback_beats_outside
+```
+
+so the fallback step is not just an implementation convention; it has the
+corresponding real-valued order theorem.
+
+Updated evidence:
+
+```text
+experiments/output/adaptive_green_certification/summary.md
+```
+
+Summary:
+
+```text
+exact top-1 matches:        8 / 8
+interval-certified top-1:   4 / 8
+fallback rows:              4 / 8
+final certified decisions:  8 / 8
+```
+
+Interpretation:
+
+```text
+open_room_12 / four_rooms_11:
+  adaptive interval decides directly
+
+corridor_128:
+  tie-uncertified, so the output is a certified top-set plus canonical tie-break
+
+maze_13:
+  curvature-uncertified full ambiguous set, so exact fallback preserves
+  correctness while giving up speed on that regime
+```
+
+The submission-facing claim should now be:
+
+```text
+Exact Green is the reference RD operator.
+Adaptive Green is the default tail-certified approximation.
+Unseparated intervals trigger exact fallback on the ambiguous top set.
+```
+
+not:
+
+```text
+pure adaptive Green certifies every top-1 decision by itself
+```

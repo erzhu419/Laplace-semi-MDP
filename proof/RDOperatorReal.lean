@@ -539,6 +539,26 @@ theorem interval_certified_top_choice
   have hyRunner := hRunner y hy
   linarith
 
+/-- Exact evaluation on an ambiguous top set certifies global optimality if it beats all outside upper bounds. -/
+theorem top_set_exact_fallback_global_optimal
+    {X : Type} {exact upper : X -> ℝ} {inAmbiguous : X -> Prop} {xBest y : X}
+    (hBestAmbiguous : ∀ z, inAmbiguous z -> exact z ≤ exact xBest)
+    (hOutsideUpper : ∀ z, ¬ inAmbiguous z -> exact z ≤ upper z)
+    (hBeatsOutside : ∀ z, ¬ inAmbiguous z -> upper z < exact xBest) :
+    exact y ≤ exact xBest := by
+  by_cases hy : inAmbiguous y
+  · exact hBestAmbiguous y hy
+  · exact le_of_lt ((hOutsideUpper y hy).trans_lt (hBeatsOutside y hy))
+
+/-- Outside the ambiguous set, the exact fallback winner is strictly better. -/
+theorem top_set_exact_fallback_beats_outside
+    {X : Type} {exact upper : X -> ℝ} {inAmbiguous : X -> Prop} {xBest y : X}
+    (hOutsideUpper : ∀ z, ¬ inAmbiguous z -> exact z ≤ upper z)
+    (hBeatsOutside : ∀ z, ¬ inAmbiguous z -> upper z < exact xBest)
+    (hy : ¬ inAmbiguous y) :
+    exact y < exact xBest :=
+  (hOutsideUpper y hy).trans_lt (hBeatsOutside y hy)
+
 /-!
 ## Truncated Green / Neumann convergence
 

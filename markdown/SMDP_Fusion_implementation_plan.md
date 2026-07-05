@@ -5292,3 +5292,85 @@ next proof/engineering target:
 This is useful for the paper: the fully weighted certificate is no longer just
 future work in principle. We have a Lean-backed theorem and a diagnostic showing
 exactly why it is stronger but numerically delicate.
+
+### 31.9 Certified Adaptive Green with top-set exact fallback
+
+GPT answer 12 made the submission-facing algorithm more precise:
+
+```text
+do not use pure adaptive Green as an unconditional main solver
+use Certified Adaptive Green with top-set exact fallback
+```
+
+I implemented this directly inside:
+
+```text
+experiments/run_adaptive_green_certification.py
+```
+
+The algorithm is now:
+
+```text
+1. score every candidate with adaptive Green intervals
+2. if the top interval separates, accept adaptive top-1
+3. otherwise form the ambiguous set A = {x : U_x >= max_z L_z}
+4. evaluate exact Green scores on A
+5. accept the exact best in A if it beats all outside interval upper bounds
+6. if exact scores tie, return a certified top-set with canonical tie-break
+```
+
+I also added the corresponding Lean theorem:
+
+```text
+top_set_exact_fallback_global_optimal
+top_set_exact_fallback_beats_outside
+```
+
+These formalize the key fallback claim: exact evaluation on the ambiguous set
+is globally valid if the exact winner beats every outside upper bound.
+
+Current output:
+
+```text
+experiments/output/adaptive_green_certification/summary.md
+```
+
+The updated main table now reports:
+
+```text
+exact top-1 matches:          8 / 8
+interval-certified top-1:     4 / 8
+top-set fallback rows:        4 / 8
+final certified decisions:    8 / 8
+```
+
+The behavior matches GPT's recommended story:
+
+```text
+open_room_12 and four_rooms_11:
+  accepted by interval certificate, no fallback
+
+corridor_128:
+  tie_uncertified; exact top set has 126 tied candidates, so the solver returns
+  a certified top-set with canonical tie-break
+
+maze_13:
+  curvature_uncertified_full_set; the interval is too wide, so the solver
+  exact-fallbacks on the ambiguous set and returns a certified exact top-set
+```
+
+This gives a much stronger submission claim:
+
+```text
+Exact Green defines the reference operator.
+Adaptive Green is the default tail-certified approximation.
+When score intervals separate, the adaptive decision is certified.
+When they do not, exact Green is used only on the ambiguous top set.
+Fixed-K remains an ablation.
+```
+
+The only caveat is timing: the current `fallback_exact_time_proxy_sec` scales
+the exact reference time by the ambiguous-set fraction because the diagnostic
+still computes exact reference rows for the table. The CSV/JSON also report the
+conservative full-exact fallback time. For final submission, if needed, this can
+be replaced by a true candidate-subset exact kernel evaluator.

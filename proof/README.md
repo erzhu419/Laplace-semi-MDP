@@ -57,6 +57,10 @@ What is formalized now:
   for any fixed nonnegative edge/objective weights, entrywise Green-tail bounds
   imply a weighted score interval, and separated approximate score intervals
   formally certify that the approximate top choice is also the exact top choice;
+- top-set exact fallback layer:
+  if interval bounds cannot separate top-1, exact evaluation on an ambiguous
+  top set certifies a global optimum whenever the exact best in that set beats
+  all outside interval upper bounds;
 - bits-curvature layer:
   the derivative of `bitsPhiDeriv` is `bitsPhiSecond`, a positive margin
   `delta <= 1 - h + eps` bounds `|bitsPhiSecond|`, and Mathlib Taylor gives the

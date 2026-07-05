@@ -163,6 +163,121 @@ def top_state(rows: Sequence[Mapping[str, object]], field: str) -> int | None:
     return int(max(rows, key=lambda row: (finite_float(row.get(field), -float("inf")), -int(row["candidate_state"])))["candidate_state"])
 
 
+def score_by_state(rows: Sequence[Mapping[str, object]], field: str) -> Dict[int, float]:
+    return {int(row["candidate_state"]): finite_float(row.get(field), float("nan")) for row in rows}
+
+
+def exact_fallback_analysis(
+    exact_scores: Sequence[Mapping[str, object]],
+    adaptive_scores: Sequence[Mapping[str, object]],
+    top1_certified: bool,
+    adaptive_time_sec: float,
+    exact_time_sec: float,
+    adaptive_point_margin: float,
+    tie_tol: float,
+) -> Dict[str, object]:
+    if not adaptive_scores:
+        return {
+            "fallback_used": False,
+            "fallback_reason": "no_candidates",
+            "ambiguous_set_size": 0,
+            "ambiguous_fraction": 0.0,
+            "final_certificate": "no_candidates",
+            "final_certified": False,
+        }
+    adaptive_by_state = {int(row["candidate_state"]): row for row in adaptive_scores}
+    exact_points = score_by_state(exact_scores, "score_point")
+    adaptive_points = score_by_state(adaptive_scores, "score_point")
+    adaptive_top = top_state(adaptive_scores, "score_point")
+    exact_top = top_state(exact_scores, "score_point")
+    exact_sorted = sorted(
+        exact_scores,
+        key=lambda row: (finite_float(row["score_point"], -float("inf")), -int(row["candidate_state"])),
+        reverse=True,
+    )
+    exact_top_score = finite_float(exact_sorted[0]["score_point"], -float("inf")) if exact_sorted else -float("inf")
+    exact_runner_score = finite_float(exact_sorted[1]["score_point"], -float("inf")) if len(exact_sorted) > 1 else -float("inf")
+    exact_margin = exact_top_score - exact_runner_score
+    exact_tie_count = sum(
+        1 for row in exact_scores if abs(finite_float(row["score_point"], -float("inf")) - exact_top_score) <= tie_tol
+    )
+    if top1_certified:
+        return {
+            "fallback_used": False,
+            "fallback_reason": "interval_certified",
+            "ambiguous_set_size": 0,
+            "ambiguous_fraction": 0.0,
+            "exact_tie_count": exact_tie_count,
+            "exact_top_margin": exact_margin,
+            "fallback_top_state": "",
+            "final_top_state": adaptive_top,
+            "final_certificate": "adaptive_interval_top1",
+            "final_certified": True,
+            "final_top_matches_exact": adaptive_top == exact_top,
+            "fallback_exact_time_proxy_sec": 0.0,
+            "total_time_with_fallback_proxy_sec": adaptive_time_sec,
+            "speedup_with_fallback_proxy_vs_full_exact": exact_time_sec / max(1e-12, adaptive_time_sec),
+            "total_time_with_full_exact_fallback_sec": adaptive_time_sec,
+        }
+
+    max_lower = max(finite_float(row["score_lower"], -float("inf")) for row in adaptive_scores)
+    ambiguous = sorted(
+        int(row["candidate_state"])
+        for row in adaptive_scores
+        if finite_float(row["score_upper"], -float("inf")) + tie_tol >= max_lower
+    )
+    ambiguous_set = set(ambiguous)
+    outside_upper = max(
+        (
+            finite_float(row["score_upper"], -float("inf"))
+            for row in adaptive_scores
+            if int(row["candidate_state"]) not in ambiguous_set
+        ),
+        default=-float("inf"),
+    )
+    if ambiguous:
+        fallback_top = max(ambiguous, key=lambda state: (exact_points.get(state, -float("inf")), -state))
+        fallback_top_exact_score = exact_points.get(fallback_top, -float("inf"))
+    else:
+        fallback_top = exact_top if exact_top is not None else -1
+        fallback_top_exact_score = exact_points.get(fallback_top, -float("inf"))
+    fallback_global_certified = fallback_top_exact_score > outside_upper + tie_tol
+    ambiguous_fraction = len(ambiguous) / max(1, len(adaptive_scores))
+    fallback_time_proxy = exact_time_sec * ambiguous_fraction
+    final_certificate = "top_set_exact_fallback" if fallback_global_certified else "needs_full_exact_or_refine"
+    fallback_reason = "curvature_uncertified"
+    if adaptive_point_margin <= tie_tol:
+        fallback_reason = "tie_uncertified"
+    elif len(ambiguous) >= len(adaptive_scores):
+        fallback_reason = "curvature_uncertified_full_set"
+    if exact_tie_count > 1 and fallback_global_certified:
+        final_certificate = "exact_top_set_canonical_tie_break"
+    return {
+        "fallback_used": True,
+        "fallback_reason": fallback_reason,
+        "ambiguous_set_size": len(ambiguous),
+        "ambiguous_fraction": ambiguous_fraction,
+        "ambiguous_states_json": json.dumps(ambiguous),
+        "outside_upper_max": outside_upper,
+        "exact_tie_count": exact_tie_count,
+        "exact_top_margin": exact_margin,
+        "fallback_top_state": fallback_top,
+        "fallback_top_exact_score": fallback_top_exact_score,
+        "fallback_global_certified": fallback_global_certified,
+        "final_top_state": fallback_top,
+        "final_certificate": final_certificate,
+        "final_certified": fallback_global_certified,
+        "final_top_matches_exact": fallback_top == exact_top,
+        "fallback_exact_time_proxy_sec": fallback_time_proxy,
+        "total_time_with_fallback_proxy_sec": adaptive_time_sec + fallback_time_proxy,
+        "speedup_with_fallback_proxy_vs_full_exact": exact_time_sec
+        / max(1e-12, adaptive_time_sec + fallback_time_proxy),
+        "total_time_with_full_exact_fallback_sec": adaptive_time_sec + exact_time_sec,
+        "adaptive_top_exact_score": exact_points.get(int(adaptive_top), float("nan")) if adaptive_top is not None else float("nan"),
+        "adaptive_top_point_score": adaptive_points.get(int(adaptive_top), float("nan")) if adaptive_top is not None else float("nan"),
+    }
+
+
 def summarize_certification(
     map_family: str,
     map_size: int,
@@ -177,6 +292,7 @@ def summarize_certification(
     adaptive_edges: Sequence[Mapping[str, object]],
     exact_time_sec: float,
     adaptive_time_sec: float,
+    tie_tol: float,
 ) -> Dict[str, object]:
     exact_top = top_state(exact_scores, "score_point")
     adaptive_top = top_state(adaptive_scores, "score_point")
@@ -192,6 +308,15 @@ def summarize_certification(
     tail_bound_max = combined_tail_bound_max(adaptive_edges)
     used_steps_max = combined_used_steps_max(adaptive_edges)
     if not sorted_adaptive:
+        fallback = exact_fallback_analysis(
+            exact_scores=exact_scores,
+            adaptive_scores=adaptive_scores,
+            top1_certified=False,
+            adaptive_time_sec=adaptive_time_sec,
+            exact_time_sec=exact_time_sec,
+            adaptive_point_margin=0.0,
+            tie_tol=tie_tol,
+        )
         return {
             "map_family": map_family,
             "map_size": map_size,
@@ -210,6 +335,7 @@ def summarize_certification(
             "value_diff_vs_exact": value_diff_vs_exact,
             "status": "no_candidates",
             "decision": "no_candidates",
+            **fallback,
         }
     top = sorted_adaptive[0]
     runner = sorted_adaptive[1] if len(sorted_adaptive) > 1 else None
@@ -233,6 +359,16 @@ def summarize_certification(
         (abs(exact_score_by_state[state] - adaptive_score_by_state[state]) for state in common_states),
         default=float("nan"),
     )
+    top1_certified = certified_margin > 0.0
+    fallback = exact_fallback_analysis(
+        exact_scores=exact_scores,
+        adaptive_scores=adaptive_scores,
+        top1_certified=top1_certified,
+        adaptive_time_sec=adaptive_time_sec,
+        exact_time_sec=exact_time_sec,
+        adaptive_point_margin=point_margin,
+        tie_tol=tie_tol,
+    )
     return {
         "map_family": map_family,
         "map_size": map_size,
@@ -252,7 +388,7 @@ def summarize_certification(
         "top_state_adaptive": adaptive_top,
         "top_state_exact": exact_top,
         "top1_match_exact": adaptive_top == exact_top,
-        "top1_certified": certified_margin > 0.0,
+        "top1_certified": top1_certified,
         "top1_margin": point_margin,
         "top1_point_margin": point_margin,
         "top1_certified_margin": certified_margin,
@@ -261,7 +397,8 @@ def summarize_certification(
         "max_abs_score_error_vs_exact": max_abs_score_error,
         "value_diff_vs_exact": value_diff_vs_exact,
         "status": "ok",
-        "decision": "accept" if certified_margin > 0.0 else "needs_refinement_or_exact_fallback",
+        "decision": "accept" if top1_certified else "top_set_exact_fallback",
+        **fallback,
     }
 
 
@@ -369,6 +506,7 @@ def run_one(
         adaptive_edges=adaptive_edges,
         exact_time_sec=exact_time_sec,
         adaptive_time_sec=adaptive_time_sec,
+        tie_tol=args.tie_tol,
     )
     score_rows = [
         {
@@ -402,6 +540,20 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "top1_margin",
         "top1_certified_margin",
         "top1_margin_over_bound",
+        "fallback_used",
+        "fallback_reason",
+        "ambiguous_set_size",
+        "ambiguous_fraction",
+        "fallback_top_state",
+        "final_top_state",
+        "final_certificate",
+        "final_certified",
+        "fallback_global_certified",
+        "exact_tie_count",
+        "exact_top_margin",
+        "fallback_exact_time_proxy_sec",
+        "total_time_with_fallback_proxy_sec",
+        "speedup_with_fallback_proxy_vs_full_exact",
         "max_abs_score_error_vs_exact",
         "value_diff_vs_exact",
         "status",
@@ -409,6 +561,8 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
     ]
     cert_count = sum(1 for row in rows if bool(row.get("top1_certified", False)))
     match_count = sum(1 for row in rows if bool(row.get("top1_match_exact", False)))
+    final_cert_count = sum(1 for row in rows if bool(row.get("final_certified", False)))
+    fallback_count = sum(1 for row in rows if bool(row.get("fallback_used", False)))
     display_rows: List[Dict[str, object]] = []
     for row in rows:
         display_row: Dict[str, object] = {}
@@ -427,11 +581,13 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         f"adaptive_tail_tols = {list(args.adaptive_tail_tols)}",
         f"candidate_universe = {args.candidate_universe}",
         "",
-        "This table checks whether adaptive Green score intervals are narrow enough to certify the top RD split without falling back to exact Green.",
+        "This table runs Certified Adaptive Green: adaptive intervals are accepted when they separate, otherwise exact Green is invoked on the ambiguous top set.",
         "",
         f"- exact top-1 matches: `{match_count}/{len(rows)}`",
         f"- interval-certified top-1 decisions: `{cert_count}/{len(rows)}`",
-        "- uncertified rows should refine the tolerance/horizon or use exact Green on the ambiguous top set.",
+        f"- rows using top-set fallback: `{fallback_count}/{len(rows)}`",
+        f"- final certified decisions/top-sets: `{final_cert_count}/{len(rows)}`",
+        "- time columns with `proxy` scale the exact reference time by ambiguous-set fraction; full exact fallback time is also in the CSV/JSON.",
         "",
         markdown_table(display_rows, columns),
     ]
@@ -450,6 +606,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-splits", type=int, default=18)
     parser.add_argument("--lambda-struct", type=float, default=8.0)
+    parser.add_argument("--tie-tol", type=float, default=1e-9)
     parser.add_argument(
         "--candidate-universe",
         choices=["all", "proposal", "proposal_or_all"],
