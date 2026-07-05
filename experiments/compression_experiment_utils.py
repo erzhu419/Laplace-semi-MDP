@@ -378,6 +378,9 @@ def build_compressed_model_measured(
     compute_struct_distinct: bool = True,
     full_record_points: Iterable[int] = (),
     smdp_record_points: Iterable[int] = (),
+    first_hit_mode: str = "exact",
+    first_hit_truncation_steps: int = 32,
+    first_hit_tail_tol: float = 0.0,
 ) -> Dict[str, object]:
     grid = GridWorld(rows)
     start_state = grid.symbol_states("S")[0]
@@ -451,6 +454,9 @@ def build_compressed_model_measured(
         residual_threshold_mode=residual_threshold_mode,
         compute_struct_distinct=compute_struct_distinct,
         proposal_boundary=residual_boundary,
+        first_hit_mode=first_hit_mode,
+        first_hit_truncation_steps=first_hit_truncation_steps,
+        first_hit_tail_tol=first_hit_tail_tol,
     )
     kernel_time = time.perf_counter() - t1
 
@@ -520,4 +526,12 @@ def build_compressed_model_measured(
         "occupancy_struct_hidden_distinct": float(occupancy_struct_hidden_distinct),
         "occupancy_model_residual": float(occupancy_model_residual),
         "struct_hidden_distinct_cvar95": tail_cvar(valid_struct_distinct),
+        "first_hit_mode": first_hit_mode,
+        "first_hit_truncation_steps": int(first_hit_truncation_steps),
+        "first_hit_tail_tol": float(metadata.get("first_hit_tail_tol", first_hit_tail_tol)),
+        "first_hit_used_steps_max": int(metadata.get("first_hit_used_steps_max", 0)),
+        "first_hit_used_steps_mean": float(metadata.get("first_hit_used_steps_mean", 0.0)),
+        "first_hit_tail_bound_max": float(metadata.get("first_hit_tail_bound_max", 0.0)),
+        "residual_first_hit_used_steps_max": int(metadata.get("residual_first_hit_used_steps_max", 0)),
+        "distinct_first_hit_used_steps_max": int(metadata.get("distinct_first_hit_used_steps_max", 0)),
     }

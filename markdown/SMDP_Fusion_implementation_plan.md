@@ -4645,3 +4645,462 @@ group constraints 本身还不够；
 4. empirical result: constraints reach feasibility with fewer vertices than scalar max,
    while scalar mean/CVaR can badly violate held-out group constraints
 ```
+
+## 31. GPT answer 10: two-layer contribution, core benchmark, proof obligations
+
+`GPT_answer_10.md` resolves the packaging problem:
+
+```text
+Frozen RD Green Operator 是 theorem；
+Adaptive Group-Constrained Beam Search 是 solver。
+```
+
+This is the right way to avoid overclaiming. The exactness guarantee belongs to
+the frozen local marginal:
+
+```text
+S_rho(x | B)
+  = lambda [rho(D(B)) - rho(D(B) - Delta(x))] - c_x
+  = J_theta^frozen(B) - J_theta^frozen(B union {x})
+```
+
+When the algorithm recomputes options, edges, occupancy, or group probes after a
+split, the objective changes. That adaptive step is not exact; it is a
+drift-aware constrained search driven by an exact local oracle.
+
+### 31.1 Unified core benchmark
+
+Added:
+
+```text
+experiments/run_core_benchmark.py
+experiments/output/core_benchmark/
+```
+
+It produces one table for:
+
+```text
+full_vi
+graph_rd_joint
+graph_rd_surrogate_joint
+group_constrained_rd
+eigenoptions_sqrt
+betweenness_sqrt
+random_landmarks_sqrt
+coverage_sqrt
+```
+
+across classic grid families:
+
+```text
+corridor
+open_room
+four_rooms
+maze
+```
+
+and multiple slip settings.
+
+The compact run used:
+
+```text
+map_specs = corridor:16,32, open_room:7, four_rooms:7, maze:9
+slips = 0.0, 0.05
+n_rollouts = 20
+```
+
+Main readout:
+
+```text
+best planning-only speedup over full VI: about 295x
+worst graph start-value gap: about 0.0497
+
+mean planning-only speedup:
+  graph_rd_joint           ≈ 109x
+  graph_rd_surrogate_joint ≈ 109x
+  group_constrained_rd     ≈ 58x
+  betweenness_sqrt         ≈ 3.9x
+  eigenoptions_sqrt        ≈ 3.4x
+  coverage_sqrt            ≈ 9.3x
+```
+
+But this table also makes the limitation clear:
+
+```text
+planning propagation is compressed;
+single-task total runtime is still dominated by boundary discovery / group-constrained construction.
+```
+
+That matches the paper story better than claiming immediate single-task wall-time
+dominance. The stronger speed claim should be multi-task amortized compression.
+
+One caution from this compact run:
+
+```text
+group_constrained_rd used beam_width=2, beam_expand=4 for speed.
+The stochastic open_room_7 row is not feasible under that tight beam.
+```
+
+So the core table is a runtime/generalization benchmark, not the final
+group-constrained feasibility table. The earlier `rd_group_constrained` run with
+`beam_width=4, beam_expand=6` is still the stronger feasibility result.
+
+### 31.2 Proof layer update
+
+`proof/RDOperator.lean` now formalizes more of the theorem stack:
+
+```text
+1. frozen finite-difference exactness
+2. adaptive drift decomposition
+3. margin stability
+4. multi-probe robust finite-difference exactness
+5. first-hit certificate existence
+6. finite absorbing-chain Green formula / nonnegativity / row bound
+7. truncated Green convergence and epsilon tail-error bound
+8. bits-distortion finite-difference / Taylor bound certificate
+9. discounted residual -> value-gap bound
+10. zero group violations -> group feasibility
+11. finite-option graph-SMDP Bellman contraction/non-expansion
+```
+
+The new proof pieces are finite/scaled but Lean-checked. They define what the
+paper must instantiate over real-valued finite MDPs:
+
+```text
+first-hit Green kernel existence:
+  finite absorbing Markov chain -> first-hit witness / harmonic measure
+  K = e_b^T (I - P_II)^-1 P_IC
+  K >= 0 and row mass <= scale
+
+truncated Green:
+  exact kernel = truncated prefix + tail
+  tail <= eps -> score error <= eps
+  tailBound -> 0 -> truncated kernel converges in epsilon form
+
+bits distortion:
+  phi_before - phi_after = first_order + Taylor remainder
+  |remainder| <= curvature budget
+
+model residual -> value gap:
+  (1 - gamma) * valueGap <= residual -> valueGap <= residual / (1 - gamma)
+
+group constraints:
+  zero per-group violation indicators -> feasible boundary set
+
+graph-SMDP Bellman:
+  finite option backup contracts in sup norm
+  repeated graph Bellman iterates are non-expansive
+```
+
+The Mathlib real layer has now started in `proof/RDOperatorReal.lean`:
+
+```text
+GreenFormula:
+  (I - P_II)^-1 P_IC solves (I - P_II) K = P_IC when det(I - P_II) is a unit
+  nonnegative inverse/block entries imply K >= 0
+  finite row-mass bounds imply entry bounds
+
+NeumannPrefix:
+  sum_{t=0}^K P_II^t P_IC
+  converges entrywise under an explicit tail-bound certificate
+  row-substochastic P_II with row mass <= q < 1 gives
+    term bound: P_II^n P_IC <= q^n * exitBound
+    finite tail bound: exitBound * q^(K+1)/(1-q)
+  weighted spectral certificate P_II w <= q w gives
+    weighted term bound: P_II^n P_IC <= q^n * exitBound * w_i
+    weighted tail bound: exitBound * w_i * q^(K+1)/(1-q)
+
+bitsPhi:
+  phi(h) = -log(1 - h + eps) / log 2
+  derivative proved by Mathlib Real.hasDerivAt_log
+  bitsPhiDeriv differentiates to bitsPhiSecond
+  delta <= 1 - h + eps bounds |bitsPhiSecond|
+  Mathlib Taylor converts this curvature bound to first-order remainder bound
+  iteratedDerivWithin glue is automatic on nondegenerate closed intervals
+
+graph-SMDP Bellman:
+  each option Q backup is gamma-Lipschitz
+  finite max over a nonempty option set is gamma-Lipschitz
+  real residual -> value gap is proved in division and budget forms
+```
+
+Remaining proof work is now narrower:
+
+```text
+1. optional: connect Mathlib spectrum/eigenvalue API directly to the weighted
+   P_II w <= q w certificate
+2. optional: add an infinite-tail HasSum/tsum theorem beside the finite-tail
+   geometric bound
+```
+
+### 31.3 Current next experiments suggested by answer 10
+
+The next experiments should be:
+
+```text
+beam width ablation:
+  W = 1,2,4,8, exhaustive-small
+
+group constraints ablation:
+  none / hard-only / hard+diversity / hard+multi-probe-CVaR / full beam
+
+small exhaustive oracle:
+  enumerate all B with |B| <= k on tiny maps
+```
+
+These are the most direct way to answer the reviewer objection that beam search
+and group constraints are heuristic. The theorem says the frozen oracle is
+exact; these ablations should show when the adaptive solver needs beam/lookahead
+and whether it approaches the exhaustive small-map optimum.
+
+### 31.4 Top-conference evidence pass
+
+I added two more experiment entry points for the current submission-risk list:
+
+```text
+experiments/run_large_scale_compression.py
+experiments/run_solver_validity.py
+```
+
+and ran:
+
+```text
+experiments/output/large_scale_compression/summary.md
+experiments/output/amortized_multitask_large_allstates/summary.md
+experiments/output/solver_validity/summary.md
+```
+
+The large-scale compression run removes dense policy iteration from the timing
+loop and measures only the relevant comparison:
+
+```text
+full-state VI propagation
+vs.
+graph construction + exact first-boundary kernels + graph-SMDP VI
+```
+
+The compact large-scale pass reached 144 states:
+
+```text
+best planning-only speedup: 2471x
+best total wall-time speedup: 10.6x
+worst start-value gap: 0.0785
+```
+
+The interpretation is now sharper. Planning propagation is strongly compressed,
+but exact first-hit kernel construction is the bottleneck. On `corridor_64`,
+the compressed method wins end-to-end. On `open_room_12` and `corridor_128`,
+the dense Green solve dominates and total wall time is worse even though SMDP
+planning itself is three orders of magnitude cheaper. This is exactly the
+place where the truncated Green / cached Green / incremental kernel update
+work should enter the paper.
+
+The all-state multi-task amortization run is a useful negative control. If we
+force 25 arbitrary task goals into the boundary once, the graph remains exact
+for those tasks but compression drops sharply:
+
+```text
+corridor_64: |B| = 26, best amortized speedup at 25 tasks ≈ 0.32x
+maze_13:     |B| = 26-36, best amortized speedup at 25 tasks ≈ 0.29x
+```
+
+So the current strong amortization claim should not be stated as “arbitrary
+state-goal multitask planning is already faster.” The honest claim is:
+
+```text
+The graph compresses propagation for tasks whose rewards/goals live on the
+abstract boundary. Arbitrary interior goals require either adding those goals as
+vertices, or learning reward-feature kernels; otherwise the current exact
+graph-SMDP model is not the right object.
+```
+
+The solver-validity run compares three things on small maps:
+
+```text
+1. exhaustive oracle over every subset up to the split budget
+2. operator-only greedy/beam group RD
+3. exact-refined beam: use the frozen operator to propose top candidates,
+   then rank those candidates by actual group-RD evaluation
+```
+
+The result is also clarifying:
+
+```text
+exact boundary matches:        14 / 18 rows
+zero total-violation gap:      14 / 18 rows
+feasible/infeasible matches:   15 / 18 rows
+oracle subsets evaluated:      66
+```
+
+Narrow operator-only search still fails on `open_room_5` and `maze_9`, but
+beam width 4 or exact-refined beam recovers the exhaustive oracle in those
+cases. On `four_rooms_7`, the oracle itself is infeasible under the two-split
+budget, and exact-refined beam matches that infeasible optimum.
+
+This changes the paper framing again:
+
+```text
+Frozen RD Green Operator:
+  theorem / scoring primitive
+
+Operator-only beam:
+  fast heuristic, useful but not always reliable
+
+Exact-refined operator beam:
+  submission-facing solver; the operator prunes the candidate universe and
+  actual group RD evaluation chooses among the short list
+```
+
+The remaining top-conference blockers are therefore narrower:
+
+```text
+1. replace exact dense first-hit solves with truncated/cached/incremental Green kernels
+2. add reward-feature kernels if we want arbitrary interior-goal multitask claims
+3. run the same evidence on larger procedural maps after the kernel bottleneck is fixed
+```
+
+### 31.5 First pass on the Green-kernel bottleneck
+
+I added executable truncated Green kernels to the experiment code:
+
+```text
+bellman_kron_reduce_truncated
+first_hit_reduce_truncated
+first_hit_interior_occupancy_truncated
+```
+
+and exposed them through:
+
+```text
+build_first_boundary_reductions(..., first_hit_mode="truncated", first_hit_truncation_steps=K)
+experiments/run_large_scale_compression.py --first-hit-mode truncated --first-hit-truncation-steps K
+experiments/run_kernel_approximation_benchmark.py
+```
+
+There is also a small cache-style cleanup: first-hit calls now reuse the
+target-policy free transition matrix `P_free` instead of rebuilding a different
+absorbing transition matrix for every terminal set. This is valid because
+first-hit reduction only uses the interior-to-terminal block; terminal rows are
+excluded from the Green solve.
+
+The kernel approximation benchmark is:
+
+```text
+experiments/output/kernel_approximation_large/summary.md
+```
+
+On `corridor_128` and `open_room_12` with endpoint graphs:
+
+```text
+truncated K=32:
+  kernel speedup up to 146x, but corridor value error is large
+
+truncated K=64:
+  still >100x kernel speedup on large maps, but corridor error remains visible
+
+truncated K=128:
+  112-119x kernel speedup
+  open_room_12 matches exact start value to numerical precision
+  corridor_128 start-value difference drops to about 0.123
+```
+
+The large-scale compression comparison is now:
+
+```text
+exact:
+  experiments/output/large_scale_compression_exact_updated/summary.md
+
+truncated K=128:
+  experiments/output/large_scale_compression_truncated_k128/summary.md
+```
+
+The best end-to-end speedup in the truncated run is now `31.9x`, with planning
+speedup up to `5075x`. The tradeoff is that a finite horizon can bias long
+corridor values unless K is large enough. This gives the next mathematical and
+algorithmic target:
+
+```text
+adaptive K per edge:
+  stop when discounted tail bound <= value tolerance
+
+or weighted/spectral tail certificate:
+  use the Lean theorem's q^K/(1-q) bound to choose K automatically
+
+or cached exact solve:
+  use exact Green for long low-branching corridors where K would be too large,
+  and truncated Green for open-room/stochastic local kernels
+```
+
+### 31.6 Adaptive per-edge K
+
+I added `first_hit_mode="adaptive"` as the next step after fixed-K truncation.
+The adaptive mode still uses the Neumann-prefix implementation, but each
+first-hit edge stops independently once a frontier tail certificate is below
+the requested tolerance:
+
+```text
+tail_bound = min(
+  max(remaining_hit_mass, discounted_reward_tail),
+  q^(K+1) / (1-q)          when q < 1
+)
+
+stop when tail_bound <= epsilon
+```
+
+This uses the same mathematical shape as the Lean tail theorem, but with a
+frontier-dependent bound so corridor edges are allowed to run longer while
+open-room edges stop early.
+
+The benchmark entry point now includes adaptive kernels:
+
+```text
+experiments/run_kernel_approximation_benchmark.py
+  --adaptive-tail-tols 1e-3 1e-6
+  --adaptive-max-steps 512
+```
+
+Current output:
+
+```text
+experiments/output/kernel_adaptive_benchmark/summary.md
+experiments/output/large_scale_compression_adaptive/summary.md
+```
+
+The key result is exactly the desired behavior:
+
+```text
+corridor_128 / endpoints:
+  fixed K=128: start-value diff ≈ 0.123
+  adaptive eps=1e-6: used K up to 160, start-value diff ≈ 1e-8
+  kernel speedup vs exact ≈ 45x
+
+open_room_12 / endpoints:
+  adaptive eps=1e-6: used K up to 41, start-value diff ≈ 1.8e-8
+  kernel speedup vs exact ≈ 164x
+
+maze_13 / endpoints:
+  adaptive eps=1e-6: used K up to 42, start-value diff ≈ 1.5e-8
+```
+
+So the method story is now much cleaner:
+
+```text
+Exact Green:
+  theorem/reference kernel
+
+Fixed-K truncated Green:
+  fast ablation; can undercut long corridors if K is too small
+
+Adaptive Green:
+  practical solver; same operator family, automatic K, tiny value error in the
+  current suite, and tens-to-hundreds-x kernel speedup on larger maps
+```
+
+This is probably ready to ask GPT for critique after the next push. The best
+question is not “is adaptive K good?” but:
+
+```text
+Does the frontier-tail certificate plus Lean Neumann theorem justify presenting
+adaptive Green as the main implementation, with exact Green as the reference
+operator and fixed-K as an ablation?
+```

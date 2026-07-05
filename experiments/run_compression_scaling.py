@@ -41,6 +41,10 @@ def row_from_model(
         "map": map_label,
         "method_spec": model["method_spec"],
         "method": model["method"],
+        "first_hit_mode": model.get("first_hit_mode", "exact"),
+        "first_hit_truncation_steps": model.get("first_hit_truncation_steps", ""),
+        "first_hit_used_steps_max": model.get("first_hit_used_steps_max", ""),
+        "first_hit_tail_bound_max": model.get("first_hit_tail_bound_max", ""),
         "n_states": int(model["n_states"]),
         "n_boundary": int(model["n_boundary"]),
         "n_edges_valid": int(model["n_edges_valid"]),
@@ -76,6 +80,10 @@ def write_report(rows: Sequence[Mapping[str, object]], out_path: Path, args: arg
         "map",
         "method_spec",
         "method",
+        "first_hit_mode",
+        "first_hit_truncation_steps",
+        "first_hit_used_steps_max",
+        "first_hit_tail_bound_max",
         "n_states",
         "n_boundary",
         "state_compression_ratio",
@@ -139,6 +147,9 @@ def main() -> None:
     parser.add_argument("--residual-reward-weight", type=float, default=0.05)
     parser.add_argument("--residual-hit-weight", type=float, default=0.0)
     parser.add_argument("--no-struct-distinct", action="store_true")
+    parser.add_argument("--first-hit-mode", choices=["exact", "truncated", "adaptive"], default="exact")
+    parser.add_argument("--first-hit-truncation-steps", type=int, default=32)
+    parser.add_argument("--first-hit-tail-tol", type=float, default=0.0)
     parser.add_argument(
         "--out-dir",
         type=Path,
@@ -177,6 +188,9 @@ def main() -> None:
                 residual_reward_weight=args.residual_reward_weight,
                 residual_hit_weight=args.residual_hit_weight,
                 compute_struct_distinct=not args.no_struct_distinct,
+                first_hit_mode=args.first_hit_mode,
+                first_hit_truncation_steps=args.first_hit_truncation_steps,
+                first_hit_tail_tol=args.first_hit_tail_tol,
             )
             rows.append(row_from_model(family, size, map_label, model, pi_result))
 

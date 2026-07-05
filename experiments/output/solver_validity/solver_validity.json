@@ -1,0 +1,1017 @@
+[
+  {
+    "map_family": "open_room",
+    "map_size": 5,
+    "map": "open_room_5",
+    "solver": "operator",
+    "n_states": 25,
+    "n_basis": 10,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 9.084139751968905,
+    "beam_width": 1,
+    "beam_expand": 6,
+    "selection_time_sec": 0.966027321992442,
+    "start_boundary": [
+      0,
+      24
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      18,
+      19
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      24
+    ],
+    "chosen_boundary": [
+      0,
+      18,
+      19,
+      24
+    ],
+    "same_boundary_as_oracle": false,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": 4,
+    "first_selected": 19,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 183.138802857067,
+    "total_violation_gap": 183.138802857067,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 114.05290461361655,
+    "max_violation_gap": 114.05290461361655,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 7.651491879260457e-06,
+    "chosen_test_bits_cvar": 54.11593818809277,
+    "test_bits_cvar_gap": 54.11593053660089,
+    "chosen_stop_reason": "budget_not_met",
+    "chosen_path": [
+      19,
+      18
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "open_room",
+    "map_size": 5,
+    "map": "open_room_5",
+    "solver": "operator",
+    "n_states": 25,
+    "n_basis": 10,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 9.084139751968905,
+    "beam_width": 2,
+    "beam_expand": 6,
+    "selection_time_sec": 1.642264056019485,
+    "start_boundary": [
+      0,
+      24
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [],
+    "oracle_boundary": [
+      0,
+      1,
+      24
+    ],
+    "chosen_boundary": [
+      0,
+      24
+    ],
+    "same_boundary_as_oracle": false,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": 4,
+    "first_selected": null,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 174.8841889328305,
+    "total_violation_gap": 174.8841889328305,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 58.29472964427684,
+    "max_violation_gap": 58.29472964427684,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 7.651491879260457e-06,
+    "chosen_test_bits_cvar": 77.72630619236912,
+    "test_bits_cvar_gap": 77.72629854087724,
+    "chosen_stop_reason": "budget_not_met",
+    "chosen_path": [],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "open_room",
+    "map_size": 5,
+    "map": "open_room_5",
+    "solver": "operator",
+    "n_states": 25,
+    "n_basis": 10,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 9.084139751968905,
+    "beam_width": 4,
+    "beam_expand": 6,
+    "selection_time_sec": 1.5426244160044007,
+    "start_boundary": [
+      0,
+      24
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      24
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      24
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 4,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 7.651491879260457e-06,
+    "chosen_test_bits_cvar": 7.651491879260457e-06,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "open_room",
+    "map_size": 5,
+    "map": "open_room_5",
+    "solver": "actual_refine",
+    "n_states": 25,
+    "n_basis": 10,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 9.084139751968905,
+    "beam_width": 1,
+    "beam_expand": 6,
+    "selection_time_sec": 2.8002888479968533,
+    "start_boundary": [
+      0,
+      24
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      24
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      24
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 4,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 7.651491879260457e-06,
+    "chosen_test_bits_cvar": 7.651491879260457e-06,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "open_room",
+    "map_size": 5,
+    "map": "open_room_5",
+    "solver": "actual_refine",
+    "n_states": 25,
+    "n_basis": 10,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 9.084139751968905,
+    "beam_width": 2,
+    "beam_expand": 6,
+    "selection_time_sec": 2.7861842089914717,
+    "start_boundary": [
+      0,
+      24
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      24
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      24
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 4,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 7.651491879260457e-06,
+    "chosen_test_bits_cvar": 7.651491879260457e-06,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "open_room",
+    "map_size": 5,
+    "map": "open_room_5",
+    "solver": "actual_refine",
+    "n_states": 25,
+    "n_basis": 10,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 9.084139751968905,
+    "beam_width": 4,
+    "beam_expand": 6,
+    "selection_time_sec": 2.9687811770127155,
+    "start_boundary": [
+      0,
+      24
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      24
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      24
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 4,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 7.651491879260457e-06,
+    "chosen_test_bits_cvar": 7.651491879260457e-06,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "four_rooms",
+    "map_size": 7,
+    "map": "four_rooms_7",
+    "solver": "operator",
+    "n_states": 40,
+    "n_basis": 26,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 16.176918354001828,
+    "beam_width": 1,
+    "beam_expand": 6,
+    "selection_time_sec": 1.811825918033719,
+    "start_boundary": [
+      0,
+      39
+    ],
+    "oracle_extra": [],
+    "chosen_extra": [
+      6,
+      28
+    ],
+    "oracle_boundary": [
+      0,
+      39
+    ],
+    "chosen_boundary": [
+      0,
+      6,
+      28,
+      39
+    ],
+    "same_boundary_as_oracle": false,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": "",
+    "first_selected": 6,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 174.8841889328305,
+    "chosen_total_violation": 576.6642551204247,
+    "total_violation_gap": 401.78006618759423,
+    "oracle_max_violation": 58.29472964427684,
+    "chosen_max_violation": 225.56495434067585,
+    "max_violation_gap": 167.270224696399,
+    "oracle_all_feasible": false,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 77.72630619236912,
+    "chosen_test_bits_cvar": 244.99442336996557,
+    "test_bits_cvar_gap": 167.26811717759645,
+    "chosen_stop_reason": "budget_not_met",
+    "chosen_path": [
+      6,
+      28
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "four_rooms",
+    "map_size": 7,
+    "map": "four_rooms_7",
+    "solver": "operator",
+    "n_states": 40,
+    "n_basis": 26,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 16.176918354001828,
+    "beam_width": 2,
+    "beam_expand": 6,
+    "selection_time_sec": 3.14489625004353,
+    "start_boundary": [
+      0,
+      39
+    ],
+    "oracle_extra": [],
+    "chosen_extra": [],
+    "oracle_boundary": [
+      0,
+      39
+    ],
+    "chosen_boundary": [
+      0,
+      39
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": "",
+    "first_selected": null,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 174.8841889328305,
+    "chosen_total_violation": 174.8841889328305,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 58.29472964427684,
+    "chosen_max_violation": 58.29472964427684,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": false,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 77.72630619236912,
+    "chosen_test_bits_cvar": 77.72630619236912,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "budget_not_met",
+    "chosen_path": [],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "four_rooms",
+    "map_size": 7,
+    "map": "four_rooms_7",
+    "solver": "operator",
+    "n_states": 40,
+    "n_basis": 26,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 16.176918354001828,
+    "beam_width": 4,
+    "beam_expand": 6,
+    "selection_time_sec": 5.426436456036754,
+    "start_boundary": [
+      0,
+      39
+    ],
+    "oracle_extra": [],
+    "chosen_extra": [],
+    "oracle_boundary": [
+      0,
+      39
+    ],
+    "chosen_boundary": [
+      0,
+      39
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": "",
+    "first_selected": null,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 174.8841889328305,
+    "chosen_total_violation": 174.8841889328305,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 58.29472964427684,
+    "chosen_max_violation": 58.29472964427684,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": false,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 77.72630619236912,
+    "chosen_test_bits_cvar": 77.72630619236912,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "budget_not_met",
+    "chosen_path": [],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "four_rooms",
+    "map_size": 7,
+    "map": "four_rooms_7",
+    "solver": "actual_refine",
+    "n_states": 40,
+    "n_basis": 26,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 16.176918354001828,
+    "beam_width": 1,
+    "beam_expand": 6,
+    "selection_time_sec": 10.212392090994399,
+    "start_boundary": [
+      0,
+      39
+    ],
+    "oracle_extra": [],
+    "chosen_extra": [],
+    "oracle_boundary": [
+      0,
+      39
+    ],
+    "chosen_boundary": [
+      0,
+      39
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": "",
+    "first_selected": null,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 174.8841889328305,
+    "chosen_total_violation": 174.8841889328305,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 58.29472964427684,
+    "chosen_max_violation": 58.29472964427684,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": false,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 77.72630619236912,
+    "chosen_test_bits_cvar": 77.72630619236912,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_budget_not_met",
+    "chosen_path": [],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "four_rooms",
+    "map_size": 7,
+    "map": "four_rooms_7",
+    "solver": "actual_refine",
+    "n_states": 40,
+    "n_basis": 26,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 16.176918354001828,
+    "beam_width": 2,
+    "beam_expand": 6,
+    "selection_time_sec": 15.475738945009653,
+    "start_boundary": [
+      0,
+      39
+    ],
+    "oracle_extra": [],
+    "chosen_extra": [],
+    "oracle_boundary": [
+      0,
+      39
+    ],
+    "chosen_boundary": [
+      0,
+      39
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": "",
+    "first_selected": null,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 174.8841889328305,
+    "chosen_total_violation": 174.8841889328305,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 58.29472964427684,
+    "chosen_max_violation": 58.29472964427684,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": false,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 77.72630619236912,
+    "chosen_test_bits_cvar": 77.72630619236912,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_budget_not_met",
+    "chosen_path": [],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "four_rooms",
+    "map_size": 7,
+    "map": "four_rooms_7",
+    "solver": "actual_refine",
+    "n_states": 40,
+    "n_basis": 26,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 16.176918354001828,
+    "beam_width": 4,
+    "beam_expand": 6,
+    "selection_time_sec": 24.99977003200911,
+    "start_boundary": [
+      0,
+      39
+    ],
+    "oracle_extra": [],
+    "chosen_extra": [],
+    "oracle_boundary": [
+      0,
+      39
+    ],
+    "chosen_boundary": [
+      0,
+      39
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": "",
+    "first_selected": null,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 174.8841889328305,
+    "chosen_total_violation": 174.8841889328305,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 58.29472964427684,
+    "chosen_max_violation": 58.29472964427684,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": false,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 77.72630619236912,
+    "chosen_test_bits_cvar": 77.72630619236912,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_budget_not_met",
+    "chosen_path": [],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "maze",
+    "map_size": 9,
+    "map": "maze_9",
+    "solver": "operator",
+    "n_states": 31,
+    "n_basis": 17,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 12.195354511961341,
+    "beam_width": 1,
+    "beam_expand": 6,
+    "selection_time_sec": 0.39682099502533674,
+    "start_boundary": [
+      0,
+      30
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [],
+    "oracle_boundary": [
+      0,
+      1,
+      30
+    ],
+    "chosen_boundary": [
+      0,
+      30
+    ],
+    "same_boundary_as_oracle": false,
+    "extra_jaccard_with_oracle": 0.0,
+    "operator_top_rank_in_oracle_extra": 1,
+    "first_selected": null,
+    "first_selected_in_oracle_extra": false,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 174.8841889328305,
+    "total_violation_gap": 174.8841889328305,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 58.29472964427684,
+    "max_violation_gap": 58.29472964427684,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": false,
+    "oracle_test_bits_cvar": 0.0,
+    "chosen_test_bits_cvar": 77.72630619236912,
+    "test_bits_cvar_gap": 77.72630619236912,
+    "chosen_stop_reason": "no_positive_violation_reduction",
+    "chosen_path": [],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "maze",
+    "map_size": 9,
+    "map": "maze_9",
+    "solver": "operator",
+    "n_states": 31,
+    "n_basis": 17,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 12.195354511961341,
+    "beam_width": 2,
+    "beam_expand": 6,
+    "selection_time_sec": 0.9543428199831396,
+    "start_boundary": [
+      0,
+      30
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      30
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      30
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 1,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 0.0,
+    "chosen_test_bits_cvar": 0.0,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "maze",
+    "map_size": 9,
+    "map": "maze_9",
+    "solver": "operator",
+    "n_states": 31,
+    "n_basis": 17,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 12.195354511961341,
+    "beam_width": 4,
+    "beam_expand": 6,
+    "selection_time_sec": 0.8664524829946458,
+    "start_boundary": [
+      0,
+      30
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      30
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      30
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 1,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 0.0,
+    "chosen_test_bits_cvar": 0.0,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "maze",
+    "map_size": 9,
+    "map": "maze_9",
+    "solver": "actual_refine",
+    "n_states": 31,
+    "n_basis": 17,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 12.195354511961341,
+    "beam_width": 1,
+    "beam_expand": 6,
+    "selection_time_sec": 3.835009041999001,
+    "start_boundary": [
+      0,
+      30
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      30
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      30
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 1,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 0.0,
+    "chosen_test_bits_cvar": 0.0,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "maze",
+    "map_size": 9,
+    "map": "maze_9",
+    "solver": "actual_refine",
+    "n_states": 31,
+    "n_basis": 17,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 12.195354511961341,
+    "beam_width": 2,
+    "beam_expand": 6,
+    "selection_time_sec": 3.90314963797573,
+    "start_boundary": [
+      0,
+      30
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      30
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      30
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 1,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 0.0,
+    "chosen_test_bits_cvar": 0.0,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  },
+  {
+    "map_family": "maze",
+    "map_size": 9,
+    "map": "maze_9",
+    "solver": "actual_refine",
+    "n_states": 31,
+    "n_basis": 17,
+    "n_start_boundary": 2,
+    "n_oracle_pool": 6,
+    "oracle_pool_truncated": true,
+    "max_extra_splits": 2,
+    "oracle_evaluated_subsets": 22,
+    "oracle_time_sec": 12.195354511961341,
+    "beam_width": 4,
+    "beam_expand": 6,
+    "selection_time_sec": 3.781640224973671,
+    "start_boundary": [
+      0,
+      30
+    ],
+    "oracle_extra": [
+      1
+    ],
+    "chosen_extra": [
+      1
+    ],
+    "oracle_boundary": [
+      0,
+      1,
+      30
+    ],
+    "chosen_boundary": [
+      0,
+      1,
+      30
+    ],
+    "same_boundary_as_oracle": true,
+    "extra_jaccard_with_oracle": 1.0,
+    "operator_top_rank_in_oracle_extra": 1,
+    "first_selected": 1,
+    "first_selected_in_oracle_extra": true,
+    "oracle_total_violation": 0.0,
+    "chosen_total_violation": 0.0,
+    "total_violation_gap": 0.0,
+    "oracle_max_violation": 0.0,
+    "chosen_max_violation": 0.0,
+    "max_violation_gap": 0.0,
+    "oracle_all_feasible": true,
+    "chosen_all_feasible": true,
+    "oracle_test_bits_cvar": 0.0,
+    "chosen_test_bits_cvar": 0.0,
+    "test_bits_cvar_gap": 0.0,
+    "chosen_stop_reason": "actual_refine_feasible",
+    "chosen_path": [
+      1
+    ],
+    "budgets": "{\"stochastic\": 19.43157654809228, \"topology\": 19.43157654809228, \"value\": 19.43157654809228}",
+    "initial_group_risks": "{\"stochastic\": 77.72630619236912, \"topology\": 77.72630619236912, \"value\": 77.72630619236912}"
+  }
+]

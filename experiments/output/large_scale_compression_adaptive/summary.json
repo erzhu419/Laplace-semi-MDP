@@ -1,0 +1,29 @@
+{
+  "n_rows": 8,
+  "n_ok_rows": 8,
+  "n_error_rows": 0,
+  "max_n_states": 144,
+  "best_total_speedup": 10.675939243088584,
+  "best_planning_speedup": 4097.341132171821,
+  "max_start_gap": 0.07851000260175311,
+  "by_method": {
+    "endpoints": {
+      "n_rows": 4,
+      "max_n_states": 144,
+      "median_total_speedup": 6.8223258104851485,
+      "best_total_speedup": 9.326703939815758,
+      "median_planning_speedup": 978.0635576237491,
+      "best_planning_speedup": 2804.4049936570755,
+      "max_start_gap": 0.07851000260175311
+    },
+    "turn_articulation": {
+      "n_rows": 4,
+      "max_n_states": 144,
+      "median_total_speedup": 5.1104805334320655,
+      "best_total_speedup": 10.675939243088584,
+      "median_planning_speedup": 675.9687120606692,
+      "best_planning_speedup": 4097.341132171821,
+      "max_start_gap": 0.07850996386812881
+    }
+  }
+}

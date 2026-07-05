@@ -19,13 +19,16 @@ from bellman_kron import (
     OPPOSITE,
     all_boundary_states,
     bellman_kron_reduce,
+    bellman_kron_reduce_truncated,
     corridor_map,
     critical_saliency,
     decision_boundary_states,
     default_map,
     endpoint_boundary_states,
     first_hit_interior_occupancy,
+    first_hit_interior_occupancy_truncated,
     first_hit_reduce,
+    first_hit_reduce_truncated,
     four_rooms_map,
     graph_adjacency,
     graph_nx,
@@ -263,6 +266,9 @@ def build_first_boundary_reductions(
     residual_threshold_mode: str,
     compute_struct_distinct: bool,
     proposal_boundary: Sequence[int] | None = None,
+    first_hit_mode: str = "exact",
+    first_hit_truncation_steps: int = 32,
+    first_hit_tail_tol: float = 0.0,
 ) -> Tuple[
     Dict[str, BellmanKronReduction],
     Dict[str, np.ndarray],
@@ -270,6 +276,11 @@ def build_first_boundary_reductions(
     Dict[str, object],
     List[Dict[str, object]],
 ]:
+    if first_hit_mode not in {"exact", "truncated", "adaptive"}:
+        raise ValueError(f"Unknown first_hit_mode: {first_hit_mode!r}")
+    adaptive_tail_tol = first_hit_tail_tol
+    if first_hit_mode == "adaptive" and adaptive_tail_tol <= 0.0:
+        adaptive_tail_tol = 1e-6
     boundary = sorted(set(boundary))
     candidate_boundary = sorted(set(candidate_boundary).union(boundary))
     residual_boundary = sorted(set(residual_boundary).union(boundary))
@@ -288,12 +299,69 @@ def build_first_boundary_reductions(
     pair_policies: Dict[str, object] = {}
     edge_rows: List[Dict[str, object]] = []
 
+    def reduce_global(P: np.ndarray, r: np.ndarray) -> BellmanKronReduction:
+        if first_hit_mode in {"truncated", "adaptive"}:
+            return bellman_kron_reduce_truncated(
+                P,
+                r,
+                boundary=boundary,
+                gamma=gamma,
+                k_steps=first_hit_truncation_steps,
+                tail_tol=adaptive_tail_tol if first_hit_mode == "adaptive" else first_hit_tail_tol,
+            )
+        return bellman_kron_reduce(P, r, boundary=boundary, gamma=gamma)
+
+    def reduce_first_hit(
+        P: np.ndarray,
+        r: np.ndarray,
+        start_state: int,
+        terminals: Sequence[int],
+    ):
+        if first_hit_mode in {"truncated", "adaptive"}:
+            return first_hit_reduce_truncated(
+                P=P,
+                r=r,
+                start_state=start_state,
+                terminals=terminals,
+                gamma=gamma,
+                k_steps=first_hit_truncation_steps,
+                tail_tol=adaptive_tail_tol if first_hit_mode == "adaptive" else first_hit_tail_tol,
+            )
+        return first_hit_reduce(
+            P=P,
+            r=r,
+            start_state=start_state,
+            terminals=terminals,
+            gamma=gamma,
+        )
+
+    def interior_occupancy(
+        P: np.ndarray,
+        start_state: int,
+        terminals: Sequence[int],
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        if first_hit_mode in {"truncated", "adaptive"}:
+            return first_hit_interior_occupancy_truncated(
+                P=P,
+                start_state=start_state,
+                terminals=terminals,
+                gamma=gamma,
+                k_steps=first_hit_truncation_steps,
+                tail_tol=adaptive_tail_tol if first_hit_mode == "adaptive" else first_hit_tail_tol,
+            )
+        return first_hit_interior_occupancy(
+            P=P,
+            start_state=start_state,
+            terminals=terminals,
+            gamma=gamma,
+        )
+
     for target_pos, target_state in enumerate(boundary):
         target_policy = shortest_path_policy_to_target(grid, target_state, slip=slip)
         target_policies[f"to_{target_pos:03d}"] = target_policy
         P_free, r_free = transition_matrix_for_policy(grid, target_policy, absorbing=[])
         P_global, r_global = transition_matrix_for_policy(grid, target_policy, absorbing=[target_state])
-        global_reduction = bellman_kron_reduce(P_global, r_global, boundary=boundary, gamma=gamma)
+        global_reduction = reduce_global(P_global, r_global)
         for src_pos, src_state in enumerate(boundary):
             if src_state == target_state:
                 continue
@@ -301,13 +369,11 @@ def build_first_boundary_reductions(
             label = f"fb_{src_pos:03d}_to_{target_pos:03d}"
             pair_policies[label] = target_policy
             terminals = [state for state in candidate_boundary if state != src_state]
-            P, r = transition_matrix_for_policy(grid, target_policy, absorbing=terminals)
-            first_hit = first_hit_reduce(
-                P=P,
-                r=r,
+            first_hit = reduce_first_hit(
+                P=P_free,
+                r=r_free,
                 start_state=src_state,
                 terminals=terminals,
-                gamma=gamma,
             )
 
             hidden_probs: Dict[int, float] = {}
@@ -345,6 +411,11 @@ def build_first_boundary_reductions(
             residual_reward_per_discounted_step = 0.0
             residual_gamma_relative = 0.0
             residual_tau_relative = 0.0
+            residual_first_hit_used_steps = 0
+            residual_first_hit_tail_mass = 0.0
+            residual_first_hit_tail_bound = 0.0
+            distinct_first_hit_used_steps_max = 0
+            distinct_first_hit_tail_bound_max = 0.0
             struct_hidden_prob = 0.0
             struct_hit_prob = 0.0
             struct_nohit_prob = 0.0
@@ -371,17 +442,11 @@ def build_first_boundary_reductions(
             expected_tau_residual = 0.0
             residual_terminals = [state for state in residual_boundary if state != src_state]
             if residual_terminals:
-                P_residual, r_residual = transition_matrix_for_policy(
-                    grid,
-                    target_policy,
-                    absorbing=residual_terminals,
-                )
-                residual_first_hit = first_hit_reduce(
-                    P=P_residual,
-                    r=r_residual,
+                residual_first_hit = reduce_first_hit(
+                    P=P_free,
+                    r=r_free,
                     start_state=src_state,
                     terminals=residual_terminals,
-                    gamma=gamma,
                 )
                 residual_gamma_boundary = np.zeros(len(boundary), dtype=float)
                 residual_hit_boundary = np.zeros(len(boundary), dtype=float)
@@ -416,16 +481,23 @@ def build_first_boundary_reductions(
                         distinct_terminals = sorted((boundary_set - {src_state}).union({int(hidden_state)}))
                         if not distinct_terminals:
                             continue
-                        distinct_first_hit = first_hit_reduce(
+                        distinct_first_hit = reduce_first_hit(
                             P=P_free,
                             r=r_free,
                             start_state=src_state,
                             terminals=distinct_terminals,
-                            gamma=gamma,
                         )
                         hidden_positions = np.flatnonzero(distinct_first_hit.terminals == int(hidden_state))
                         if len(hidden_positions) == 0:
                             continue
+                        distinct_first_hit_used_steps_max = max(
+                            distinct_first_hit_used_steps_max,
+                            int(distinct_first_hit.used_steps),
+                        )
+                        distinct_first_hit_tail_bound_max = max(
+                            distinct_first_hit_tail_bound_max,
+                            float(distinct_first_hit.tail_bound),
+                        )
                         p_hidden_distinct = float(distinct_first_hit.hit_probability[int(hidden_positions[0])])
                         struct_distinct_scores[int(hidden_state)] = p_hidden_distinct
                         if int(hidden_state) in residual_hidden_probs:
@@ -455,6 +527,9 @@ def build_first_boundary_reductions(
                     + residual_reward_weight * residual_reward_abs
                     + residual_hit_weight * residual_hit_l1
                 )
+                residual_first_hit_used_steps = int(residual_first_hit.used_steps)
+                residual_first_hit_tail_mass = float(residual_first_hit.tail_mass)
+                residual_first_hit_tail_bound = float(residual_first_hit.tail_bound)
                 residual_tau_mask = np.isfinite(residual_first_hit.expected_tau) & (
                     residual_first_hit.hit_probability > 1e-12
                 )
@@ -498,11 +573,10 @@ def build_first_boundary_reductions(
             if np.any(soft_state_cost > 1e-12):
                 pair_soft_cost = soft_state_cost.copy()
                 pair_soft_cost[np.array(boundary, dtype=int)] = 0.0
-                interior, occupancy = first_hit_interior_occupancy(
-                    P=P,
+                interior, occupancy = interior_occupancy(
+                    P=P_free,
                     start_state=src_state,
                     terminals=terminals,
-                    gamma=gamma,
                 )
                 if len(interior) > 0:
                     soft_scores = occupancy * pair_soft_cost[interior]
@@ -601,6 +675,17 @@ def build_first_boundary_reductions(
                     "residual_argmax_coord": idx_to_coord[residual_argmax] if residual_argmax is not None else None,
                     "residual_argmax_prob": residual_argmax_prob,
                     "reward": first_hit.reward,
+                    "first_hit_mode": first_hit_mode,
+                    "first_hit_truncation_steps": first_hit_truncation_steps,
+                    "first_hit_used_steps": int(first_hit.used_steps),
+                    "first_hit_tail_mass": float(first_hit.tail_mass),
+                    "first_hit_tail_bound": float(first_hit.tail_bound),
+                    "first_hit_q_bound": float(first_hit.q_bound),
+                    "residual_first_hit_used_steps": residual_first_hit_used_steps,
+                    "residual_first_hit_tail_mass": residual_first_hit_tail_mass,
+                    "residual_first_hit_tail_bound": residual_first_hit_tail_bound,
+                    "distinct_first_hit_used_steps_max": distinct_first_hit_used_steps_max,
+                    "distinct_first_hit_tail_bound_max": distinct_first_hit_tail_bound_max,
                 }
             )
 
@@ -613,6 +698,22 @@ def build_first_boundary_reductions(
     ]
     metadata: Dict[str, object] = {
         "option_set": "first_boundary_targeted",
+        "first_hit_mode": first_hit_mode,
+        "first_hit_truncation_steps": int(first_hit_truncation_steps),
+        "first_hit_tail_tol": float(adaptive_tail_tol if first_hit_mode == "adaptive" else first_hit_tail_tol),
+        "first_hit_used_steps_max": int(max((int(row["first_hit_used_steps"]) for row in edge_rows), default=0)),
+        "first_hit_used_steps_mean": float(np.mean([int(row["first_hit_used_steps"]) for row in edge_rows]))
+        if edge_rows
+        else 0.0,
+        "first_hit_tail_bound_max": float(
+            max((float(row["first_hit_tail_bound"]) for row in edge_rows), default=0.0)
+        ),
+        "residual_first_hit_used_steps_max": int(
+            max((int(row["residual_first_hit_used_steps"]) for row in edge_rows), default=0)
+        ),
+        "distinct_first_hit_used_steps_max": int(
+            max((int(row["distinct_first_hit_used_steps_max"]) for row in edge_rows), default=0)
+        ),
         "local_horizon": local_horizon,
         "hidden_threshold": hidden_threshold,
         "option_pair_count": len(edge_rows),
@@ -1145,6 +1246,9 @@ def evaluate_boundary(
     candidate_kind: str,
     candidate_top_fraction: float,
     proposal_boundary: Sequence[int] | None = None,
+    first_hit_mode: str = "exact",
+    first_hit_truncation_steps: int = 32,
+    first_hit_tail_tol: float = 0.0,
 ) -> Tuple[Dict[str, object], List[Dict[str, object]]]:
     start = grid.symbol_states("S")[0]
     goal = grid.symbol_states("G")[0]
@@ -1175,6 +1279,9 @@ def evaluate_boundary(
         residual_threshold_mode=residual_threshold_mode,
         compute_struct_distinct=compute_struct_distinct,
         proposal_boundary=proposal_boundary,
+        first_hit_mode=first_hit_mode,
+        first_hit_truncation_steps=first_hit_truncation_steps,
+        first_hit_tail_tol=first_hit_tail_tol,
     )
     feasible = True
     start_gap = float("inf")

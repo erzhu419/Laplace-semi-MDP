@@ -101,6 +101,10 @@ class BellmanKronReduction:
     laplacian: np.ndarray
     hit_probability: np.ndarray
     expected_tau: np.ndarray
+    used_steps: int = 0
+    tail_mass: float = 0.0
+    tail_bound: float = 0.0
+    q_bound: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -110,6 +114,10 @@ class FirstHitReduction:
     reward: float
     hit_probability: np.ndarray
     expected_tau: np.ndarray
+    used_steps: int = 0
+    tail_mass: float = 0.0
+    tail_bound: float = 0.0
+    q_bound: float = 1.0
 
 
 def default_map() -> Tuple[str, ...]:
@@ -513,6 +521,20 @@ def _solve_or_pinv(A: np.ndarray, B: np.ndarray) -> np.ndarray:
         return np.linalg.pinv(A) @ B
 
 
+def substochastic_q_bound(P_II: np.ndarray) -> float:
+    if P_II.size == 0:
+        return 0.0
+    return float(np.max(np.sum(np.maximum(P_II, 0.0), axis=1), initial=0.0))
+
+
+def geometric_tail_bound(q: float, steps_after_prefix: int) -> float:
+    if q < 0.0:
+        return 0.0
+    if q >= 1.0:
+        return float("inf")
+    return float((q ** max(0, int(steps_after_prefix))) / max(1e-12, 1.0 - q))
+
+
 def bellman_kron_reduce(
     P: np.ndarray,
     r: np.ndarray,
@@ -575,6 +597,102 @@ def bellman_kron_reduce(
     )
 
 
+def bellman_kron_reduce_truncated(
+    P: np.ndarray,
+    r: np.ndarray,
+    boundary: Sequence[State],
+    gamma: float,
+    k_steps: int,
+    tail_tol: float = 0.0,
+) -> BellmanKronReduction:
+    """Truncated Neumann approximation to ``bellman_kron_reduce``.
+
+    The exact reducer uses ``(I - gamma P_II)^-1`` and ``(I - P_II)^-1``.
+    This approximation replaces both inverses by the finite prefix
+    ``sum_{t=0}^K P_II^t``. It is substantially cheaper for repeated
+    candidate scoring and is the executable counterpart of the truncated
+    Green-kernel theorem in ``proof/``.
+    """
+
+    n = P.shape[0]
+    B = np.array(sorted(boundary), dtype=int)
+    B_set = set(B.tolist())
+    I = np.array([s for s in range(n) if s not in B_set], dtype=int)
+
+    P_BB = P[np.ix_(B, B)]
+    P_BI = P[np.ix_(B, I)]
+    P_IB = P[np.ix_(I, B)]
+    P_II = P[np.ix_(I, I)]
+    r_B = r[B]
+    r_I = r[I]
+
+    if len(I) == 0:
+        gamma_terminal = gamma * P_BB
+        reward = r_B.copy()
+        hit_probability = P_BB.copy()
+        expected_tau = np.ones_like(P_BB)
+        used_steps = 0
+        tail_mass = 0.0
+        tail_bound = 0.0
+        q_bound = 0.0
+    else:
+        k = max(0, int(k_steps))
+        reward_extra = np.zeros(len(B), dtype=float)
+        gamma_terminal_extra = np.zeros((len(B), len(B)), dtype=float)
+        hit_extra = np.zeros((len(B), len(B)), dtype=float)
+        tau_numerator = P_BB.copy()
+        frontier = P_BI.copy()
+        discount = 1.0
+        used_steps = k
+        tail_mass = float(np.max(np.sum(np.abs(frontier), axis=1), initial=0.0))
+        tail_bound = float("inf")
+        q_bound = substochastic_q_bound(P_II)
+        for t in range(k + 1):
+            terminal_flow = frontier @ P_IB
+            reward_extra += discount * (frontier @ r_I)
+            gamma_terminal_extra += discount * terminal_flow
+            hit_extra += terminal_flow
+            tau_numerator += float(t + 2) * terminal_flow
+            frontier = frontier @ P_II
+            used_steps = t
+            tail_mass = float(np.max(np.sum(np.abs(frontier), axis=1), initial=0.0))
+            hit_tail_bound = tail_mass
+            reward_tail_bound = (
+                (gamma * discount * gamma) * tail_mass / max(1e-12, 1.0 - gamma)
+            )
+            q_tail_bound = geometric_tail_bound(q_bound, t + 1)
+            tail_bound = min(max(hit_tail_bound, reward_tail_bound), q_tail_bound)
+            if tail_tol > 0.0 and tail_bound <= tail_tol:
+                break
+            discount *= gamma
+
+        gamma_terminal = gamma * P_BB + (gamma**2) * gamma_terminal_extra
+        reward = r_B + gamma * reward_extra
+        hit_probability = P_BB + hit_extra
+        expected_tau = np.divide(
+            tau_numerator,
+            hit_probability,
+            out=np.full_like(tau_numerator, np.nan),
+            where=hit_probability > 1e-12,
+        )
+
+    laplacian = np.eye(len(B)) - gamma_terminal
+    return BellmanKronReduction(
+        boundary=B,
+        interior=I,
+        gamma=gamma,
+        gamma_terminal=gamma_terminal,
+        reward=reward,
+        laplacian=laplacian,
+        hit_probability=hit_probability,
+        expected_tau=expected_tau,
+        used_steps=used_steps,
+        tail_mass=tail_mass,
+        tail_bound=tail_bound,
+        q_bound=q_bound,
+    )
+
+
 def discounted_interior_occupancy(
     P: np.ndarray,
     boundary: Sequence[State],
@@ -614,6 +732,10 @@ def first_hit_reduce(
             reward=0.0,
             hit_probability=np.zeros(0, dtype=float),
             expected_tau=np.zeros(0, dtype=float),
+            used_steps=0,
+            tail_mass=0.0,
+            tail_bound=0.0,
+            q_bound=0.0,
         )
 
     terminal_set = set(T.tolist())
@@ -646,6 +768,90 @@ def first_hit_reduce(
     )
 
 
+def first_hit_reduce_truncated(
+    P: np.ndarray,
+    r: np.ndarray,
+    start_state: State,
+    terminals: Sequence[State],
+    gamma: float,
+    k_steps: int,
+    tail_tol: float = 0.0,
+) -> FirstHitReduction:
+    """Truncated first-hit Green kernel from one start state.
+
+    The prefix includes powers ``P_II^0`` through ``P_II^K``. Thus
+    ``k_steps=0`` accounts for terminal hits after one primitive transition.
+    Remaining non-terminal tail mass is deliberately dropped, making this a
+    controlled approximation rather than an exact model.
+    """
+
+    n = P.shape[0]
+    T = np.array(sorted(set(terminals)), dtype=int)
+    if start_state in set(T.tolist()):
+        raise ValueError("start_state must not be in terminals.")
+    if len(T) == 0:
+        return FirstHitReduction(
+            terminals=T,
+            gamma_terminal=np.zeros(0, dtype=float),
+            reward=0.0,
+            hit_probability=np.zeros(0, dtype=float),
+            expected_tau=np.zeros(0, dtype=float),
+        )
+
+    terminal_set = set(T.tolist())
+    I = np.array([s for s in range(n) if s not in terminal_set], dtype=int)
+    start_pos = int(np.flatnonzero(I == start_state)[0])
+    P_II = P[np.ix_(I, I)]
+    P_IT = P[np.ix_(I, T)]
+    r_I = r[I]
+
+    current = np.zeros(len(I), dtype=float)
+    current[start_pos] = 1.0
+    gamma_terminal = np.zeros(len(T), dtype=float)
+    hit_probability = np.zeros(len(T), dtype=float)
+    tau_numerator = np.zeros(len(T), dtype=float)
+    reward = 0.0
+    discount = 1.0
+    used_steps = max(0, int(k_steps))
+    tail_mass = float(np.sum(current))
+    tail_bound = float("inf")
+    q_bound = substochastic_q_bound(P_II)
+    for t in range(max(0, int(k_steps)) + 1):
+        reward += discount * float(current @ r_I)
+        terminal_flow = current @ P_IT
+        hit_probability += terminal_flow
+        gamma_terminal += discount * gamma * terminal_flow
+        tau_numerator += float(t + 1) * terminal_flow
+        current = current @ P_II
+        used_steps = t
+        tail_mass = float(np.sum(np.abs(current)))
+        hit_tail_bound = tail_mass
+        reward_tail_bound = (discount * gamma) * tail_mass / max(1e-12, 1.0 - gamma)
+        q_tail_bound = geometric_tail_bound(q_bound, t + 1)
+        tail_bound = min(max(hit_tail_bound, reward_tail_bound), q_tail_bound)
+        if tail_tol > 0.0 and tail_bound <= tail_tol:
+            break
+        discount *= gamma
+
+    expected_tau = np.divide(
+        tau_numerator,
+        hit_probability,
+        out=np.full_like(tau_numerator, np.nan),
+        where=hit_probability > 1e-12,
+    )
+    return FirstHitReduction(
+        terminals=T,
+        gamma_terminal=gamma_terminal,
+        reward=float(reward),
+        hit_probability=hit_probability,
+        expected_tau=expected_tau,
+        used_steps=used_steps,
+        tail_mass=tail_mass,
+        tail_bound=tail_bound,
+        q_bound=q_bound,
+    )
+
+
 def first_hit_interior_occupancy(
     P: np.ndarray,
     start_state: State,
@@ -665,6 +871,37 @@ def first_hit_interior_occupancy(
     P_II = P[np.ix_(I, I)]
     occupancy = gamma * P_sI @ _solve_or_pinv(np.eye(len(I)) - gamma * P_II, np.eye(len(I)))
     return I, occupancy[0]
+
+
+def first_hit_interior_occupancy_truncated(
+    P: np.ndarray,
+    start_state: State,
+    terminals: Sequence[State],
+    gamma: float,
+    k_steps: int,
+    tail_tol: float = 0.0,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Truncated discounted occupancy over non-terminal states after leaving start."""
+
+    n = P.shape[0]
+    terminal_set = set(terminals)
+    if start_state in terminal_set:
+        raise ValueError("start_state must not be in terminals.")
+    I = np.array([s for s in range(n) if s not in terminal_set], dtype=int)
+    if len(I) == 0:
+        return I, np.zeros(0, dtype=float)
+    P_sI = P[np.ix_([start_state], I)]
+    P_II = P[np.ix_(I, I)]
+    current = gamma * P_sI[0]
+    occupancy = np.zeros(len(I), dtype=float)
+    discount = 1.0
+    for _ in range(max(0, int(k_steps)) + 1):
+        occupancy += discount * current
+        current = current @ P_II
+        if tail_tol > 0.0 and float(np.sum(current)) <= tail_tol:
+            break
+        discount *= gamma
+    return I, occupancy
 
 
 def first_hit_expected_interior_cost(
