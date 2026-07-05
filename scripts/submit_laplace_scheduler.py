@@ -110,9 +110,13 @@ def task_specs(args: argparse.Namespace) -> List[Tuple[str, str, Dict[str, objec
     for suite in planned_suites(args):
         if suite == "amortized":
             shard_count = args.amortized_shards or default_amortized_shards(args.profile)
+            shard_start = max(0, args.amortized_shard_start)
+            shard_stop = shard_count if args.amortized_shard_stop < 0 else min(shard_count, args.amortized_shard_stop)
+            if shard_start >= shard_stop:
+                continue
             if shard_count > 1:
                 width = max(2, len(str(shard_count - 1)))
-                for shard_index in range(shard_count):
+                for shard_index in range(shard_start, shard_stop):
                     label = f"amortized_shard_{shard_index:0{width}d}_of_{shard_count:0{width}d}"
                     specs.append(
                         (
@@ -196,7 +200,7 @@ def submit(args: argparse.Namespace) -> List[str]:
             "--allow-remote-large-data",
             "--allow-duplicate",
         ]
-        if suite_kind == "amortized":
+        if suite_kind == "amortized" and args.scheduler_ckpt_dir:
             cmd.extend(["--ckpt-dir", str(remote_result_dir / "amortized_multitask")])
         else:
             cmd.append("--allow-no-ckpt")
@@ -233,11 +237,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--amortized-threads", type=int, default=16)
     parser.add_argument("--amortized-cpu", type=int, default=16)
     parser.add_argument(
+        "--scheduler-ckpt-dir",
+        action="store_true",
+        help="Also declare amortized output dirs as scheduler ckpt dirs; slower because submit scans remote paths.",
+    )
+    parser.add_argument(
         "--amortized-shards",
         type=int,
         default=0,
         help="Number of amortized map/method shards; 0 chooses a profile default.",
     )
+    parser.add_argument("--amortized-shard-start", type=int, default=0)
+    parser.add_argument("--amortized-shard-stop", type=int, default=-1)
     parser.add_argument("--dispatch", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()

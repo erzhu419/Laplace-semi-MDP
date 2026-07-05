@@ -91,9 +91,10 @@ idle `node001`-`node006` jobs queued. The `--threads` value is exported as
 `MKL_NUM_THREADS`, and `NUMEXPR_NUM_THREADS`. Large/xl amortized runs are split
 into map/method shards by default (`--amortized-shards 32`) and use smaller
 per-shard reservations (`--amortized-threads 16`, `--amortized-cpu 16`) because
-that workload did not saturate a whole 192-core node. Each shard declares its
-output directory as a scheduler checkpoint directory and writes `progress.jsonl`
-plus an incrementally refreshed CSV/summary after every map/method job. To
+that workload did not saturate a whole 192-core node. Each shard writes
+application-level checkpoints (`progress.jsonl` plus an incrementally refreshed
+CSV/summary) after every map/method job; `--scheduler-ckpt-dir` can also declare
+those dirs to scheduler, but it is slower because submit scans remote paths. To
 aggregate finished shard outputs:
 
 ```bash
