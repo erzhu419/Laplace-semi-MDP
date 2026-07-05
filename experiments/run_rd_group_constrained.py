@@ -13,11 +13,14 @@ import thread_limits  # noqa: F401
 import numpy as np
 
 from bellman_kron import (
+    BellmanKronReduction,
     GridWorld,
     endpoint_boundary_states,
+    first_hit_reduce,
     first_hit_green_state,
     shortest_path_distance_matrix,
     shortest_path_policy_to_target,
+    smdp_value_iteration,
     transition_matrix_for_policy,
 )
 from compression_experiment_utils import parse_map_specs
@@ -33,8 +36,6 @@ from run_rd_multiprobe_basis import (
     write_csv,
 )
 from run_rd_operator_theorem_checks import (
-    active_edges,
-    evaluate_recipe_boundary,
     finite_float,
     operator_marginal_rows,
     phi_bits,
@@ -310,35 +311,142 @@ def active_weight_table_for_boundary(
     recipe: Mapping[str, object],
     basis: Sequence[int],
     boundary: Sequence[int],
-    weight_probe: str,
     gamma: float,
     slip: float,
     edge_weight: str,
     probe_top_fraction: float,
 ) -> ActiveWeightRecord:
+    del map_name, recipe, probe_top_fraction
     started = time.perf_counter()
-    context = build_probe_context(
-        rows,
-        recipe=recipe,
-        fixed_candidate_basis=basis,
-        residual_kind=weight_probe,
-        gamma=gamma,
-        slip=slip,
-        probe_top_fraction=probe_top_fraction,
-    )
-    _weight_row, weight_edges = evaluate_recipe_boundary(
-        map_name=map_name,
-        context=context,
-        recipe=recipe,
-        boundary=boundary,
-        gamma=gamma,
-        slip=slip,
-    )
-    weights_by_edge = {
-        (int(edge_row["src_state"]), int(edge_row["target_state"])): float(weight)
-        for edge_row, weight in active_edges(weight_edges, edge_weight=edge_weight)
-        if float(weight) > 1e-12
-    }
+    grid = GridWorld(rows)
+    start = grid.symbol_states("S")[0]
+    goal = grid.symbol_states("G")[0]
+    boundary = sorted(set(int(state) for state in boundary))
+    boundary_set = set(boundary)
+    boundary_to_pos = {state: pos for pos, state in enumerate(boundary)}
+    candidate_boundary = sorted(set(int(state) for state in basis).union(boundary_set))
+    distances = shortest_path_distance_matrix(grid)
+    hidden_threshold = 1e-6
+    reductions: Dict[str, BellmanKronReduction] = {}
+    valid_actions: Dict[str, np.ndarray] = {}
+    edge_rows: List[Dict[str, object]] = []
+
+    for target_pos, target_state in enumerate(boundary):
+        target_policy = shortest_path_policy_to_target(grid, int(target_state), slip=slip)
+        P_free, r_free = transition_matrix_for_policy(grid, target_policy, absorbing=[])
+        for src_pos, src_state in enumerate(boundary):
+            if int(src_state) == int(target_state):
+                continue
+            label = f"fb_{src_pos:03d}_to_{target_pos:03d}"
+            terminals = [state for state in candidate_boundary if state != int(src_state)]
+            first_hit = first_hit_reduce(
+                P=P_free,
+                r=r_free,
+                start_state=int(src_state),
+                terminals=terminals,
+                gamma=gamma,
+            )
+            hidden_mass = 0.0
+            gamma_terminal = np.zeros(len(boundary), dtype=float)
+            hit_probability = np.zeros(len(boundary), dtype=float)
+            expected_tau = np.full(len(boundary), np.nan, dtype=float)
+            for term, prob, discounted_prob, tau in zip(
+                first_hit.terminals,
+                first_hit.hit_probability,
+                first_hit.gamma_terminal,
+                first_hit.expected_tau,
+            ):
+                term_int = int(term)
+                dst_pos = boundary_to_pos.get(term_int)
+                if dst_pos is None:
+                    hidden_mass += float(prob)
+                    continue
+                gamma_terminal[dst_pos] = float(discounted_prob)
+                hit_probability[dst_pos] = float(prob)
+                expected_tau[dst_pos] = float(tau)
+            reward = np.zeros(len(boundary), dtype=float)
+            gamma_terminal_matrix = np.zeros((len(boundary), len(boundary)), dtype=float)
+            hit_probability_matrix = np.zeros((len(boundary), len(boundary)), dtype=float)
+            expected_tau_matrix = np.full((len(boundary), len(boundary)), np.nan, dtype=float)
+            reward[src_pos] = float(first_hit.reward)
+            gamma_terminal_matrix[src_pos] = gamma_terminal
+            hit_probability_matrix[src_pos] = hit_probability
+            expected_tau_matrix[src_pos] = expected_tau
+            reduction = BellmanKronReduction(
+                boundary=np.asarray(boundary, dtype=int),
+                interior=np.asarray([], dtype=int),
+                gamma=gamma,
+                gamma_terminal=gamma_terminal_matrix,
+                reward=reward,
+                laplacian=np.eye(len(boundary), dtype=float) - gamma_terminal_matrix,
+                hit_probability=hit_probability_matrix,
+                expected_tau=expected_tau_matrix,
+            )
+            edge_valid = bool(
+                float(distances[int(src_state), int(target_state)]) <= 999.0
+                and hidden_mass <= hidden_threshold
+            )
+            valid = np.zeros(len(boundary), dtype=bool)
+            valid[src_pos] = edge_valid
+            reductions[label] = reduction
+            valid_actions[label] = valid
+            edge_rows.append(
+                {
+                    "option": label,
+                    "src_state": int(src_state),
+                    "target_state": int(target_state),
+                    "edge_valid": edge_valid,
+                    "policy_occupancy": 0.0,
+                }
+            )
+
+    if start in boundary_to_pos and goal in boundary_to_pos and reductions:
+        try:
+            _values, policy_smdp = smdp_value_iteration(
+                reductions,
+                goal_boundary_position=boundary_to_pos[goal],
+                valid_actions=valid_actions,
+            )
+            n_boundary = len(boundary)
+            P_pi = np.zeros((n_boundary, n_boundary), dtype=float)
+            goal_pos = boundary_to_pos[goal]
+            for src_pos in range(n_boundary):
+                action = policy_smdp.get(src_pos)
+                if src_pos == goal_pos or action not in reductions:
+                    continue
+                P_pi[src_pos, :] = reductions[action].hit_probability[src_pos]
+            start_vec = np.zeros(n_boundary, dtype=float)
+            start_vec[boundary_to_pos[start]] = 1.0
+            try:
+                occupancy_by_boundary = np.linalg.solve(np.eye(n_boundary) - P_pi.T, start_vec)
+            except np.linalg.LinAlgError:
+                occupancy_by_boundary = np.linalg.lstsq(np.eye(n_boundary) - P_pi.T, start_vec, rcond=None)[0]
+            occupancy_by_boundary = np.maximum(
+                0.0,
+                np.nan_to_num(occupancy_by_boundary, nan=0.0, posinf=0.0, neginf=0.0),
+            )
+            for edge_row in edge_rows:
+                src_state = int(edge_row["src_state"])
+                src_pos = boundary_to_pos[src_state]
+                if (
+                    str(edge_row["option"]) == str(policy_smdp[src_pos])
+                    and bool(edge_row["edge_valid"])
+                ):
+                    edge_row["policy_occupancy"] = float(occupancy_by_boundary[src_pos])
+        except ValueError:
+            pass
+
+    valid_rows = [edge_row for edge_row in edge_rows if bool(edge_row.get("edge_valid", False))]
+    base_rows = valid_rows if valid_rows else edge_rows
+    occupancy_total = sum(finite_float(edge_row.get("policy_occupancy", 0.0)) for edge_row in base_rows)
+    weights_by_edge: Dict[Tuple[int, int], float] = {}
+    for edge_row in base_rows:
+        if edge_weight == "occupancy" or (edge_weight == "occupancy_or_uniform" and occupancy_total > 1e-12):
+            weight = finite_float(edge_row.get("policy_occupancy", 0.0))
+        else:
+            weight = 1.0
+        if weight > 1e-12:
+            weights_by_edge[(int(edge_row["src_state"]), int(edge_row["target_state"]))] = weight
     return ActiveWeightRecord(
         weights_by_edge=weights_by_edge,
         n_active_edges=len(weights_by_edge),
@@ -523,7 +631,6 @@ def probe_delta_table(
                 recipe=recipe,
                 basis=basis,
                 boundary=boundary,
-                weight_probe=str(probes[0]) if probes else "none",
                 gamma=gamma,
                 slip=slip,
                 edge_weight=edge_weight,

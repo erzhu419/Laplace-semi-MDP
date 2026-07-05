@@ -39,7 +39,7 @@
   "backend_summaries": [
     {
       "backend": "operator",
-      "step_time_sec": 1.5924793609883636,
+      "step_time_sec": 1.5878317799651995,
       "current_group_risks": {
         "topology": 77.72630619236912,
         "value": 77.72630619236912,
@@ -57,7 +57,7 @@
     },
     {
       "backend": "insertion_score",
-      "step_time_sec": 0.9002697760006413,
+      "step_time_sec": 0.7360887069953606,
       "current_group_risks": {
         "topology": 77.72630619236912,
         "value": 77.72630619236912,

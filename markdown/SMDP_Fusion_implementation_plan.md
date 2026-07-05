@@ -5860,15 +5860,15 @@ Current larger-table summary:
 ```text
 group_constrained / operator:
   feasible rows = 6 / 6
-  median selection time ≈ 5.41s
-  best total speedup ≈ 0.0167x
+  median selection time ≈ 5.38s
+  best total speedup ≈ 0.0174x
 
 group_constrained_incremental / insertion_score:
   feasible rows = 6 / 6
-  median selection time ≈ 1.58s
-  best total speedup ≈ 0.0443x
-  median probe Green time ≈ 0.0278s
-  median active-weight time ≈ 0.346s
+  median selection time ≈ 1.27s
+  best total speedup ≈ 0.0585x
+  median probe Green time ≈ 0.0283s
+  median active-weight time ≈ 0.0406s
   candidate score time remains tiny.
 ```
 
@@ -5954,17 +5954,31 @@ Current larger-table summary after thread cap plus occupancy-weight cache:
 ```text
 operator backend:
   feasible = 6 / 6
-  median selection time ≈ 5.41s
-  best total speedup ≈ 0.0167x
+  median selection time ≈ 5.38s
+  best total speedup ≈ 0.0174x
 
 incremental insertion_score backend:
   feasible = 6 / 6
-  median selection time ≈ 1.58s
-  median active-weight time ≈ 0.346s
-  best total speedup ≈ 0.0443x
+  median selection time ≈ 1.27s
+  median active-weight time ≈ 0.0406s
+  best total speedup ≈ 0.0585x
 ```
 
-So the next optimization target is no longer per-candidate Green child solves.
-It is true incremental / cached occupancy evaluation: update the SMDP policy
-occupancy and active-edge weights after a split without rebuilding the whole
-production edge model.
+I then replaced the active-weight computation with an occupancy-only path
+instead of calling full `evaluate_recipe_boundary`. This still builds the
+production first-boundary SMDP policy and occupancy, but skips residual/probe
+hidden-mass fields. On the current larger table it cuts median active-weight
+time from roughly 0.346s to 0.0406s.
+
+I also added:
+
+```text
+experiments/run_linear_solver_thread_scaling.py
+experiments/output/linear_solver_thread_scaling/summary.md
+```
+
+Local WSL result: for matrix sizes 96, 192, and 384, extra BLAS threads give
+little or negative speedup; 32 threads is worse for size 384. On node001-node006
+we should rerun this benchmark before choosing a high `LAPLACE_NUM_THREADS`.
+The likely policy is: keep local runs at 1 thread; use 8-64 threads only for
+larger dense solves on CPU nodes if the benchmark says they help.

@@ -1,10 +1,10 @@
 # Incremental Group Beam Semantic Diff
 
-Generated: 2026-07-05T19:11:33
+Generated: 2026-07-05T19:20:31
 map = `open_room_12`, slip = `0.0`
 initial_boundary = `[0, 143]`, n_basis = `24`
 budgets = `{"stochastic": 0.0, "topology": 19.43157654809228, "value": 19.43157654809228}`
-elapsed_sec = `9.655`
+elapsed_sec = `9.611`
 
 This diagnostic separates the open-room discrepancy into score estimate, edge-weight semantics, and exact post-split group feasibility.
 
@@ -12,8 +12,8 @@ This diagnostic separates the open-room discrepancy into score estimate, edge-we
 
 | backend | step_time_sec | top_candidate | top_estimated_violation_after | top_estimated_violation_reduction | current_total_violation |
 | --- | --- | --- | --- | --- | --- |
-| operator | 1.592 | 1 | 116.6 | 0.0 | 116.6 |
-| insertion_score | 0.9003 | 72 | 77.73 | 38.86 | 116.6 |
+| operator | 1.588 | 1 | 116.6 | 0.0 | 116.6 |
+| insertion_score | 0.7361 | 72 | 77.73 | 38.86 | 116.6 |
 
 ## Top Candidate Exact Checks
 

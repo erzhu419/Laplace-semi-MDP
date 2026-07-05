@@ -62,6 +62,12 @@ for example:
 LAPLACE_NUM_THREADS=64 bash scripts/reproduce_core.sh
 ```
 
+To choose a thread count on a CPU node, run:
+
+```bash
+python3 experiments/run_linear_solver_thread_scaling.py --threads 1 2 4 8 16 32 64
+```
+
 ## Current Artifact Status
 
 - Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.

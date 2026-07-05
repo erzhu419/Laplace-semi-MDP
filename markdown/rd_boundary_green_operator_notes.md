@@ -1293,13 +1293,35 @@ Current larger group table:
 
 ```text
 operator:
-  median selection ≈ 5.41s
+  median selection ≈ 5.38s
 
 insertion_score:
-  median selection ≈ 1.58s
+  median selection ≈ 1.27s
   median probe Green ≈ 0.0278s
-  median active-weight time ≈ 0.346s
+  median active-weight time ≈ 0.0406s
 ```
 
 This confirms the next bottleneck is the production occupancy-weight model, not
 the score-level Green insertion itself.
+
+The latest pass replaces the full active-weight `evaluate_recipe_boundary` call
+with an occupancy-only first-boundary SMDP path. It still computes the same
+policy occupancy/active-edge semantics, but skips the probe residual fields.
+
+I also added a thread-scaling benchmark:
+
+```text
+experiments/run_linear_solver_thread_scaling.py
+experiments/output/linear_solver_thread_scaling/summary.md
+```
+
+Local result: these small-to-medium dense solves do not benefit much from many
+OpenBLAS threads, and 32 threads can be slower. Before using the 192-core CPU
+nodes, rerun:
+
+```bash
+LAPLACE_NUM_THREADS=1 python3 experiments/run_linear_solver_thread_scaling.py \
+  --threads 1 2 4 8 16 32 64 96 128
+```
+
+Then set `LAPLACE_NUM_THREADS` to the best row for the target matrix size.
