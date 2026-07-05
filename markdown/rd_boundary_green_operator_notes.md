@@ -96,3 +96,105 @@ The current experiments suggest the finite-difference version should be the theo
 ## Current Diagnostic Takeaway
 
 On the first hard split in mazes, \(h_e\) is often nearly one. That makes \(S_{\rm RD}^{\rm grad}\) unstable, while \(S_{\rm RD}^{\rm FD}\) stays interpretable. This supports presenting the finite-difference operator as the theorem, with the GNN-like gradient/truncated operator as an efficient approximation under an additional \(h_e\le 1-\delta\) assumption.
+
+## Frozen Versus Adaptive Objective
+
+The main theorem should be stated against a frozen local objective, not the fully recomputed adaptive algorithm.
+
+Let
+
+\[
+\theta_B=(C_B,\Pi_B,E_B,w_B,c_B)
+\]
+
+collect the current candidate universe, option policies, active edge set, edge weights, and local rate cost. The frozen objective is
+
+\[
+\mathcal L_{\theta_B}^{\rm fr}(A)=R_{\theta_B}(A)+\lambda D_{\theta_B}(A),
+\qquad A\supseteq B,
+\]
+
+where \(\theta_B\) is kept fixed even when evaluating \(A=B\cup\{x\}\). The adaptive objective is
+
+\[
+\mathcal L^{\rm ad}(A)=R_{\theta_A}(A)+\lambda D_{\theta_A}(A),
+\]
+
+where adding \(x\) can change the candidate universe, options, edges, occupancy weights, and rate terms.
+
+Thus
+
+\[
+S_{\rm FD}(x\mid B)=
+\mathcal L_{\theta_B}^{\rm fr}(B)
+-
+\mathcal L_{\theta_B}^{\rm fr}(B\cup\{x\})
+\]
+
+is an exact identity, while full recomputation measures
+
+\[
+S_{\rm ad}(x\mid B)=
+\mathcal L_{\theta_B}^{\rm fr}(B)
+-
+\mathcal L_{\theta_{B\cup\{x\}}}^{\rm ad}(B\cup\{x\}).
+\]
+
+The difference
+
+\[
+A(x\mid B)=S_{\rm ad}(x\mid B)-S_{\rm FD}(x\mid B)
+\]
+
+is the adaptive recomputation drift. Actual-recompute mismatch is therefore not a refutation of the frozen theorem; it means the outer adaptive algorithm is no longer optimizing the same frozen local objective.
+
+`experiments/run_rd_operator_theorem_checks.py` now supports `--with-frozen-recompute` to verify the exact identity and `--with-actual-recompute` to expose the drift. The expected pattern is:
+
+\[
+S_{\rm FD}=S_{\rm frozen}
+\]
+
+to numerical precision, while
+
+\[
+S_{\rm actual}\ne S_{\rm frozen}
+\]
+
+when recomputation drift is large.
+
+The same script also supports `--with-recompute-modes`, which adds bridge diagnostics:
+
+- `rate_only_score`: recompute only the rate term while keeping the frozen distortion.
+- `occupancy_only_score`: use recomputed occupancy weights on the frozen first-hit kernels.
+- `edge_only_score`: use recomputed first-hit kernels for the old edge keys with frozen weights.
+- `edge_option_uniform_score`: recompute the edge/option library under a uniform audit objective.
+- `actual_recompute_score`: full adaptive recompute.
+
+On the current small diagnostic suite, rate-only, occupancy-only, and old-edge/kernel-only usually preserve the FD top split. The cases where full adaptive changes the top split are driven by larger edge/option-library drift, especially when the newly added boundary creates a substantially different graph-option library.
+
+## Answer 8 Follow-up Diagnostics
+
+The current experiment pass adds the requested theorem-facing diagnostics.
+
+- Margin-stability: `summary.csv` now reports `fd_margin`, `epsilon_adapt_observed`, `margin_stability_condition`, and `margin_stability_correct`. The intended theorem check is exactly
+  \[
+  m>2\epsilon_{\rm adapt}\Rightarrow \arg\max S_{\rm FD}=\arg\max S_{\rm actual}.
+  \]
+  On `rd_operator_theorem_checks_actual_small`, the open-room case where the condition is true is stable; the maze/four-room mismatch cases fail the margin condition, which is what the theorem should predict.
+- Baseline ranking: candidate rows and summaries now include `raw_hidden`, `random`, `spectral`, `betweenness`, `value_gradient`, and `degree` ranks, top-state matches, Kendall tau against \(S_{\rm FD}\), and actual-recompute regret where available.
+- Runtime/amortization proxy: the same summary reports base graph evaluation time, cheap FD/gradient operator scoring time, full actual recomputation time, and truncated-Green timing per \(K\). In the small recompute suite, full recomputation is roughly \(2\text{x}\) to \(23\text{x}\) slower than the frozen operator score.
+- Drift separation: `rate_only`, `occupancy_only`, `edge_only`, and `edge_option_uniform` modes separate rate drift, occupancy-weight drift, old-edge first-hit drift, and option/edge-library drift. Current evidence still says the most damaging mismatch comes from changing the option/edge library, not from the frozen finite-difference identity.
+- Held-out probes/tasks: `experiments/run_rd_operator_generalization.py` evaluates the selected boundary under held-out residual probes and alternate goals. The first run shows a useful warning: the current \(S_{\rm FD}\) selection is good as a local frozen operator, but not yet robust as a task/probe-general abstraction objective. In maze with only two splits, spectral/random landmarks can look better under held-out probes because the RD local score overcommits to the training residual universe.
+
+## Lean Proof Core
+
+The formal proof core is in `proof/RDOperator.lean`.
+
+It currently proves:
+
+- exact frozen finite-difference identity,
+- adaptive drift decomposition,
+- margin stability from \(m>2\epsilon\),
+- abstract graph-SMDP Bellman contraction/non-expansion obligations.
+
+This is intentionally not yet a full real-analysis proof of first-hit Green kernels. The next proof layer should instantiate the abstract integers/reweighted terms with real-valued finite MDP quantities, preferably with Mathlib: stochastic matrix absorption, truncated Green convergence, Taylor error for the bits distortion, and sup-norm Bellman contraction over finite graph options.

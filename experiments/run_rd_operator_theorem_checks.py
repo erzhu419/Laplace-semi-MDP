@@ -14,6 +14,7 @@ import numpy as np
 from bellman_kron import (
     GridWorld,
     endpoint_boundary_states,
+    graph_adjacency,
     shortest_path_policy_to_target,
     transition_matrix_for_policy,
 )
@@ -38,7 +39,7 @@ def write_csv(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
             if key not in fields:
                 fields.append(key)
     with path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -254,10 +255,72 @@ def hidden_distortions(
     return {"linear": float(linear), "bits": float(bits)}
 
 
+def edge_key(edge_row: Mapping[str, object]) -> Tuple[int, int]:
+    return int(edge_row["src_state"]), int(edge_row["target_state"])
+
+
+def hidden_mass_from_probs(probs: Mapping[int, float], hidden_set: set[int]) -> float:
+    return sum(finite_float(prob) for state, prob in probs.items() if int(state) in hidden_set)
+
+
+def spectral_energy_scores(grid: GridWorld, n_vectors: int = 6) -> np.ndarray:
+    adjacency = graph_adjacency(grid)
+    degree = np.diag(adjacency.sum(axis=1))
+    laplacian = degree - adjacency
+    if grid.n_states <= 1:
+        return np.zeros(grid.n_states, dtype=float)
+    values, vectors = np.linalg.eigh(laplacian)
+    n_vec = max(1, min(n_vectors, grid.n_states - 1))
+    nontrivial = vectors[:, 1 : n_vec + 1]
+    lambdas = values[1 : n_vec + 1]
+    scores = np.zeros(grid.n_states, dtype=float)
+    for state in range(grid.n_states):
+        for neighbor in np.flatnonzero(adjacency[state] > 0):
+            diff = nontrivial[state] - nontrivial[neighbor]
+            scores[state] += float(np.sum((lambdas + 1e-9) * diff * diff))
+    max_score = float(scores.max(initial=0.0))
+    if max_score > 0.0:
+        scores = scores / max_score
+    return scores
+
+
+def deterministic_random_score(map_name: str, step: int, state: int) -> float:
+    value = 1469598103934665603
+    for ch in f"{map_name}:{step}:{state}":
+        value ^= ord(ch)
+        value *= 1099511628211
+        value &= (1 << 64) - 1
+    return value / float(1 << 64)
+
+
 def rank_rows(rows: List[Dict[str, object]], field: str, out_field: str) -> None:
     ranked = sorted(rows, key=lambda row: (finite_float(row[field], -float("inf")), -int(row["candidate_state"])), reverse=True)
     for rank, row in enumerate(ranked, start=1):
         row[out_field] = rank
+
+
+def kendall_tau(rows: Sequence[Mapping[str, object]], a: str, b: str) -> float | None:
+    values: List[Tuple[float, float]] = []
+    for row in rows:
+        av = finite_float(row.get(a), default=float("nan"))
+        bv = finite_float(row.get(b), default=float("nan"))
+        if math.isfinite(av) and math.isfinite(bv):
+            values.append((av, bv))
+    concordant = 0
+    discordant = 0
+    for i in range(len(values)):
+        for j in range(i + 1, len(values)):
+            da = values[i][0] - values[j][0]
+            db = values[i][1] - values[j][1]
+            product = da * db
+            if product > 0:
+                concordant += 1
+            elif product < 0:
+                discordant += 1
+    total = concordant + discordant
+    if total == 0:
+        return None
+    return (concordant - discordant) / total
 
 
 def operator_marginal_rows(
@@ -271,8 +334,11 @@ def operator_marginal_rows(
     lambda_struct: float,
     edge_weight: str,
     max_candidates: int,
+    with_frozen_recompute: bool,
     with_actual_recompute: bool,
+    with_recompute_modes: bool,
 ) -> Tuple[List[Dict[str, object]], Dict[str, object], List[Dict[str, object]]]:
+    base_eval_start = time.perf_counter()
     row, edge_rows = evaluate_recipe_boundary(
         map_name=map_name,
         context=context,
@@ -281,6 +347,31 @@ def operator_marginal_rows(
         gamma=gamma,
         slip=slip,
     )
+    base_eval_time = time.perf_counter() - base_eval_start
+    score_start = time.perf_counter()
+    grid: GridWorld = context["grid"]  # type: ignore[assignment]
+    goal = grid.symbol_states("G")[0]
+    betweenness_scores = critical_saliency(
+        grid=grid,
+        kind="betweenness",
+        goal_state=goal,
+        gamma=gamma,
+        slip=slip,
+        top_fraction=1.0,
+    )
+    value_gradient_scores = critical_saliency(
+        grid=grid,
+        kind="value_gradient",
+        goal_state=goal,
+        gamma=gamma,
+        slip=slip,
+        top_fraction=1.0,
+    )
+    spectral_scores = spectral_energy_scores(grid)
+    degree_scores = np.array([float(len(grid.legal_actions(state))) for state in range(grid.n_states)])
+    degree_max = float(degree_scores.max(initial=0.0))
+    if degree_max > 0.0:
+        degree_scores = degree_scores / degree_max
     universe = sorted(set(int(s) for s in context["proposal_boundary"]).union(boundary))  # type: ignore[arg-type]
     hidden_candidates = [state for state in universe if state not in set(boundary)]
     weighted_edges = active_edges(edge_rows, edge_weight=edge_weight)
@@ -301,17 +392,25 @@ def operator_marginal_rows(
 
     base_rate = boundary_rate(row, recipe)
     base_distortions = hidden_distortions(edge_rows, boundary=boundary, edge_weight=edge_weight)
+    base_uniform_distortions = hidden_distortions(edge_rows, boundary=boundary, edge_weight="uniform")
     base_objective = base_rate + lambda_struct * base_distortions["bits"]
+    base_uniform_objective = base_rate + lambda_struct * base_uniform_distortions["bits"]
     local_rate_delta = approximate_split_rate_delta(row, recipe)
     out: List[Dict[str, object]] = []
+    recompute_time = 0.0
     for candidate_state in ranked_candidates:
         linear_delta = 0.0
         bits_fd_delta = 0.0
         bits_grad_delta = 0.0
         grad_abs_error_bound = 0.0
         contributing_edges = 0
+        frozen_linear_after_direct = 0.0
+        frozen_bits_after_direct = 0.0
         for edge_row, weight, probs, hidden_mass in edge_kernels:
             k_prob = finite_float(probs.get(candidate_state, 0.0))
+            next_hidden_mass = max(0.0, hidden_mass - k_prob)
+            frozen_linear_after_direct += weight * next_hidden_mass
+            frozen_bits_after_direct += weight * phi_bits(next_hidden_mass)
             if k_prob <= 1e-12:
                 continue
             contributing_edges += 1
@@ -323,11 +422,36 @@ def operator_marginal_rows(
             grad_abs_error_bound += weight * 0.5 * phi_bits_second_upper(hidden_mass) * k_prob * k_prob
 
         rate_delta = local_rate_delta
+        frozen_recompute_score = float("nan")
+        frozen_objective_after = float("nan")
+        frozen_linear_after = float("nan")
+        frozen_bits_after = float("nan")
+        fd_minus_frozen = float("nan")
+        if with_frozen_recompute:
+            frozen_linear_after = frozen_linear_after_direct
+            frozen_bits_after = frozen_bits_after_direct
+            frozen_objective_after = base_rate + local_rate_delta + lambda_struct * frozen_bits_after
+            frozen_recompute_score = base_objective - frozen_objective_after
+            fd_minus_frozen = (lambda_struct * bits_fd_delta - rate_delta) - frozen_recompute_score
+
         actual_recompute_score = float("nan")
         actual_rate_delta = float("nan")
+        adaptive_drift = float("nan")
+        adaptive_drift_rate = float("nan")
+        adaptive_drift_bits = float("nan")
+        adaptive_drift_linear = float("nan")
+        rate_only_score = float("nan")
+        rate_only_drift = float("nan")
+        occupancy_only_score = float("nan")
+        occupancy_drift = float("nan")
+        edge_only_score = float("nan")
+        edge_drift = float("nan")
+        edge_option_uniform_score = float("nan")
+        edge_option_uniform_drift = float("nan")
         candidate_objective = float("nan")
         candidate_distortions = {"linear": float("nan"), "bits": float("nan")}
-        if with_actual_recompute:
+        if with_actual_recompute or with_recompute_modes:
+            candidate_start = time.perf_counter()
             trial_boundary = sorted(set(boundary).union({int(candidate_state)}))
             candidate_row, candidate_edges = evaluate_recipe_boundary(
                 map_name=map_name,
@@ -337,15 +461,76 @@ def operator_marginal_rows(
                 gamma=gamma,
                 slip=slip,
             )
+            recompute_time += time.perf_counter() - candidate_start
             candidate_rate = boundary_rate(candidate_row, recipe)
+            actual_rate_delta = candidate_rate - base_rate
+            rate_only_score = lambda_struct * bits_fd_delta - actual_rate_delta
+            if with_frozen_recompute:
+                rate_only_drift = rate_only_score - frozen_recompute_score
+
             candidate_distortions = hidden_distortions(
                 candidate_edges,
                 boundary=trial_boundary,
                 edge_weight=edge_weight,
             )
             candidate_objective = candidate_rate + lambda_struct * candidate_distortions["bits"]
-            actual_rate_delta = candidate_rate - base_rate
             actual_recompute_score = base_objective - candidate_objective
+
+            if with_recompute_modes:
+                trial_hidden_set = set(universe) - set(trial_boundary)
+                candidate_weight_by_key = {
+                    edge_key(candidate_edge): candidate_weight
+                    for candidate_edge, candidate_weight in active_edges(candidate_edges, edge_weight=edge_weight)
+                }
+                candidate_row_by_key = {edge_key(candidate_edge): candidate_edge for candidate_edge in candidate_edges}
+
+                occupancy_bits_after = 0.0
+                occupancy_linear_after = 0.0
+                edge_bits_after = 0.0
+                edge_linear_after = 0.0
+                for frozen_edge, frozen_weight, _probs, _hidden_mass in edge_kernels:
+                    key = edge_key(frozen_edge)
+                    candidate_weight = candidate_weight_by_key.get(key, 0.0)
+                    frozen_probs = parse_prob_map(frozen_edge.get("residual_hidden_probs", "{}"))
+                    frozen_after_mass = hidden_mass_from_probs(frozen_probs, trial_hidden_set)
+                    occupancy_linear_after += candidate_weight * frozen_after_mass
+                    occupancy_bits_after += candidate_weight * phi_bits(frozen_after_mass)
+
+                    candidate_edge = candidate_row_by_key.get(key)
+                    if candidate_edge is None:
+                        continue
+                    candidate_probs = parse_prob_map(candidate_edge.get("residual_hidden_probs", "{}"))
+                    candidate_after_mass = hidden_mass_from_probs(candidate_probs, trial_hidden_set)
+                    edge_linear_after += frozen_weight * candidate_after_mass
+                    edge_bits_after += frozen_weight * phi_bits(candidate_after_mass)
+
+                occupancy_after_objective = base_rate + local_rate_delta + lambda_struct * occupancy_bits_after
+                occupancy_only_score = base_objective - occupancy_after_objective
+                edge_after_objective = base_rate + local_rate_delta + lambda_struct * edge_bits_after
+                edge_only_score = base_objective - edge_after_objective
+
+                candidate_uniform_distortions = hidden_distortions(
+                    candidate_edges,
+                    boundary=trial_boundary,
+                    edge_weight="uniform",
+                )
+                edge_option_uniform_after = (
+                    base_rate + local_rate_delta + lambda_struct * candidate_uniform_distortions["bits"]
+                )
+                edge_option_uniform_score = base_uniform_objective - edge_option_uniform_after
+
+                if with_frozen_recompute:
+                    occupancy_drift = occupancy_only_score - frozen_recompute_score
+                    edge_drift = edge_only_score - frozen_recompute_score
+                    edge_option_uniform_drift = edge_option_uniform_score - frozen_recompute_score
+
+            if with_frozen_recompute:
+                actual_bits_delta = base_distortions["bits"] - candidate_distortions["bits"]
+                actual_linear_delta = base_distortions["linear"] - candidate_distortions["linear"]
+                adaptive_drift = actual_recompute_score - frozen_recompute_score
+                adaptive_drift_rate = local_rate_delta - actual_rate_delta
+                adaptive_drift_bits = lambda_struct * (actual_bits_delta - bits_fd_delta)
+                adaptive_drift_linear = actual_linear_delta - linear_delta
         out.append(
             {
                 "map": map_name,
@@ -359,6 +544,12 @@ def operator_marginal_rows(
                 "lambda_struct": lambda_struct,
                 "edge_weight": edge_weight,
                 "linear_delta": linear_delta,
+                "raw_hidden_score": linear_delta,
+                "random_score": deterministic_random_score(map_name, step, int(candidate_state)),
+                "spectral_score": float(spectral_scores[int(candidate_state)]),
+                "betweenness_score": float(betweenness_scores[int(candidate_state)]),
+                "value_gradient_score": float(value_gradient_scores[int(candidate_state)]),
+                "degree_score": float(degree_scores[int(candidate_state)]),
                 "bits_fd_delta": bits_fd_delta,
                 "bits_grad_delta": bits_grad_delta,
                 "grad_minus_fd": bits_grad_delta - bits_fd_delta,
@@ -368,22 +559,73 @@ def operator_marginal_rows(
                 "linear_operator_score": lambda_struct * linear_delta - rate_delta,
                 "bits_fd_operator_score": lambda_struct * bits_fd_delta - rate_delta,
                 "bits_grad_operator_score": lambda_struct * bits_grad_delta - rate_delta,
+                "frozen_recompute_score": frozen_recompute_score,
+                "fd_minus_frozen": fd_minus_frozen,
+                "frozen_objective_before": base_objective,
+                "frozen_objective_after": frozen_objective_after,
+                "frozen_linear_before": base_distortions["linear"],
+                "frozen_linear_after": frozen_linear_after,
+                "frozen_bits_before": base_distortions["bits"],
+                "frozen_bits_after": frozen_bits_after,
+                "rate_only_score": rate_only_score,
+                "rate_only_drift": rate_only_drift,
+                "occupancy_only_score": occupancy_only_score,
+                "occupancy_drift": occupancy_drift,
+                "edge_only_score": edge_only_score,
+                "edge_drift": edge_drift,
+                "edge_option_uniform_score": edge_option_uniform_score,
+                "edge_option_uniform_drift": edge_option_uniform_drift,
                 "actual_recompute_score": actual_recompute_score,
                 "actual_rate_delta": actual_rate_delta,
+                "adaptive_drift": adaptive_drift,
+                "adaptive_drift_rate": adaptive_drift_rate,
+                "adaptive_drift_bits": adaptive_drift_bits,
+                "adaptive_drift_linear": adaptive_drift_linear,
                 "actual_objective_before": base_objective,
                 "actual_objective_after": candidate_objective,
                 "actual_linear_before": base_distortions["linear"],
                 "actual_linear_after": candidate_distortions["linear"],
                 "actual_bits_before": base_distortions["bits"],
                 "actual_bits_after": candidate_distortions["bits"],
+                "time_base_eval_sec": base_eval_time,
+                "time_operator_score_sec": 0.0,
+                "time_recompute_total_sec": 0.0,
+                "recompute_speedup_proxy": float("nan"),
             }
+        )
+
+    score_time = max(0.0, time.perf_counter() - score_start - recompute_time)
+    for diag in out:
+        diag["time_operator_score_sec"] = score_time
+        diag["time_recompute_total_sec"] = recompute_time
+        diag["recompute_speedup_proxy"] = (
+            recompute_time / max(1e-12, score_time)
+            if recompute_time > 0.0
+            else float("nan")
         )
 
     rank_fields = [
         ("linear_operator_score", "linear_rank"),
         ("bits_fd_operator_score", "bits_fd_rank"),
         ("bits_grad_operator_score", "bits_grad_rank"),
+        ("raw_hidden_score", "raw_hidden_rank"),
+        ("random_score", "random_rank"),
+        ("spectral_score", "spectral_rank"),
+        ("betweenness_score", "betweenness_rank"),
+        ("value_gradient_score", "value_gradient_rank"),
+        ("degree_score", "degree_rank"),
     ]
+    if with_frozen_recompute:
+        rank_fields.append(("frozen_recompute_score", "frozen_rank"))
+    if with_recompute_modes:
+        rank_fields.extend(
+            [
+                ("rate_only_score", "rate_only_rank"),
+                ("occupancy_only_score", "occupancy_only_rank"),
+                ("edge_only_score", "edge_only_rank"),
+                ("edge_option_uniform_score", "edge_option_uniform_rank"),
+            ]
+        )
     if with_actual_recompute:
         rank_fields.append(("actual_recompute_score", "actual_rank"))
     for field, rank_field in rank_fields:
@@ -447,6 +689,7 @@ def truncation_rows(
 
     rows: List[Dict[str, object]] = []
     for k_steps in k_values:
+        k_started = time.perf_counter()
         approx_scores = {state: 0.0 for state in hidden_candidates}
         for edge_row, weight in weighted_edges:
             terminals = [state for state in universe if state != int(edge_row["src_state"])]
@@ -482,6 +725,7 @@ def truncation_rows(
                 "top1_match": exact_top == approx_top,
                 "exact_top_score": exact_scores.get(exact_top, 0.0) if exact_top is not None else 0.0,
                 "approx_top_score": approx_scores.get(approx_top, 0.0) if approx_top is not None else 0.0,
+                "time_truncated_green_sec": time.perf_counter() - k_started,
             }
         )
     return rows
@@ -491,6 +735,28 @@ def top_row(rows: Sequence[Mapping[str, object]], field: str) -> Mapping[str, ob
     if not rows:
         return None
     return max(rows, key=lambda row: (finite_float(row.get(field), -float("inf")), -int(row["candidate_state"])))
+
+
+def row_for_state(rows: Sequence[Mapping[str, object]], state: int | None) -> Mapping[str, object] | None:
+    if state is None:
+        return None
+    for row in rows:
+        if int(row["candidate_state"]) == int(state):
+            return row
+    return None
+
+
+def actual_regret_for_choice(
+    rows: Sequence[Mapping[str, object]],
+    choice: Mapping[str, object] | None,
+    actual_best: float,
+) -> float | None:
+    if choice is None or not math.isfinite(actual_best):
+        return None
+    actual_at_choice = finite_float(choice.get("actual_recompute_score"), default=float("nan"))
+    if not math.isfinite(actual_at_choice):
+        return None
+    return actual_best - actual_at_choice
 
 
 def aggregate_truncation(rows: Sequence[Mapping[str, object]]) -> List[Dict[str, object]]:
@@ -509,6 +775,58 @@ def aggregate_truncation(rows: Sequence[Mapping[str, object]]) -> List[Dict[str,
                     np.mean([finite_float(row["mean_abs_score_error"]) for row in group])
                 ),
                 "max_abs_score_error": max(finite_float(row["max_abs_score_error"]) for row in group),
+                "mean_time_truncated_green_sec": float(
+                    np.mean([finite_float(row["time_truncated_green_sec"]) for row in group])
+                ),
+            }
+        )
+    return out
+
+
+def runtime_rows(
+    summary_rows: Sequence[Mapping[str, object]],
+    trunc_summary_rows: Sequence[Mapping[str, object]],
+) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for row in summary_rows:
+        n_candidates = max(1, int(row["n_candidates"]))
+        fd_time = finite_float(row.get("time_operator_score_sec"))
+        recompute_time = finite_float(row.get("time_recompute_total_sec"))
+        out.append(
+            {
+                "map": row["map"],
+                "step": row["step"],
+                "method": "fd_grad_operator",
+                "n_candidates": row["n_candidates"],
+                "time_sec": fd_time,
+                "time_per_candidate_sec": fd_time / n_candidates,
+                "relative_to_fd_grad": 1.0,
+            }
+        )
+        if recompute_time > 0.0:
+            out.append(
+                {
+                    "map": row["map"],
+                    "step": row["step"],
+                    "method": "full_actual_recompute",
+                    "n_candidates": row["n_candidates"],
+                    "time_sec": recompute_time,
+                    "time_per_candidate_sec": recompute_time / n_candidates,
+                    "relative_to_fd_grad": recompute_time / max(1e-12, fd_time),
+                }
+            )
+    for row in trunc_summary_rows:
+        out.append(
+            {
+                "map": row["map"],
+                "step": "all",
+                "method": f"truncated_green_K{row['k_steps']}",
+                "n_candidates": "",
+                "time_sec": row["mean_time_truncated_green_sec"],
+                "time_per_candidate_sec": "",
+                "relative_to_fd_grad": "",
+                "top1_match_rate": row["top1_match_rate"],
+                "mean_abs_score_error": row["mean_abs_score_error"],
             }
         )
     return out
@@ -531,10 +849,14 @@ def main() -> None:
         default="occupancy_or_uniform",
     )
     parser.add_argument("--truncation-k", nargs="+", type=int, default=[1, 2, 4, 8, 16, 32])
+    parser.add_argument("--with-frozen-recompute", action="store_true")
     parser.add_argument("--with-actual-recompute", action="store_true")
+    parser.add_argument("--with-recompute-modes", action="store_true")
     parser.add_argument("--greedy-positive-only", action="store_true")
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/rd_operator_theorem_checks"))
     args = parser.parse_args()
+    with_frozen_recompute = args.with_frozen_recompute or args.with_recompute_modes
+    with_actual_recompute = args.with_actual_recompute or args.with_recompute_modes
 
     recipe = LEARNED_RECIPES[args.recipe]
     marginal_rows: List[Dict[str, object]] = []
@@ -559,7 +881,9 @@ def main() -> None:
                 lambda_struct=args.lambda_struct,
                 edge_weight=args.edge_weight,
                 max_candidates=args.max_candidates,
-                with_actual_recompute=args.with_actual_recompute,
+                with_frozen_recompute=with_frozen_recompute,
+                with_actual_recompute=with_actual_recompute,
+                with_recompute_modes=args.with_recompute_modes,
             )
             marginal_rows.extend(step_rows)
             trunc_rows.extend(
@@ -576,7 +900,18 @@ def main() -> None:
             )
             top_fd = top_row(step_rows, "bits_fd_operator_score")
             top_grad = top_row(step_rows, "bits_grad_operator_score")
-            top_actual = top_row(step_rows, "actual_recompute_score") if args.with_actual_recompute else None
+            top_frozen = top_row(step_rows, "frozen_recompute_score") if with_frozen_recompute else None
+            top_rate = top_row(step_rows, "rate_only_score") if args.with_recompute_modes else None
+            top_occupancy = top_row(step_rows, "occupancy_only_score") if args.with_recompute_modes else None
+            top_edge = top_row(step_rows, "edge_only_score") if args.with_recompute_modes else None
+            top_edge_option = top_row(step_rows, "edge_option_uniform_score") if args.with_recompute_modes else None
+            top_actual = top_row(step_rows, "actual_recompute_score") if with_actual_recompute else None
+            top_raw_hidden = top_row(step_rows, "raw_hidden_score")
+            top_random = top_row(step_rows, "random_score")
+            top_spectral = top_row(step_rows, "spectral_score")
+            top_betweenness = top_row(step_rows, "betweenness_score")
+            top_value_gradient = top_row(step_rows, "value_gradient_score")
+            top_degree = top_row(step_rows, "degree_score")
             mean_grad_error = (
                 float(np.mean([finite_float(row["grad_abs_error"]) for row in step_rows]))
                 if step_rows
@@ -590,6 +925,91 @@ def main() -> None:
                 ),
                 default=0.0,
             )
+            frozen_errors = [
+                abs(finite_float(row["fd_minus_frozen"]))
+                for row in step_rows
+                if with_frozen_recompute
+            ]
+            adaptive_drifts = [
+                abs(finite_float(row["adaptive_drift"]))
+                for row in step_rows
+                if with_actual_recompute and with_frozen_recompute
+            ]
+            fd_state = int(top_fd["candidate_state"]) if top_fd else None
+            actual_best = finite_float(top_actual["actual_recompute_score"]) if top_actual else float("nan")
+            top_fd_row = row_for_state(step_rows, fd_state)
+            actual_at_fd = (
+                finite_float(top_fd_row.get("actual_recompute_score"), default=float("nan"))
+                if top_fd_row is not None
+                else float("nan")
+            )
+            sorted_fd = sorted(
+                step_rows,
+                key=lambda row: (
+                    finite_float(row["bits_fd_operator_score"], default=-float("inf")),
+                    -int(row["candidate_state"]),
+                ),
+                reverse=True,
+            )
+            fd_margin = (
+                finite_float(sorted_fd[0]["bits_fd_operator_score"])
+                - finite_float(sorted_fd[1]["bits_fd_operator_score"])
+                if len(sorted_fd) >= 2
+                else None
+            )
+            epsilon_adapt = max(adaptive_drifts) if adaptive_drifts else None
+            stability_condition = (
+                fd_margin is not None
+                and epsilon_adapt is not None
+                and fd_margin > 2.0 * epsilon_adapt
+            )
+            actual_match_fd = (
+                (int(top_actual["candidate_state"]) == fd_state)
+                if with_actual_recompute and top_actual is not None and fd_state is not None
+                else None
+            )
+            baseline_tops = {
+                "raw_hidden": (top_raw_hidden, "raw_hidden_score"),
+                "random": (top_random, "random_score"),
+                "spectral": (top_spectral, "spectral_score"),
+                "betweenness": (top_betweenness, "betweenness_score"),
+                "value_gradient": (top_value_gradient, "value_gradient_score"),
+                "degree": (top_degree, "degree_score"),
+            }
+            baseline_summary: Dict[str, object] = {}
+            for baseline_name, (baseline_top, baseline_field) in baseline_tops.items():
+                baseline_summary[f"top_{baseline_name}_state"] = (
+                    int(baseline_top["candidate_state"]) if baseline_top else None
+                )
+                baseline_summary[f"top_{baseline_name}_match_fd"] = (
+                    int(baseline_top["candidate_state"]) == fd_state
+                    if baseline_top is not None and fd_state is not None
+                    else None
+                )
+                baseline_summary[f"tau_{baseline_name}_vs_fd"] = kendall_tau(
+                    step_rows,
+                    "bits_fd_operator_score",
+                    baseline_field,
+                )
+                baseline_summary[f"actual_regret_{baseline_name}"] = actual_regret_for_choice(
+                    step_rows,
+                    baseline_top,
+                    actual_best,
+                )
+            baseline_summary["time_base_eval_sec"] = (
+                finite_float(step_rows[0].get("time_base_eval_sec")) if step_rows else 0.0
+            )
+            baseline_summary["time_operator_score_sec"] = (
+                finite_float(step_rows[0].get("time_operator_score_sec")) if step_rows else 0.0
+            )
+            baseline_summary["time_recompute_total_sec"] = (
+                finite_float(step_rows[0].get("time_recompute_total_sec")) if step_rows else 0.0
+            )
+            baseline_summary["recompute_speedup_proxy"] = (
+                finite_float(step_rows[0].get("recompute_speedup_proxy"), default=float("nan"))
+                if step_rows
+                else float("nan")
+            )
             summary_rows.append(
                 {
                     "map": map_label,
@@ -601,20 +1021,85 @@ def main() -> None:
                     "top_fd_state": int(top_fd["candidate_state"]) if top_fd else None,
                     "top_fd_coord": top_fd["candidate_coord"] if top_fd else None,
                     "top_fd_score": finite_float(top_fd["bits_fd_operator_score"]) if top_fd else 0.0,
+                    "fd_margin": fd_margin,
+                    "epsilon_adapt_observed": epsilon_adapt,
+                    "margin_stability_condition": stability_condition,
+                    "margin_stability_correct": (
+                        (actual_match_fd is True)
+                        if stability_condition and actual_match_fd is not None
+                        else None
+                    ),
                     "top_grad_state": int(top_grad["candidate_state"]) if top_grad else None,
                     "top_grad_match_fd": (
                         int(top_grad["candidate_state"]) == int(top_fd["candidate_state"])
                         if top_fd and top_grad
                         else False
                     ),
+                    "top_frozen_state": int(top_frozen["candidate_state"]) if top_frozen else None,
+                    "top_frozen_match_fd": (
+                        (int(top_frozen["candidate_state"]) == int(top_fd["candidate_state"]))
+                        if with_frozen_recompute and top_fd and top_frozen
+                        else None
+                    ),
+                    "top_rate_only_state": int(top_rate["candidate_state"]) if top_rate else None,
+                    "top_rate_only_match_fd": (
+                        int(top_rate["candidate_state"]) == int(top_fd["candidate_state"])
+                        if top_fd and top_rate
+                        else None
+                    ),
+                    "top_occupancy_only_state": int(top_occupancy["candidate_state"]) if top_occupancy else None,
+                    "top_occupancy_only_match_fd": (
+                        int(top_occupancy["candidate_state"]) == int(top_fd["candidate_state"])
+                        if top_fd and top_occupancy
+                        else None
+                    ),
+                    "top_edge_only_state": int(top_edge["candidate_state"]) if top_edge else None,
+                    "top_edge_only_match_fd": (
+                        int(top_edge["candidate_state"]) == int(top_fd["candidate_state"])
+                        if top_fd and top_edge
+                        else None
+                    ),
+                    "top_edge_option_uniform_state": (
+                        int(top_edge_option["candidate_state"]) if top_edge_option else None
+                    ),
+                    "top_edge_option_uniform_match_fd": (
+                        int(top_edge_option["candidate_state"]) == int(top_fd["candidate_state"])
+                        if top_fd and top_edge_option
+                        else None
+                    ),
                     "top_actual_state": int(top_actual["candidate_state"]) if top_actual else None,
                     "top_actual_match_fd": (
-                        (int(top_actual["candidate_state"]) == int(top_fd["candidate_state"]))
-                        if args.with_actual_recompute and top_fd and top_actual
+                        actual_match_fd
+                    ),
+                    **baseline_summary,
+                    "tau_rate_only_vs_fd": kendall_tau(step_rows, "bits_fd_operator_score", "rate_only_score"),
+                    "tau_occupancy_only_vs_fd": kendall_tau(
+                        step_rows,
+                        "bits_fd_operator_score",
+                        "occupancy_only_score",
+                    ),
+                    "tau_edge_only_vs_fd": kendall_tau(step_rows, "bits_fd_operator_score", "edge_only_score"),
+                    "tau_edge_option_uniform_vs_fd": kendall_tau(
+                        step_rows,
+                        "bits_fd_operator_score",
+                        "edge_option_uniform_score",
+                    ),
+                    "tau_actual_vs_fd": kendall_tau(step_rows, "bits_fd_operator_score", "actual_recompute_score"),
+                    "actual_regret_of_fd": (
+                        actual_best - actual_at_fd
+                        if math.isfinite(actual_best) and math.isfinite(actual_at_fd)
                         else None
                     ),
                     "mean_grad_abs_error": mean_grad_error,
                     "max_grad_error_to_bound_ratio": max_bound_ratio,
+                    "max_abs_fd_minus_frozen": max(frozen_errors) if frozen_errors else None,
+                    "mean_abs_fd_minus_frozen": (
+                        float(np.mean(frozen_errors)) if frozen_errors else None
+                    ),
+                    "max_abs_adaptive_drift": max(adaptive_drifts) if adaptive_drifts else None,
+                    "mean_abs_adaptive_drift": (
+                        float(np.mean(adaptive_drifts)) if adaptive_drifts else None
+                    ),
                     "selected_sequence": list(selected_sequence),
                 }
             )
@@ -630,9 +1115,11 @@ def main() -> None:
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     trunc_summary_rows = aggregate_truncation(trunc_rows)
+    runtime_summary_rows = runtime_rows(summary_rows, trunc_summary_rows)
     write_csv(args.out_dir / "operator_marginals.csv", marginal_rows)
     write_csv(args.out_dir / "truncated_green.csv", trunc_rows)
     write_csv(args.out_dir / "truncation_summary.csv", trunc_summary_rows)
+    write_csv(args.out_dir / "runtime_summary.csv", runtime_summary_rows)
     write_csv(args.out_dir / "summary.csv", summary_rows)
     (args.out_dir / "operator_marginals.json").write_text(
         json.dumps(marginal_rows, indent=2, default=json_default) + "\n",
@@ -643,7 +1130,9 @@ def main() -> None:
         f"- recipe: `{args.recipe}`\n"
         f"- lambda_struct: {args.lambda_struct}\n"
         f"- edge_weight: `{args.edge_weight}`\n"
-        f"- with_actual_recompute: {args.with_actual_recompute}\n"
+        f"- with_frozen_recompute: {with_frozen_recompute}\n"
+        f"- with_actual_recompute: {with_actual_recompute}\n"
+        f"- with_recompute_modes: {args.with_recompute_modes}\n"
         f"- elapsed_sec: {time.perf_counter() - started:.3f}\n\n"
         "## Step Summary\n\n"
         + "\n".join(
@@ -651,18 +1140,71 @@ def main() -> None:
                 f"- {row['map']} step {row['step']}: "
                 f"top_fd={row['top_fd_state']} {row['top_fd_coord']} "
                 f"score={float(row['top_fd_score']):.4g}, "
+                f"margin={row['fd_margin']}, "
+                f"eps_adapt={row['epsilon_adapt_observed']}, "
+                f"stable_if_margin={row['margin_stability_condition']}, "
+                f"stable_ok={row['margin_stability_correct']}, "
                 f"grad_match={row['top_grad_match_fd']}, "
+                f"frozen_match={row['top_frozen_match_fd']}, "
                 f"actual_match={row['top_actual_match_fd']}, "
-                f"mean_grad_error={float(row['mean_grad_abs_error']):.3g}"
+                f"mean_grad_error={float(row['mean_grad_abs_error']):.3g}, "
+                f"max_fd_minus_frozen={row['max_abs_fd_minus_frozen']}, "
+                f"max_adaptive_drift={row['max_abs_adaptive_drift']}, "
+                f"actual_regret_fd={row['actual_regret_of_fd']}"
             )
             for row in summary_rows
+        )
+        + "\n\n## Baseline Ranking Summary\n\n"
+        + "\n".join(
+            (
+                f"- {row['map']} step {row['step']}: "
+                f"raw={row['top_raw_hidden_state']} match={row['top_raw_hidden_match_fd']} "
+                f"regret={row['actual_regret_raw_hidden']}, "
+                f"spectral={row['top_spectral_state']} match={row['top_spectral_match_fd']} "
+                f"regret={row['actual_regret_spectral']}, "
+                f"betweenness={row['top_betweenness_state']} match={row['top_betweenness_match_fd']} "
+                f"regret={row['actual_regret_betweenness']}, "
+                f"value_grad={row['top_value_gradient_state']} match={row['top_value_gradient_match_fd']} "
+                f"regret={row['actual_regret_value_gradient']}, "
+                f"random={row['top_random_state']} match={row['top_random_match_fd']} "
+                f"regret={row['actual_regret_random']}"
+            )
+            for row in summary_rows
+        )
+        + "\n\n## Runtime Summary\n\n"
+        + "\n".join(
+            (
+                f"- {row['map']} step {row['step']}: "
+                f"base_eval={float(row['time_base_eval_sec']):.4g}s, "
+                f"fd_grad_score={float(row['time_operator_score_sec']):.4g}s, "
+                f"actual_recompute={float(row['time_recompute_total_sec']):.4g}s, "
+                f"recompute_over_operator={row['recompute_speedup_proxy']}"
+            )
+            for row in summary_rows
+        )
+        + (
+            "\n\n## Recompute Mode Summary\n\n"
+            + "\n".join(
+                (
+                    f"- {row['map']} step {row['step']}: "
+                    f"rate_match={row['top_rate_only_match_fd']}, "
+                    f"occ_match={row['top_occupancy_only_match_fd']}, "
+                    f"edge_match={row['top_edge_only_match_fd']}, "
+                    f"edge_option_match={row['top_edge_option_uniform_match_fd']}, "
+                    f"tau_actual={row['tau_actual_vs_fd']}"
+                )
+                for row in summary_rows
+            )
+            if args.with_recompute_modes
+            else ""
         )
         + "\n\n## Truncation Summary\n\n"
         + "\n".join(
             (
                 f"- {row['map']} K={row['k_steps']}: "
                 f"top1_match_rate={float(row['top1_match_rate']):.3g}, "
-                f"mean_abs_error={float(row['mean_abs_score_error']):.3g}"
+                f"mean_abs_error={float(row['mean_abs_score_error']):.3g}, "
+                f"mean_time={float(row['mean_time_truncated_green_sec']):.4g}s"
             )
             for row in trunc_summary_rows
             if int(row["k_steps"]) in {4, 8, 16, 32}

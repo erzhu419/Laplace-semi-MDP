@@ -6,7 +6,7 @@
 - with_frozen_recompute: True
 - with_actual_recompute: True
 - with_recompute_modes: True
-- elapsed_sec: 4.303
+- elapsed_sec: 4.412
 
 ## Step Summary
 
@@ -34,14 +34,14 @@
 
 ## Runtime Summary
 
-- maze_9 step 0: base_eval=0.01927s, fd_grad_score=0.01642s, actual_recompute=0.1504s, recompute_over_operator=9.16468026341604
-- maze_9 step 1: base_eval=0.0344s, fd_grad_score=0.01652s, actual_recompute=0.2s, recompute_over_operator=12.107293900176114
-- maze_9 step 2: base_eval=0.04473s, fd_grad_score=0.01679s, actual_recompute=0.1753s, recompute_over_operator=10.443522898659975
-- four_rooms_9 step 0: base_eval=0.05055s, fd_grad_score=0.04734s, actual_recompute=0.7351s, recompute_over_operator=15.528406786889864
-- four_rooms_9 step 1: base_eval=0.06116s, fd_grad_score=0.04822s, actual_recompute=0.926s, recompute_over_operator=19.203582682741274
-- four_rooms_9 step 2: base_eval=0.07716s, fd_grad_score=0.05042s, actual_recompute=1.154s, recompute_over_operator=22.886541017494853
-- open_room_7 step 0: base_eval=0.03169s, fd_grad_score=0.02772s, actual_recompute=0.07994s, recompute_over_operator=2.8843850473824793
-- open_room_7 step 1: base_eval=0.03963s, fd_grad_score=0.02757s, actual_recompute=0.05069s, recompute_over_operator=1.8381676452567268
+- maze_9 step 0: base_eval=0.01941s, fd_grad_score=0.01783s, actual_recompute=0.1546s, recompute_over_operator=8.670526039635849
+- maze_9 step 1: base_eval=0.03517s, fd_grad_score=0.01711s, actual_recompute=0.2002s, recompute_over_operator=11.698800715811657
+- maze_9 step 2: base_eval=0.04431s, fd_grad_score=0.01807s, actual_recompute=0.1746s, recompute_over_operator=9.662729836289282
+- four_rooms_9 step 0: base_eval=0.05176s, fd_grad_score=0.051s, actual_recompute=0.7551s, recompute_over_operator=14.807454151490345
+- four_rooms_9 step 1: base_eval=0.06273s, fd_grad_score=0.05215s, actual_recompute=0.9483s, recompute_over_operator=18.183924635695355
+- four_rooms_9 step 2: base_eval=0.07962s, fd_grad_score=0.05625s, actual_recompute=1.185s, recompute_over_operator=21.06483889012767
+- open_room_7 step 0: base_eval=0.033s, fd_grad_score=0.02918s, actual_recompute=0.08114s, recompute_over_operator=2.7811178624863095
+- open_room_7 step 1: base_eval=0.04042s, fd_grad_score=0.02954s, actual_recompute=0.05211s, recompute_over_operator=1.7639235079084858
 - open_room_7 step 2: base_eval=0s, fd_grad_score=0s, actual_recompute=0s, recompute_over_operator=nan
 
 ## Recompute Mode Summary
@@ -58,15 +58,15 @@
 
 ## Truncation Summary
 
-- four_rooms_9 K=4: top1_match_rate=0.333, mean_abs_error=0.0264, mean_time=0.0008527s
-- four_rooms_9 K=8: top1_match_rate=0.667, mean_abs_error=0.0246, mean_time=0.0008201s
-- four_rooms_9 K=16: top1_match_rate=1, mean_abs_error=4.84e-05, mean_time=0.0008419s
-- four_rooms_9 K=32: top1_match_rate=1, mean_abs_error=2.69e-12, mean_time=0.0009489s
-- maze_9 K=4: top1_match_rate=1, mean_abs_error=0.0116, mean_time=0.0004954s
-- maze_9 K=8: top1_match_rate=1, mean_abs_error=5.23e-05, mean_time=0.0005407s
-- maze_9 K=16: top1_match_rate=1, mean_abs_error=1.08e-09, mean_time=0.0005222s
-- maze_9 K=32: top1_match_rate=1, mean_abs_error=9.31e-17, mean_time=0.0005957s
-- open_room_7 K=4: top1_match_rate=0.667, mean_abs_error=0.151, mean_time=0.0006074s
-- open_room_7 K=8: top1_match_rate=1, mean_abs_error=0.00107, mean_time=0.0006695s
-- open_room_7 K=16: top1_match_rate=1, mean_abs_error=2.42e-08, mean_time=0.0006781s
-- open_room_7 K=32: top1_match_rate=1, mean_abs_error=1.48e-16, mean_time=0.0007818s
+- four_rooms_9 K=4: top1_match_rate=0.333, mean_abs_error=0.0264, mean_time=0.0008007s
+- four_rooms_9 K=8: top1_match_rate=0.667, mean_abs_error=0.0246, mean_time=0.0007852s
+- four_rooms_9 K=16: top1_match_rate=1, mean_abs_error=4.84e-05, mean_time=0.0009052s
+- four_rooms_9 K=32: top1_match_rate=1, mean_abs_error=2.69e-12, mean_time=0.0009282s
+- maze_9 K=4: top1_match_rate=1, mean_abs_error=0.0116, mean_time=0.0004728s
+- maze_9 K=8: top1_match_rate=1, mean_abs_error=5.23e-05, mean_time=0.0004631s
+- maze_9 K=16: top1_match_rate=1, mean_abs_error=1.08e-09, mean_time=0.0005086s
+- maze_9 K=32: top1_match_rate=1, mean_abs_error=9.31e-17, mean_time=0.0006457s
+- open_room_7 K=4: top1_match_rate=0.667, mean_abs_error=0.151, mean_time=0.0006216s
+- open_room_7 K=8: top1_match_rate=1, mean_abs_error=0.00107, mean_time=0.0006724s
+- open_room_7 K=16: top1_match_rate=1, mean_abs_error=2.42e-08, mean_time=0.0006506s
+- open_room_7 K=32: top1_match_rate=1, mean_abs_error=1.48e-16, mean_time=0.000719s
