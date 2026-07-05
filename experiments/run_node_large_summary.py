@@ -171,6 +171,53 @@ def summarize_random(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object
     return out
 
 
+def option_group(method: str) -> str:
+    text = method.lower()
+    if "eigen" in text:
+        return "eigenoptions"
+    if "between" in text:
+        return "betweenness"
+    if "random" in text:
+        return "random_landmarks"
+    if "coverage" in text:
+        return "coverage"
+    if "graph_rd" in text:
+        return "graph_rd"
+    if text == "endpoints":
+        return "endpoints"
+    if "turn_articulation" in text:
+        return "dense_turn"
+    return method
+
+
+def summarize_option_frontier(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    grouped: Dict[str, List[Mapping[str, str]]] = defaultdict(list)
+    for row in rows:
+        grouped[option_group(str(row.get("method", "")))].append(row)
+    out: List[Dict[str, object]] = []
+    for group_name, group in sorted(grouped.items()):
+        ok = [row for row in group if not row.get("error")]
+        out.append(
+            {
+                "method_group": group_name,
+                "n_rows": len(ok),
+                "pareto_rows": sum(1 for row in ok if parse_bool(row.get("pareto_frontier"))),
+                "median_n_boundary": median(finite_float(row.get("n_boundary")) for row in ok),
+                "median_state_compression": median(
+                    finite_float(row.get("n_states")) / max(1.0, finite_float(row.get("n_boundary")))
+                    for row in ok
+                ),
+                "median_start_gap": median(finite_float(row.get("start_gap")) for row in ok),
+                "median_hidden_audit": median(
+                    finite_float(row.get("hidden_audit_distinct_mean"), finite_float(row.get("occupancy_struct_hidden_distinct")))
+                    for row in ok
+                ),
+                "median_success_rate": median(finite_float(row.get("success_rate")) for row in ok),
+            }
+        )
+    return out
+
+
 def summarize_threads(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
     for size, group in sorted(group_by(rows, "size").items(), key=lambda item: int(item[0] or 0)):
@@ -194,6 +241,7 @@ def write_report(
     random_rows: Sequence[Mapping[str, object]],
     thread_rows: Sequence[Mapping[str, object]],
     edge_reward_rows: Sequence[Mapping[str, object]],
+    option_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
 ) -> None:
     large_columns = [
@@ -248,6 +296,16 @@ def write_report(
         "median_goal_policies",
         "max_start_gap",
     ]
+    option_columns = [
+        "method_group",
+        "n_rows",
+        "pareto_rows",
+        "median_n_boundary",
+        "median_state_compression",
+        "median_start_gap",
+        "median_hidden_audit",
+        "median_success_rate",
+    ]
     best_amortized = max(
         (finite_float(row.get("best_amortized_speedup")) for row in amortized_rows),
         default=float("nan"),
@@ -287,6 +345,10 @@ def write_report(
         "",
         markdown_table(edge_reward_rows, edge_reward_columns) if edge_reward_rows else "_No edge-reward rows._",
         "",
+        "## Option Baseline Frontier",
+        "",
+        markdown_table(option_rows, option_columns) if option_rows else "_No option-frontier rows._",
+        "",
         "## Random Maze Robustness",
         "",
         markdown_table(random_rows, random_columns) if random_rows else "_No random-maze rows._",
@@ -296,6 +358,7 @@ def write_report(
         f"- large scale: `{args.large_scale_csv}`",
         f"- amortized: `{args.amortized_csv}`",
         f"- edge reward: `{args.edge_reward_csv}`",
+        f"- option frontier: `{args.option_frontier_csv}`",
         f"- random maze: `{args.random_maze_csv}`",
         f"- thread scaling: `{args.thread_scaling_csv}`",
     ]
@@ -325,6 +388,11 @@ def main() -> None:
         default=Path("experiments/output/node_large_runs/latest/random_maze_generalization/random_maze_generalization.csv"),
     )
     parser.add_argument(
+        "--option-frontier-csv",
+        type=Path,
+        default=Path("experiments/output/node_large_runs/latest/option_baseline_frontier/frontier_all.csv"),
+    )
+    parser.add_argument(
         "--thread-scaling-csv",
         type=Path,
         default=Path("experiments/output/node_large_runs/latest/linear_solver_thread_scaling/linear_solver_thread_scaling.csv"),
@@ -336,6 +404,7 @@ def main() -> None:
     amortized_rows = summarize_amortized(read_csv_rows(args.amortized_csv))
     edge_reward_rows = summarize_edge_reward(read_csv_rows(args.edge_reward_csv))
     random_rows = summarize_random(read_csv_rows(args.random_maze_csv))
+    option_rows = summarize_option_frontier(read_csv_rows(args.option_frontier_csv))
     thread_rows = summarize_threads(read_csv_rows(args.thread_scaling_csv))
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -343,6 +412,7 @@ def main() -> None:
     write_csv_all_fields(args.out_dir / "amortized_summary.csv", amortized_rows)
     write_csv_all_fields(args.out_dir / "edge_reward_summary.csv", edge_reward_rows)
     write_csv_all_fields(args.out_dir / "random_maze_summary.csv", random_rows)
+    write_csv_all_fields(args.out_dir / "option_frontier_summary.csv", option_rows)
     write_csv_all_fields(args.out_dir / "thread_scaling_summary.csv", thread_rows)
     (args.out_dir / "node_large_paper_summary.json").write_text(
         json.dumps(
@@ -351,6 +421,7 @@ def main() -> None:
                 "amortized": amortized_rows,
                 "edge_reward": edge_reward_rows,
                 "random_maze": random_rows,
+                "option_frontier": option_rows,
                 "thread_scaling": thread_rows,
             },
             indent=2,
@@ -359,7 +430,16 @@ def main() -> None:
         + "\n",
         encoding="utf-8",
     )
-    write_report(args.out_dir / "summary.md", large_rows, amortized_rows, random_rows, thread_rows, edge_reward_rows, args)
+    write_report(
+        args.out_dir / "summary.md",
+        large_rows,
+        amortized_rows,
+        random_rows,
+        thread_rows,
+        edge_reward_rows,
+        option_rows,
+        args,
+    )
 
 
 if __name__ == "__main__":

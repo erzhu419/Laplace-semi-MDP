@@ -141,6 +141,70 @@ def normalize_group_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, ob
     return out
 
 
+def normalize_large_scale_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for row in rows:
+        if row.get("error"):
+            continue
+        method = str(row.get("method_spec") or row.get("method") or "")
+        n_states = finite_float(row.get("n_states"))
+        n_boundary = finite_float(row.get("n_boundary"))
+        out.append(
+            {
+                "source": "large_scale_compression",
+                "map": row.get("map", ""),
+                "slip": row.get("slip", ""),
+                "method": method,
+                "method_group": method_group(method, "large_scale_compression"),
+                "n_states": n_states,
+                "n_boundary": n_boundary,
+                "rate_budget_boundary_frac": n_boundary / max(1.0, n_states),
+                "state_compression_ratio": finite_float(row.get("state_compression_ratio")),
+                "planning_speedup": finite_float(row.get("planning_time_speedup_vs_full_vi")),
+                "total_speedup": finite_float(row.get("total_time_speedup_vs_full_vi")),
+                "start_gap": finite_float(row.get("start_gap")),
+                "value_gap_max": finite_float(row.get("value_gap_max")),
+                "hidden_audit": finite_float(row.get("occupancy_struct_hidden_distinct")),
+                "success_rate": float("nan"),
+                "group_feasible": None,
+                "budget_label": "large_scale_same_protocol",
+            }
+        )
+    return out
+
+
+def normalize_random_maze_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for row in rows:
+        if row.get("error"):
+            continue
+        method = str(row.get("method", ""))
+        n_states = finite_float(row.get("n_states"))
+        n_boundary = finite_float(row.get("n_boundary"))
+        out.append(
+            {
+                "source": "random_maze_generalization",
+                "map": row.get("map", ""),
+                "slip": row.get("slip", ""),
+                "method": method,
+                "method_group": method_group(method, "random_maze_generalization"),
+                "n_states": n_states,
+                "n_boundary": n_boundary,
+                "rate_budget_boundary_frac": n_boundary / max(1.0, n_states),
+                "state_compression_ratio": finite_float(row.get("state_compression_ratio")),
+                "planning_speedup": finite_float(row.get("planning_speedup")),
+                "total_speedup": finite_float(row.get("total_speedup")),
+                "start_gap": finite_float(row.get("start_gap")),
+                "value_gap_max": finite_float(row.get("value_gap_max")),
+                "hidden_audit": finite_float(row.get("group_total_violation"), 0.0),
+                "success_rate": float("nan"),
+                "group_feasible": parse_bool(row.get("group_all_feasible")),
+                "budget_label": f"random_group_budget_frac={row.get('budget_frac', '')}",
+            }
+        )
+    return out
+
+
 def normalize_option_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
     for row in rows:
@@ -164,7 +228,7 @@ def normalize_option_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, o
                 "value_gap_max": finite_float(row.get("value_gap_max")),
                 "hidden_audit": finite_float(row.get("hidden_audit_distinct_mean"), finite_float(row.get("occupancy_struct_hidden_distinct"))),
                 "success_rate": finite_float(row.get("success_rate")),
-                "group_feasible": parse_bool(row.get("feasible")),
+                "group_feasible": parse_bool(row.get("feasible") or row.get("group_all_feasible")),
                 "budget_label": "option_count_or_boundary_count",
             }
         )
@@ -314,7 +378,9 @@ def write_report(
         "## Source Artifacts",
         "",
         f"- core benchmark: `{args.core_csv}`",
+        f"- large-scale compression: `{args.large_scale_csv}`",
         f"- group-constrained adaptive: `{args.group_adaptive_csv}`",
+        f"- random maze generalization: `{args.random_maze_csv}`",
         f"- option baseline frontier: `{args.option_frontier_csv}`",
     ]
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -324,9 +390,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Build a fair rate/distortion frontier across graph and option baselines.")
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
     parser.add_argument(
+        "--large-scale-csv",
+        type=Path,
+        default=Path("experiments/output/large_scale_compression_adaptive/large_scale_compression.csv"),
+    )
+    parser.add_argument(
         "--group-adaptive-csv",
         type=Path,
         default=Path("experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv"),
+    )
+    parser.add_argument(
+        "--random-maze-csv",
+        type=Path,
+        default=Path("experiments/output/random_maze_generalization/random_maze_generalization.csv"),
     )
     parser.add_argument(
         "--option-frontier-csv",
@@ -338,7 +414,9 @@ def main() -> None:
 
     rows = (
         normalize_core_rows(read_csv_rows(args.core_csv))
+        + normalize_large_scale_rows(read_csv_rows(args.large_scale_csv))
         + normalize_group_rows(read_csv_rows(args.group_adaptive_csv))
+        + normalize_random_maze_rows(read_csv_rows(args.random_maze_csv))
         + normalize_option_rows(read_csv_rows(args.option_frontier_csv))
     )
     rows = add_pareto_flags(rows)

@@ -152,6 +152,7 @@ def build_main_runtime_rows(
         out.append(
             {
                 "map": row.get("map", ""),
+                "slip": row.get("slip", ""),
                 "boundary_selector": method_spec,
                 "method": "certified_adaptive_green_rd",
                 "n_states": row.get("n_states", ""),
@@ -403,6 +404,149 @@ def build_fair_frontier_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str
     return out
 
 
+def build_amortized_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for (method_spec, task_count), group in sorted(group_rows(rows, ["method_spec", "task_count"]).items()):
+        ok = [row for row in group if not row.get("error")]
+        out.append(
+            {
+                "source": "amortized_multitask",
+                "method_or_variant": method_spec,
+                "task_count": task_count,
+                "n_rows": len(ok),
+                "median_amortized_speedup": median(
+                    finite_float(row.get("amortized_speedup_vs_full_vi")) for row in ok
+                ),
+                "best_amortized_speedup": max(
+                    (finite_float(row.get("amortized_speedup_vs_full_vi")) for row in ok),
+                    default=float("nan"),
+                ),
+                "median_planning_only_speedup": median(
+                    finite_float(row.get("planning_only_speedup_vs_full_vi")) for row in ok
+                ),
+                "median_break_even_tasks": median(finite_float(row.get("break_even_tasks")) for row in ok),
+                "max_start_gap": max((finite_float(row.get("start_gap"), 0.0) for row in ok), default=float("nan")),
+                "median_state_compression": median(finite_float(row.get("state_compression_ratio")) for row in ok),
+            }
+        )
+    return out
+
+
+def build_edge_reward_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for (variant, task_count), group in sorted(group_rows(rows, ["variant", "task_count"]).items()):
+        if not variant or variant == "error":
+            continue
+        ok = [row for row in group if not row.get("error")]
+        out.append(
+            {
+                "source": "edge_reward_kernel_multitask",
+                "method_or_variant": variant,
+                "task_count": task_count,
+                "n_rows": len(ok),
+                "median_amortized_speedup": median(
+                    finite_float(row.get("amortized_speedup_vs_full_vi")) for row in ok
+                ),
+                "best_amortized_speedup": max(
+                    (finite_float(row.get("amortized_speedup_vs_full_vi")) for row in ok),
+                    default=float("nan"),
+                ),
+                "median_planning_only_speedup": median(
+                    finite_float(row.get("planning_only_speedup_vs_full_vi")) for row in ok
+                ),
+                "median_break_even_tasks": median(finite_float(row.get("break_even_num_tasks")) for row in ok),
+                "max_start_gap": max((finite_float(row.get("start_gap_max"), 0.0) for row in ok), default=float("nan")),
+                "median_goal_interface": median(finite_float(row.get("goal_option_interface_size")) for row in ok),
+                "median_goal_policies": median(finite_float(row.get("n_goal_policies")) for row in ok),
+            }
+        )
+    return out
+
+
+def build_multitask_rows(
+    amortized_rows: Sequence[Mapping[str, str]],
+    edge_reward_rows: Sequence[Mapping[str, str]],
+) -> List[Dict[str, object]]:
+    return build_amortized_rows(amortized_rows) + build_edge_reward_rows(edge_reward_rows)
+
+
+def build_failure_mode_rows(
+    main_rows: Sequence[Mapping[str, object]],
+    group_adaptive_rows: Sequence[Mapping[str, object]],
+    edge_reward_rows: Sequence[Mapping[str, str]],
+) -> List[Dict[str, object]]:
+    rows: List[Dict[str, object]] = []
+    open_rows = [
+        row for row in group_adaptive_rows
+        if "open_room" in str(row.get("map", "")) and str(row.get("method", "")) in {"endpoints", "group_constrained", "group_constrained_incremental"}
+    ]
+    if open_rows:
+        endpoint_rows = [row for row in open_rows if row.get("method") == "endpoints"]
+        robust_rows = [row for row in open_rows if str(row.get("method", "")).startswith("group_constrained")]
+        rows.append(
+            {
+                "failure_mode": "open_room_soft_over_split_or_hidden_boundary",
+                "evidence": "group constraints expose endpoint infeasibility while incremental/group RD removes group violation",
+                "n_rows": len(open_rows),
+                "endpoint_feasible_rate": rate(parse_bool(row.get("group_all_feasible")) for row in endpoint_rows),
+                "robust_feasible_rate": rate(parse_bool(row.get("group_all_feasible")) for row in robust_rows),
+                "max_endpoint_violation": max(
+                    (finite_float(row.get("group_total_violation"), 0.0) for row in endpoint_rows),
+                    default=float("nan"),
+                ),
+                "max_robust_violation": max(
+                    (finite_float(row.get("group_total_violation"), 0.0) for row in robust_rows),
+                    default=float("nan"),
+                ),
+            }
+        )
+    corridor_rows = [row for row in main_rows if "corridor" in str(row.get("map", ""))]
+    if corridor_rows:
+        rows.append(
+            {
+                "failure_mode": "corridor_top_set_tie",
+                "evidence": "long corridors create large epsilon/tie sets; tie-aware certificate reports cheap top-set exact fallback separately",
+                "n_rows": len(corridor_rows),
+                "max_ambiguous_set_size": max(
+                    (finite_float(row.get("ambiguous_set_size"), 0.0) for row in corridor_rows),
+                    default=float("nan"),
+                ),
+                "tie_set_certified_rate": rate(parse_bool(row.get("tie_set_certified")) for row in corridor_rows),
+                "max_tie_aware_total_speedup": max(
+                    (finite_float(row.get("total_speedup_tie_aware")) for row in corridor_rows),
+                    default=float("nan"),
+                ),
+            }
+        )
+    edge_ok = [row for row in edge_reward_rows if not row.get("error")]
+    if edge_ok:
+        event_rows = [row for row in edge_ok if row.get("variant") == "fixed_B_event_hit_kernel"]
+        gc_rows = [row for row in edge_ok if row.get("variant") == "fixed_B_goal_conditioned_event_options"]
+        rows.append(
+            {
+                "failure_mode": "terminal_interior_goal_event_gap",
+                "evidence": "fixed-B event kernels expose option/boundary restriction bias; goal-conditioned event options reduce gap but add query-time interface cost",
+                "n_rows": len(event_rows) + len(gc_rows),
+                "event_kernel_max_gap": max(
+                    (finite_float(row.get("start_gap_max"), 0.0) for row in event_rows),
+                    default=float("nan"),
+                ),
+                "goal_conditioned_max_gap": max(
+                    (finite_float(row.get("start_gap_max"), 0.0) for row in gc_rows),
+                    default=float("nan"),
+                ),
+                "goal_conditioned_median_break_even": median(
+                    finite_float(row.get("break_even_num_tasks")) for row in gc_rows
+                ),
+                "goal_conditioned_best_speedup": max(
+                    (finite_float(row.get("amortized_speedup_vs_full_vi")) for row in gc_rows),
+                    default=float("nan"),
+                ),
+            }
+        )
+    return rows
+
+
 def build_theorem_bridge_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
     for row in rows:
@@ -425,6 +569,8 @@ def write_report(
     group_adaptive_rows: Sequence[Mapping[str, object]],
     random_maze_rows: Sequence[Mapping[str, object]],
     fair_frontier_rows: Sequence[Mapping[str, object]],
+    multitask_rows: Sequence[Mapping[str, object]],
+    failure_mode_rows: Sequence[Mapping[str, object]],
     solver_rows: Sequence[Mapping[str, object]],
     certificate_rows: Sequence[Mapping[str, object]],
     discovery_profile_rows: Sequence[Mapping[str, object]],
@@ -434,6 +580,7 @@ def write_report(
 ) -> None:
     main_columns = [
         "map",
+        "slip",
         "boundary_selector",
         "method",
         "n_states",
@@ -521,6 +668,36 @@ def write_report(
         "median_total_speedup",
         "median_success_rate",
     ]
+    multitask_columns = [
+        "source",
+        "method_or_variant",
+        "task_count",
+        "n_rows",
+        "median_amortized_speedup",
+        "best_amortized_speedup",
+        "median_planning_only_speedup",
+        "median_break_even_tasks",
+        "max_start_gap",
+        "median_state_compression",
+        "median_goal_interface",
+        "median_goal_policies",
+    ]
+    failure_columns = [
+        "failure_mode",
+        "evidence",
+        "n_rows",
+        "endpoint_feasible_rate",
+        "robust_feasible_rate",
+        "max_endpoint_violation",
+        "max_robust_violation",
+        "max_ambiguous_set_size",
+        "tie_set_certified_rate",
+        "max_tie_aware_total_speedup",
+        "event_kernel_max_gap",
+        "goal_conditioned_max_gap",
+        "goal_conditioned_median_break_even",
+        "goal_conditioned_best_speedup",
+    ]
     solver_columns = [
         "solver",
         "beam_width",
@@ -583,6 +760,16 @@ def write_report(
     ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
+    best_multitask = max((finite_float(row.get("best_amortized_speedup")) for row in multitask_rows), default=float("nan"))
+    best_edge_reward = max(
+        (
+            finite_float(row.get("best_amortized_speedup"))
+            for row in multitask_rows
+            if row.get("source") == "edge_reward_kernel_multitask"
+            and row.get("method_or_variant") == "fixed_B_edge_reward_kernel"
+        ),
+        default=float("nan"),
+    )
     worst_gap = max((finite_float(row.get("start_gap")) for row in main_rows), default=float("nan"))
     final_certs = next(
         (row for row in certificate_rows if row.get("certificate") == "adaptive_frontier_tail_plus_top_set_fallback"),
@@ -604,6 +791,8 @@ def write_report(
         "",
         f"- best certified adaptive total speedup with unique-top fallback: `{best_total_unique:.4g}x`",
         f"- best certified adaptive total speedup with tie-aware certificate: `{best_total_tie:.4g}x`",
+        f"- best multi-task amortized speedup in the current table: `{best_multitask:.4g}x`",
+        f"- best fixed-B edge reward relabeling speedup: `{best_edge_reward:.4g}x`",
         f"- worst certified adaptive start-value gap in that table: `{worst_gap:.4g}`",
         f"- adaptive final certified decisions under unique-top fallback: `{final_certs.get('final_certified', '')}/{final_certs.get('rows', '')}`",
         f"- adaptive final certified decisions under tie-aware reporting: `{final_certs.get('tie_aware_final_certified', '')}/{final_certs.get('rows', '')}`",
@@ -639,6 +828,24 @@ def write_report(
         )
         if fair_frontier_rows
         else "_No fair-budget frontier rows found._",
+        "",
+        "## Multi-Task And Edge Reward Compression",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in multitask_columns} for row in multitask_rows],
+            multitask_columns,
+        )
+        if multitask_rows
+        else "_No multi-task rows found._",
+        "",
+        "## Failure Modes",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in failure_columns} for row in failure_mode_rows],
+            failure_columns,
+        )
+        if failure_mode_rows
+        else "_No failure-mode rows found._",
         "",
         "## Solver Validity Aggregate",
         "",
@@ -683,6 +890,8 @@ def write_report(
         f"- larger group-constrained adaptive: `{args.group_adaptive_csv}`",
         f"- random maze generalization: `{args.random_maze_csv}`",
         f"- fair budget frontier: `{args.fair_frontier_csv}`",
+        f"- amortized multitask: `{args.amortized_csv}`",
+        f"- edge reward multitask: `{args.edge_reward_csv}`",
         f"- solver validity: `{args.solver_csv}`",
         f"- discovery profile/cache: `{args.discovery_profile_csv}`",
         f"- incremental Green update: `{args.incremental_green_csv}`",
@@ -704,6 +913,8 @@ def main() -> None:
     parser.add_argument("--group-adaptive-csv", type=Path, default=Path("experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv"))
     parser.add_argument("--random-maze-csv", type=Path, default=Path("experiments/output/random_maze_generalization/random_maze_generalization.csv"))
     parser.add_argument("--fair-frontier-csv", type=Path, default=Path("experiments/output/fair_budget_frontier/fair_budget_frontier_summary.csv"))
+    parser.add_argument("--amortized-csv", type=Path, default=Path("experiments/output/amortized_multitask/amortized_multitask.csv"))
+    parser.add_argument("--edge-reward-csv", type=Path, default=Path("experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv"))
     parser.add_argument("--solver-csv", type=Path, default=Path("experiments/output/solver_validity/solver_validity.csv"))
     parser.add_argument("--discovery-profile-csv", type=Path, default=Path("experiments/output/discovery_profile_cache/discovery_profile_cache.csv"))
     parser.add_argument("--incremental-green-csv", type=Path, default=Path("experiments/output/incremental_green_update/incremental_green_update_aggregate.csv"))
@@ -722,6 +933,8 @@ def main() -> None:
     group_adaptive_raw = read_csv_rows(args.group_adaptive_csv)
     random_maze_raw = read_csv_rows(args.random_maze_csv)
     fair_frontier_raw = read_csv_rows(args.fair_frontier_csv)
+    amortized_raw = read_csv_rows(args.amortized_csv)
+    edge_reward_raw = read_csv_rows(args.edge_reward_csv)
     solver_rows_raw = read_csv_rows(args.solver_csv)
     discovery_profile_raw = read_csv_rows(args.discovery_profile_csv)
     incremental_green_rows = read_csv_rows(args.incremental_green_csv)
@@ -734,6 +947,8 @@ def main() -> None:
     group_adaptive_rows = build_group_adaptive_rows(group_adaptive_raw)
     random_maze_rows = build_random_maze_rows(random_maze_raw)
     fair_frontier_rows = build_fair_frontier_rows(fair_frontier_raw)
+    multitask_rows = build_multitask_rows(amortized_raw, edge_reward_raw)
+    failure_mode_rows = build_failure_mode_rows(main_rows, group_adaptive_rows, edge_reward_raw)
     solver_rows = build_solver_rows(solver_rows_raw)
     discovery_profile_rows = build_discovery_profile_rows(discovery_profile_raw)
     theorem_bridge_rows = build_theorem_bridge_rows(theorem_bridge_raw)
@@ -745,6 +960,8 @@ def main() -> None:
     write_csv_all_fields(args.out_dir / "group_constrained_adaptive_table.csv", group_adaptive_rows)
     write_csv_all_fields(args.out_dir / "random_maze_generalization_aggregate.csv", random_maze_rows)
     write_csv_all_fields(args.out_dir / "fair_budget_frontier_aggregate.csv", fair_frontier_rows)
+    write_csv_all_fields(args.out_dir / "multitask_edge_reward_aggregate.csv", multitask_rows)
+    write_csv_all_fields(args.out_dir / "failure_modes.csv", failure_mode_rows)
     write_csv_all_fields(args.out_dir / "solver_validity_aggregate.csv", solver_rows)
     write_csv_all_fields(args.out_dir / "discovery_profile_aggregate.csv", discovery_profile_rows)
     write_csv_all_fields(args.out_dir / "incremental_green_update_aggregate.csv", incremental_green_rows)
@@ -758,6 +975,8 @@ def main() -> None:
                 "group_constrained_adaptive_table": group_adaptive_rows,
                 "random_maze_generalization_aggregate": random_maze_rows,
                 "fair_budget_frontier_aggregate": fair_frontier_rows,
+                "multitask_edge_reward_aggregate": multitask_rows,
+                "failure_modes": failure_mode_rows,
                 "solver_validity_aggregate": solver_rows,
                 "discovery_profile_aggregate": discovery_profile_rows,
                 "incremental_green_update_aggregate": incremental_green_rows,
@@ -777,6 +996,8 @@ def main() -> None:
         group_adaptive_rows,
         random_maze_rows,
         fair_frontier_rows,
+        multitask_rows,
+        failure_mode_rows,
         solver_rows,
         certificate_rows,
         discovery_profile_rows,

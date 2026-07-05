@@ -85,7 +85,7 @@
     "proof_symbols": "reward_kernel_error_le_l1; reward_kernel_value_gap_real; primitive_to_reward_kernel_gap_decomposition",
     "proof_status": "proved_symbol_present",
     "experiment_artifact": "experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv",
-    "experiment_status": "rows=96, additive=48, event_gap=27.52, goal_conditioned_gap=0.3494",
+    "experiment_status": "rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.4631",
     "manuscript_location": "Multi-task compression and reward relabeling",
     "remaining_gap": "Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted."
   },
@@ -95,7 +95,7 @@
     "proof_symbols": "goal_event_kernel_value_gap_real; goal_event_option_bias_value_gap_real; goal_event_total_value_gap_real",
     "proof_status": "proved_symbol_present",
     "experiment_artifact": "experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv",
-    "experiment_status": "rows=96, additive=48, event_gap=27.52, goal_conditioned_gap=0.3494",
+    "experiment_status": "rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.4631",
     "manuscript_location": "Secondary terminal-goal extension",
     "remaining_gap": "The gap is much smaller and the backend is shared/batched, but larger multitask runs must show amortized speedup beyond the current break-even table."
   },

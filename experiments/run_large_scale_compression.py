@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence
@@ -30,6 +32,7 @@ def row_from_model(
     family: str,
     size: int,
     map_label: str,
+    slip: float,
     model: Mapping[str, object],
 ) -> Dict[str, object]:
     full = model["full_result"]
@@ -47,6 +50,7 @@ def row_from_model(
         "map_family": family,
         "map_size": size,
         "map": map_label,
+        "slip": slip,
         "method_spec": model["method_spec"],
         "method": model["method"],
         "first_hit_mode": model.get("first_hit_mode", "exact"),
@@ -88,6 +92,7 @@ def error_row(
     family: str,
     size: int,
     map_label: str,
+    slip: float,
     method: str,
     rows: Sequence[str],
     message: str,
@@ -97,6 +102,7 @@ def error_row(
         "map_family": family,
         "map_size": size,
         "map": map_label,
+        "slip": slip,
         "method_spec": method,
         "method": method,
         "first_hit_mode": "",
@@ -188,6 +194,7 @@ def write_report(
 ) -> None:
     columns = [
         "map",
+        "slip",
         "method_spec",
         "first_hit_mode",
         "first_hit_truncation_steps",
@@ -228,7 +235,8 @@ def write_report(
         f"map_specs = {list(args.map_specs)}",
         f"methods = {list(args.methods)}",
         f"first_hit_mode = {args.first_hit_mode}, first_hit_truncation_steps = {args.first_hit_truncation_steps}",
-        f"gamma = {args.gamma}, slip = {args.slip}",
+        f"gamma = {args.gamma}, slips = {list(args.slips)}",
+        f"shard = {args.shard_index}/{args.num_shards}",
         "",
         "This run intentionally omits policy iteration so larger tabular maps do not pay the dense linear-solve cost. "
         "It measures the core claim: full-state Bellman propagation versus first-boundary graph-SMDP planning after graph/kernel construction.",
@@ -248,6 +256,59 @@ def write_report(
         markdown_table(rows, columns),
     ]
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def read_existing_rows(path: Path) -> List[Dict[str, object]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as handle:
+        return [dict(row) for row in csv.DictReader(handle)]
+
+
+def completed_jobs(rows: Sequence[Mapping[str, object]]) -> set[tuple[str, str, str]]:
+    done: set[tuple[str, str, str]] = set()
+    for row in rows:
+        key = (
+            str(row.get("map", "")),
+            str(row.get("slip", "")),
+            str(row.get("method_spec") or row.get("method") or ""),
+        )
+        if all(key):
+            done.add(key)
+    return done
+
+
+def write_outputs(rows: Sequence[Mapping[str, object]], args: argparse.Namespace) -> None:
+    summary = summarize(rows)
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    write_csv_all_fields(args.out_dir / "large_scale_compression.csv", rows)
+    (args.out_dir / "large_scale_compression.json").write_text(
+        json.dumps(rows, indent=2, default=json_default) + "\n",
+        encoding="utf-8",
+    )
+    (args.out_dir / "summary.json").write_text(
+        json.dumps(summary, indent=2, default=json_default) + "\n",
+        encoding="utf-8",
+    )
+    write_report(rows, summary, args.out_dir / "summary.md", args)
+
+
+def progress_path(args: argparse.Namespace) -> Path:
+    return args.progress_log or (args.out_dir / "progress.jsonl")
+
+
+def log_progress(args: argparse.Namespace, event: str, **payload: object) -> None:
+    path = progress_path(args)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rec = {
+        "ts": time.time(),
+        "event": event,
+        "shard_index": args.shard_index,
+        "num_shards": args.num_shards,
+        **payload,
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(rec, default=json_default) + "\n")
 
 
 def main() -> None:
@@ -275,6 +336,7 @@ def main() -> None:
     )
     parser.add_argument("--gamma", type=float, default=0.97)
     parser.add_argument("--slip", type=float, default=0.05)
+    parser.add_argument("--slips", type=float, nargs="+", default=None)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-splits", type=int, default=18)
     parser.add_argument("--audit-lens", default="turn_articulation")
@@ -293,59 +355,121 @@ def main() -> None:
     parser.add_argument("--first-hit-truncation-steps", type=int, default=32)
     parser.add_argument("--first-hit-tail-tol", type=float, default=0.0)
     parser.add_argument("--continue-on-error", action="store_true")
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--resume", dest="resume", action="store_true", default=True)
+    parser.add_argument("--no-resume", dest="resume", action="store_false")
+    parser.add_argument("--progress-log", type=Path, default=None)
     parser.add_argument(
         "--out-dir",
         type=Path,
         default=Path("experiments/output/large_scale_compression"),
     )
     args = parser.parse_args()
+    args.slips = list(args.slips if args.slips is not None else [args.slip])
+    if args.num_shards < 1:
+        raise ValueError("--num-shards must be >= 1")
+    if args.shard_index < 0 or args.shard_index >= args.num_shards:
+        raise ValueError("--shard-index must satisfy 0 <= shard-index < num-shards")
 
-    rows: List[Dict[str, object]] = []
-    for family, size, map_label, map_rows in parse_map_specs(args.map_specs):
-        for method in args.methods:
-            try:
-                model = build_compressed_model_measured(
-                    map_label=map_label,
-                    rows=map_rows,
-                    method_spec=method,
-                    gamma=args.gamma,
-                    slip=args.slip,
-                    seed=args.seed,
-                    max_splits=args.max_splits,
-                    audit_lens=args.audit_lens,
-                    audit_top_fraction=args.audit_top_fraction,
-                    soft_kind=args.soft_kind,
-                    soft_top_fraction=args.soft_top_fraction,
-                    local_horizon=args.local_horizon,
-                    hidden_threshold=args.hidden_threshold,
-                    soft_threshold=args.soft_threshold,
-                    residual_threshold=args.residual_threshold,
-                    residual_threshold_mode=args.residual_threshold_mode,
-                    residual_reward_weight=args.residual_reward_weight,
-                    residual_hit_weight=args.residual_hit_weight,
-                    compute_struct_distinct=not args.no_struct_distinct,
-                    first_hit_mode=args.first_hit_mode,
-                    first_hit_truncation_steps=args.first_hit_truncation_steps,
-                    first_hit_tail_tol=args.first_hit_tail_tol,
-                )
-                rows.append(row_from_model(family, size, map_label, model))
-            except Exception as exc:
-                if not args.continue_on_error:
-                    raise
-                rows.append(error_row(family, size, map_label, method, map_rows, repr(exc)))
+    jobs = [
+        (family, size, map_label, map_rows, slip, method)
+        for family, size, map_label, map_rows in parse_map_specs(args.map_specs)
+        for slip in args.slips
+        for method in args.methods
+    ]
+    selected_jobs = [
+        (job_index, *job)
+        for job_index, job in enumerate(jobs)
+        if job_index % args.num_shards == args.shard_index
+    ]
 
-    args.out_dir.mkdir(parents=True, exist_ok=True)
-    summary = summarize(rows)
-    write_csv_all_fields(args.out_dir / "large_scale_compression.csv", rows)
-    (args.out_dir / "large_scale_compression.json").write_text(
-        json.dumps(rows, indent=2, default=json_default) + "\n",
-        encoding="utf-8",
+    rows: List[Dict[str, object]] = (
+        read_existing_rows(args.out_dir / "large_scale_compression.csv") if args.resume else []
     )
-    (args.out_dir / "summary.json").write_text(
-        json.dumps(summary, indent=2, default=json_default) + "\n",
-        encoding="utf-8",
+    done = completed_jobs(rows)
+    log_progress(
+        args,
+        "start",
+        selected_jobs=len(selected_jobs),
+        total_jobs=len(jobs),
+        resumed_completed_jobs=len(done),
     )
-    write_report(rows, summary, args.out_dir / "summary.md", args)
+    for progress_index, (job_index, family, size, map_label, map_rows, slip, method) in enumerate(
+        selected_jobs, start=1
+    ):
+        key = (map_label, str(slip), method)
+        if args.resume and key in done:
+            log_progress(
+                args,
+                "skip_completed",
+                progress_index=progress_index,
+                selected_jobs=len(selected_jobs),
+                job_index=job_index,
+                map=map_label,
+                slip=slip,
+                method=method,
+            )
+            continue
+        started = time.perf_counter()
+        try:
+            model = build_compressed_model_measured(
+                map_label=map_label,
+                rows=map_rows,
+                method_spec=method,
+                gamma=args.gamma,
+                slip=slip,
+                seed=args.seed,
+                max_splits=args.max_splits,
+                audit_lens=args.audit_lens,
+                audit_top_fraction=args.audit_top_fraction,
+                soft_kind=args.soft_kind,
+                soft_top_fraction=args.soft_top_fraction,
+                local_horizon=args.local_horizon,
+                hidden_threshold=args.hidden_threshold,
+                soft_threshold=args.soft_threshold,
+                residual_threshold=args.residual_threshold,
+                residual_threshold_mode=args.residual_threshold_mode,
+                residual_reward_weight=args.residual_reward_weight,
+                residual_hit_weight=args.residual_hit_weight,
+                compute_struct_distinct=not args.no_struct_distinct,
+                first_hit_mode=args.first_hit_mode,
+                first_hit_truncation_steps=args.first_hit_truncation_steps,
+                first_hit_tail_tol=args.first_hit_tail_tol,
+            )
+            rows.append(row_from_model(family, size, map_label, slip, model))
+            done.add(key)
+            log_progress(
+                args,
+                "job_done",
+                progress_index=progress_index,
+                selected_jobs=len(selected_jobs),
+                job_index=job_index,
+                map=map_label,
+                slip=slip,
+                method=method,
+                elapsed_sec=time.perf_counter() - started,
+            )
+        except Exception as exc:
+            if not args.continue_on_error:
+                raise
+            rows.append(error_row(family, size, map_label, slip, method, map_rows, repr(exc)))
+            done.add(key)
+            log_progress(
+                args,
+                "job_error",
+                progress_index=progress_index,
+                selected_jobs=len(selected_jobs),
+                job_index=job_index,
+                map=map_label,
+                slip=slip,
+                method=method,
+                elapsed_sec=time.perf_counter() - started,
+                error=repr(exc),
+            )
+        write_outputs(rows, args)
+    write_outputs(rows, args)
+    log_progress(args, "done", rows=len(rows), selected_jobs=len(selected_jobs), total_jobs=len(jobs))
 
 
 if __name__ == "__main__":

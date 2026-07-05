@@ -1,24 +1,24 @@
 # Fair Budget Frontier
 
-Generated: 2026-07-05T19:42:59
+Generated: 2026-07-06T06:52:24
 
 This table normalizes full-MDP, graph-RD, group-constrained RD, and option-discovery rows into the same rate/distortion frontier vocabulary. It is an aggregation layer; it does not rerun heavy experiments.
 
-- total normalized rows: `121`
-- Pareto non-dominated rows: `59`
+- total normalized rows: `135`
+- Pareto non-dominated rows: `72`
 
 ## Method-Group Summary
 
 | method_group | n_rows | pareto_rows | median_rate_budget_boundary_frac | median_state_compression_ratio | median_start_gap | median_hidden_audit | mean_group_feasible_rate | median_total_speedup | median_success_rate |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| baseline:dense_turn | 1 | 1 | 0.3704 | 2.7 | 2.901501261476369e-11 | 0.0 | 1 | nan | 1 |
-| baseline:endpoints | 7 | 7 | 0.01923 | 52 | 2.921041186709772e-11 | 155.5 | 0.1429 | 2.759 | 1 |
+| baseline:dense_turn | 5 | 4 | 0.03125 | 32 | 2.946e-08 | 0.0 | 1 | 5.11 | 1 |
+| baseline:endpoints | 13 | 13 | 0.02469 | 40.5 | 1.548e-08 | 155.5 | 0.1111 | 3.241 | 1 |
 | full_mdp | 10 | 5 | 1 | 1 | 0.0 | 0.0 | nan | 1 | 1 |
 | option_baseline:bottleneck | 15 | 8 | 0.1875 | 5.333 | 1.4097167877480388e-11 | 2 | 1 | 0.3402 | 1 |
 | option_baseline:coverage | 15 | 1 | 0.1875 | 5.333 | 2.9125146738806507e-11 | 2 | 1 | 0.4021 | 1 |
 | option_baseline:eigen | 15 | 3 | 0.1875 | 5.333 | 2.332356530132529e-11 | 2.1 | 1 | 0.3368 | 1 |
 | option_baseline:random | 15 | 1 | 0.1875 | 5.333 | 2.1433521624203422e-11 | 2 | 1 | 0.3465 | 1 |
-| ours:group_rd | 22 | 14 | 0.05221 | 19.27 | 1.7967849430533533e-12 | 0.0 | 0.9545 | 0.01516 | 1 |
+| ours:group_rd | 26 | 18 | 0.06582 | 15.27 | 2.949906985350026e-11 | 0.0 | 0.9231 | 0.01516 | 1 |
 | ours:rd_graph | 21 | 19 | 0.125 | 8 | 1.9127810446661897e-11 | 0.0 | 1 | 0.1836 | 1 |
 
 ## Pareto Rows
@@ -60,6 +60,13 @@ This table normalizes full-MDP, graph-RD, group-constrained RD, and option-disco
 | core_benchmark | maze_9 | 0.05 | graph_rd_surrogate_joint | ours:rd_graph | 31 | 5 | 0.1613 | 6.2 | 1.9127810446661897e-11 | 0.0 | 1 | None | 0.06558 | True |  |
 | core_benchmark | maze_9 | 0.05 | group_constrained_rd | ours:group_rd | 31 | 3 | 0.09677 | 10.33 | 3.5864644587491057e-12 | 3 | 1 | True | 0.01795 | True |  |
 | core_benchmark | maze_9 | 0.05 | betweenness_sqrt | option_baseline:bottleneck | 31 | 6 | 0.1935 | 5.167 | 7.052136652418994e-12 | 2 | 1 | None | 0.3524 | True |  |
+| large_scale_compression | corridor_64 |  | endpoints | baseline:endpoints | 64 | 2 | 0.03125 | 32 | 2.946e-08 | 0.0 | nan | None | 6.668 | True |  |
+| large_scale_compression | corridor_64 |  | turn_articulation | baseline:dense_turn | 64 | 2 | 0.03125 | 32 | 2.946e-08 | 0.0 | nan | None | 7.981 | True |  |
+| large_scale_compression | corridor_128 |  | endpoints | baseline:endpoints | 128 | 2 | 0.01562 | 64 | 1.024e-08 | 0.0 | nan | None | 9.327 | True |  |
+| large_scale_compression | corridor_128 |  | turn_articulation | baseline:dense_turn | 128 | 2 | 0.01562 | 64 | 1.024e-08 | 0.0 | nan | None | 10.68 | True |  |
+| large_scale_compression | open_room_12 |  | endpoints | baseline:endpoints | 144 | 2 | 0.01389 | 72 | 0.07851 | 0.0 | nan | None | 3.698 | True |  |
+| large_scale_compression | open_room_12 |  | turn_articulation | baseline:dense_turn | 144 | 4 | 0.02778 | 36 | 0.07851 | 0.0 | nan | None | 2.24 | True |  |
+| large_scale_compression | maze_13 |  | endpoints | baseline:endpoints | 71 | 2 | 0.02817 | 35.5 | 1.548e-08 | 0.0 | nan | None | 6.977 | True |  |
 | group_constrained_adaptive | open_room_12 | 0.0 | endpoints | baseline:endpoints | 144 | 2 | 0.01389 | 72 | 3.552713678800501e-15 | 155.5 | nan | False | 2.343 | True |  |
 | group_constrained_adaptive | open_room_12 | 0.0 | group_constrained | ours:group_rd | 144 | 3 | 0.02083 | 48 | 3.552713678800501e-15 | 0.0 | nan | True | 0.01595 | True |  |
 | group_constrained_adaptive | open_room_12 | 0.0 | group_constrained_incremental | ours:group_rd | 144 | 3 | 0.02083 | 48 | 3.552713678800501e-15 | 0.0 | nan | True | 0.04026 | True |  |
@@ -76,6 +83,12 @@ This table normalizes full-MDP, graph-RD, group-constrained RD, and option-disco
 | group_constrained_adaptive | maze_13 | 0.0 | group_constrained_incremental | ours:group_rd | 71 | 3 | 0.04225 | 23.67 | 7.105427357601002e-15 | 0.0 | nan | True | 0.04848 | True |  |
 | group_constrained_adaptive | maze_13 | 0.05 | endpoints | baseline:endpoints | 71 | 2 | 0.02817 | 35.5 | 1.548e-08 | 233.2 | nan | False | 3.348 | True |  |
 | group_constrained_adaptive | maze_13 | 0.05 | group_constrained_incremental | ours:group_rd | 71 | 3 | 0.04225 | 23.67 | 2.733e-07 | 0.0 | nan | True | 0.05848 | True |  |
+| random_maze_generalization | random_maze_9_seed0 | 0.05 | endpoints | baseline:endpoints | 31 | 2 | 0.06452 | 15.5 | 3.332e-08 | 233.2 | nan | False | 2.584 | True |  |
+| random_maze_generalization | random_maze_9_seed0 | 0.05 | group_constrained_operator | ours:group_rd | 31 | 3 | 0.09677 | 10.33 | 1.633e-07 | 0.0 | nan | True | 0.01309 | True |  |
+| random_maze_generalization | random_maze_9_seed0 | 0.05 | group_constrained_incremental | ours:group_rd | 31 | 3 | 0.09677 | 10.33 | 1.633e-07 | 0.0 | nan | True | 0.05324 | True |  |
+| random_maze_generalization | random_maze_9_seed1 | 0.05 | endpoints | baseline:endpoints | 31 | 2 | 0.06452 | 15.5 | 1.724e-08 | 233.2 | nan | False | 2.404 | True |  |
+| random_maze_generalization | random_maze_9_seed1 | 0.05 | group_constrained_operator | ours:group_rd | 31 | 3 | 0.09677 | 10.33 | 6.702e-08 | 116.6 | nan | False | 0.003385 | True |  |
+| random_maze_generalization | random_maze_9_seed1 | 0.05 | group_constrained_incremental | ours:group_rd | 31 | 3 | 0.09677 | 10.33 | 2.167e-07 | 0.0 | nan | True | 0.05523 | True |  |
 | option_baseline_frontier | maze | 0.05 | betweenness_4 | option_baseline:bottleneck | 81 | 4 | 0.04938 | 20.25 | 2.921041186709772e-11 | 11 | 1 | True | nan | True |  |
 | option_baseline_frontier | maze | 0.05 | betweenness_8 | option_baseline:bottleneck | 81 | 8 | 0.09877 | 10.12 | 2.5359270239277976e-11 | 9.12 | 1 | True | nan | True |  |
 | option_baseline_frontier | maze | 0.05 | betweenness_12 | option_baseline:bottleneck | 81 | 12 | 0.1481 | 6.75 | 2.0179413695586845e-11 | 7.22 | 1 | True | nan | True |  |
@@ -88,5 +101,7 @@ This table normalizes full-MDP, graph-RD, group-constrained RD, and option-disco
 ## Source Artifacts
 
 - core benchmark: `experiments/output/core_benchmark/core_benchmark.csv`
+- large-scale compression: `experiments/output/large_scale_compression_adaptive/large_scale_compression.csv`
 - group-constrained adaptive: `experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv`
+- random maze generalization: `experiments/output/random_maze_generalization/random_maze_generalization.csv`
 - option baseline frontier: `experiments/output/option_baseline_frontier_maze_slip005/frontier_all.csv`

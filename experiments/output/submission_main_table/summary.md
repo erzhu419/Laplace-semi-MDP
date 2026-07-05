@@ -1,11 +1,13 @@
 # Submission Main Table
 
-Generated: 2026-07-05T19:43:00
+Generated: 2026-07-06T06:52:25
 
 This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.
 
 - best certified adaptive total speedup with unique-top fallback: `3.698x`
 - best certified adaptive total speedup with tie-aware certificate: `10.68x`
+- best multi-task amortized speedup in the current table: `112.3x`
+- best fixed-B edge reward relabeling speedup: `112.3x`
 - worst certified adaptive start-value gap in that table: `0.07851`
 - adaptive final certified decisions under unique-top fallback: `20/20`
 - adaptive final certified decisions under tie-aware reporting: `20/20`
@@ -14,16 +16,16 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 
 ## Main Runtime Table
 
-| map | boundary_selector | method | n_states | n_boundary | state_compression_ratio | first_hit_used_steps_max | tail_bound_max | full_vi_time_sec | upfront_time_sec | smdp_solve_time_sec | total_time_unique_top_fallback_sec | total_time_with_tie_certificate_sec | planning_speedup | total_speedup_unique_top_fallback | total_speedup_tie_aware | unique_top_break_even_tasks | amortization_break_even_tasks | start_gap | tie_mode | epsilon_optimal_certified | tie_set_certified | tie_aware_fallback_used | curvature_fallback_used | interval_certified | fallback_used | ambiguous_set_size | tie_aware_final_certified |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| corridor_64 | endpoints | certified_adaptive_green_rd | 64 | 2 | 32 | 87 | 5.982e-07 | 0.08168 | 0.01215 | 9.527e-05 | 0.1421 | 0.01225 | 857.3 | 0.5749 | 6.668 | 2 | 1 | 2.946e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 62 | True |
-| corridor_64 | turn_articulation | certified_adaptive_green_rd | 64 | 2 | 32 | 87 | 5.982e-07 | 0.1006 | 0.01251 | 8.714e-05 | 0.1423 | 0.0126 | 1154 | 0.7066 | 7.981 | 2 | 1 | 2.946e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 62 | True |
-| corridor_128 | endpoints | certified_adaptive_green_rd | 128 | 2 | 64 | 160 | 7.468e-07 | 0.2938 | 0.03139 | 0.0001048 | 1.903 | 0.0315 | 2804 | 0.1544 | 9.327 | 7 | 1 | 1.024e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 126 | True |
-| corridor_128 | turn_articulation | certified_adaptive_green_rd | 128 | 2 | 64 | 160 | 7.468e-07 | 0.3624 | 0.03386 | 8.845e-05 | 5.223 | 0.03395 | 4097 | 0.06939 | 10.68 | 15 | 1 | 1.024e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 126 | True |
-| open_room_12 | endpoints | certified_adaptive_green_rd | 144 | 2 | 72 | 41 | 3.737e-07 | 0.09671 | 0.02606 | 8.801e-05 | 0.02615 | 0.02615 | 1099 | 3.698 | 3.698 | 1 | 1 | 0.07851 | unique_interval_top1 | True | False | False | False | True | False | 0 | True |
-| open_room_12 | turn_articulation | certified_adaptive_green_rd | 144 | 4 | 36 | 38 | 8.604e-07 | 0.1401 | 0.06182 | 0.0007079 | 23.72 | 0.06253 | 197.9 | 0.005905 | 2.24 | 171 | 1 | 0.07851 | epsilon_optimal_interval | True | True | False | False | False | True | 140 | True |
-| maze_13 | endpoints | certified_adaptive_green_rd | 71 | 2 | 35.5 | 42 | 4.298e-07 | 0.0677 | 0.009614 | 8.903e-05 | 0.09614 | 0.09614 | 760.4 | 0.7041 | 0.7041 | 2 | 2 | 1.548e-08 | curvature_exact_fallback | False | False | True | True | False | True | 69 | True |
-| maze_13 | turn_articulation | certified_adaptive_green_rd | 71 | 18 | 3.944 | 24 | 9.741e-07 | 0.06422 | 0.2002 | 0.03605 | 0.9096 | 0.2362 | 1.781 | 0.07061 | 0.2719 | 32 | 8 | 7.147e-07 | epsilon_optimal_interval | True | True | False | False | False | True | 53 | True |
+| map | slip | boundary_selector | method | n_states | n_boundary | state_compression_ratio | first_hit_used_steps_max | tail_bound_max | full_vi_time_sec | upfront_time_sec | smdp_solve_time_sec | total_time_unique_top_fallback_sec | total_time_with_tie_certificate_sec | planning_speedup | total_speedup_unique_top_fallback | total_speedup_tie_aware | unique_top_break_even_tasks | amortization_break_even_tasks | start_gap | tie_mode | epsilon_optimal_certified | tie_set_certified | tie_aware_fallback_used | curvature_fallback_used | interval_certified | fallback_used | ambiguous_set_size | tie_aware_final_certified |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| corridor_64 |  | endpoints | certified_adaptive_green_rd | 64 | 2 | 32 | 87 | 5.982e-07 | 0.08168 | 0.01215 | 9.527e-05 | 0.1421 | 0.01225 | 857.3 | 0.5749 | 6.668 | 2 | 1 | 2.946e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 62 | True |
+| corridor_64 |  | turn_articulation | certified_adaptive_green_rd | 64 | 2 | 32 | 87 | 5.982e-07 | 0.1006 | 0.01251 | 8.714e-05 | 0.1423 | 0.0126 | 1154 | 0.7066 | 7.981 | 2 | 1 | 2.946e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 62 | True |
+| corridor_128 |  | endpoints | certified_adaptive_green_rd | 128 | 2 | 64 | 160 | 7.468e-07 | 0.2938 | 0.03139 | 0.0001048 | 1.903 | 0.0315 | 2804 | 0.1544 | 9.327 | 7 | 1 | 1.024e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 126 | True |
+| corridor_128 |  | turn_articulation | certified_adaptive_green_rd | 128 | 2 | 64 | 160 | 7.468e-07 | 0.3624 | 0.03386 | 8.845e-05 | 5.223 | 0.03395 | 4097 | 0.06939 | 10.68 | 15 | 1 | 1.024e-08 | epsilon_optimal_interval | True | True | False | False | False | True | 126 | True |
+| open_room_12 |  | endpoints | certified_adaptive_green_rd | 144 | 2 | 72 | 41 | 3.737e-07 | 0.09671 | 0.02606 | 8.801e-05 | 0.02615 | 0.02615 | 1099 | 3.698 | 3.698 | 1 | 1 | 0.07851 | unique_interval_top1 | True | False | False | False | True | False | 0 | True |
+| open_room_12 |  | turn_articulation | certified_adaptive_green_rd | 144 | 4 | 36 | 38 | 8.604e-07 | 0.1401 | 0.06182 | 0.0007079 | 23.72 | 0.06253 | 197.9 | 0.005905 | 2.24 | 171 | 1 | 0.07851 | epsilon_optimal_interval | True | True | False | False | False | True | 140 | True |
+| maze_13 |  | endpoints | certified_adaptive_green_rd | 71 | 2 | 35.5 | 42 | 4.298e-07 | 0.0677 | 0.009614 | 8.903e-05 | 0.09614 | 0.09614 | 760.4 | 0.7041 | 0.7041 | 2 | 2 | 1.548e-08 | curvature_exact_fallback | False | False | True | True | False | True | 69 | True |
+| maze_13 |  | turn_articulation | certified_adaptive_green_rd | 71 | 18 | 3.944 | 24 | 9.741e-07 | 0.06422 | 0.2002 | 0.03605 | 0.9096 | 0.2362 | 1.781 | 0.07061 | 0.2719 | 32 | 8 | 7.147e-07 | epsilon_optimal_interval | True | True | False | False | False | True | 53 | True |
 
 ## Compact Baseline Aggregate
 
@@ -73,15 +75,58 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 
 | method_group | n_rows | pareto_rows | median_rate_budget_boundary_frac | median_state_compression_ratio | median_start_gap | median_hidden_audit | mean_group_feasible_rate | median_total_speedup | median_success_rate |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| baseline:dense_turn | 1 | 1 | 0.3704 | 2.7 | 2.901501261476369e-11 | 0.0 | 1 | nan | 1 |
-| baseline:endpoints | 7 | 7 | 0.01923 | 52 | 2.921041186709772e-11 | 155.5 | 0.1429 | 2.759 | 1 |
+| baseline:dense_turn | 5 | 4 | 0.03125 | 32 | 2.946e-08 | 0.0 | 1 | 5.11 | 1 |
+| baseline:endpoints | 13 | 13 | 0.02469 | 40.5 | 1.548e-08 | 155.5 | 0.1111 | 3.241 | 1 |
 | full_mdp | 10 | 5 | 1 | 1 | 0.0 | 0.0 | nan | 1 | 1 |
 | option_baseline:bottleneck | 15 | 8 | 0.1875 | 5.333 | 1.4097167877480388e-11 | 2 | 1 | 0.3402 | 1 |
 | option_baseline:coverage | 15 | 1 | 0.1875 | 5.333 | 2.9125146738806507e-11 | 2 | 1 | 0.4021 | 1 |
 | option_baseline:eigen | 15 | 3 | 0.1875 | 5.333 | 2.332356530132529e-11 | 2.1 | 1 | 0.3368 | 1 |
 | option_baseline:random | 15 | 1 | 0.1875 | 5.333 | 2.1433521624203422e-11 | 2 | 1 | 0.3465 | 1 |
-| ours:group_rd | 22 | 14 | 0.05221 | 19.27 | 1.7967849430533533e-12 | 0.0 | 0.9545 | 0.01516 | 1 |
+| ours:group_rd | 26 | 18 | 0.06582 | 15.27 | 2.949906985350026e-11 | 0.0 | 0.9231 | 0.01516 | 1 |
 | ours:rd_graph | 21 | 19 | 0.125 | 8 | 1.9127810446661897e-11 | 0.0 | 1 | 0.1836 | 1 |
+
+## Multi-Task And Edge Reward Compression
+
+| source | method_or_variant | task_count | n_rows | median_amortized_speedup | best_amortized_speedup | median_planning_only_speedup | median_break_even_tasks | max_start_gap | median_state_compression | median_goal_interface | median_goal_policies |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| amortized_multitask | betweenness_sqrt | 1 | 2 | 0.725 | 0.9623 | 5.616 | nan | 0.0 | 7.944 |  |  |
+| amortized_multitask | betweenness_sqrt | 5 | 2 | 2.263 | 2.642 | 6.699 | nan | 0.0 | 7.944 |  |  |
+| amortized_multitask | betweenness_sqrt | 7 | 1 | 3.223 | 3.223 | 7.555 | nan | 0.0 | 8 |  |  |
+| amortized_multitask | betweenness_sqrt | 8 | 1 | 2.507 | 2.507 | 6.048 | nan | 0.0 | 7.889 |  |  |
+| amortized_multitask | endpoints | 1 | 2 | 6.729 | 8.533 | 390.6 | nan | 0.0 | 33.75 |  |  |
+| amortized_multitask | turn_articulation | 1 | 2 | 5.483 | 10.81 | 323.4 | nan | 0.0 | 17.97 |  |  |
+| amortized_multitask | turn_articulation | 10 | 1 | 0.928 | 0.928 | 1.648 | nan | 0.0 | 3.944 |  |  |
+| amortized_multitask | turn_articulation | 17 | 1 | 1.121 | 1.121 | 1.647 | nan | 0.0 | 3.944 |  |  |
+| amortized_multitask | turn_articulation | 5 | 1 | 0.6509 | 0.6509 | 1.677 | nan | 0.0 | 3.944 |  |  |
+| edge_reward_kernel_multitask | fixed_B_edge_reward_kernel | 1 | 32 | 0.5487 | 1.466 | 152.6 | 2 | 28.8 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_edge_reward_kernel | 10 | 32 | 5.771 | 14.22 | 178.5 | 2 | 30.88 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_edge_reward_kernel | 100 | 30 | 50.17 | 112.3 | 187.8 | 2 | 30.88 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_edge_reward_kernel | 25 | 32 | 13.19 | 35.45 | 185.7 | 2 | 30.88 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_edge_reward_kernel | 5 | 32 | 2.936 | 7.047 | 172.9 | 2 | 30.88 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_edge_reward_kernel | 50 | 32 | 24.12 | 65.12 | 192.2 | 2 | 30.88 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_edge_reward_kernel | 89 | 2 | 0.08996 | 0.1014 | 0.09334 | nan | 21.38 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_event_hit_kernel | 1 | 16 | 0.06956 | 0.3051 | 1.178 | 17 | 27.44 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_event_hit_kernel | 10 | 16 | 0.5023 | 1.798 | 0.8963 | 10 | 30.09 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_event_hit_kernel | 100 | 15 | 1.012 | 3.634 | 1.152 | 11.5 | 30.2 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_event_hit_kernel | 25 | 16 | 0.7043 | 2.752 | 0.9529 | 11.5 | 30.09 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_event_hit_kernel | 5 | 16 | 0.3146 | 1.153 | 0.8957 | 10 | 30.09 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_event_hit_kernel | 50 | 16 | 0.835 | 3.291 | 0.9915 | 11.5 | 30.09 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_event_hit_kernel | 89 | 1 | 0.005618 | 0.005618 | 0.005689 | nan | 5.022 |  | 0.0 | 0.0 |
+| edge_reward_kernel_multitask | fixed_B_goal_conditioned_event_options | 1 | 16 | 0.06788 | 0.2912 | 0.8008 | 14 | 0.2593 |  | 2 | 1 |
+| edge_reward_kernel_multitask | fixed_B_goal_conditioned_event_options | 10 | 16 | 0.4071 | 1.428 | 0.6404 | 22 | 0.4631 |  | 20 | 10 |
+| edge_reward_kernel_multitask | fixed_B_goal_conditioned_event_options | 100 | 15 | 0.7249 | 2.43 | 0.7943 | 118 | 0.4631 |  | 200 | 100 |
+| edge_reward_kernel_multitask | fixed_B_goal_conditioned_event_options | 25 | 16 | 0.5373 | 1.996 | 0.673 | 39.5 | 0.4631 |  | 50 | 25 |
+| edge_reward_kernel_multitask | fixed_B_goal_conditioned_event_options | 5 | 16 | 0.2766 | 0.9835 | 0.6422 | 16 | 0.3618 |  | 10 | 5 |
+| edge_reward_kernel_multitask | fixed_B_goal_conditioned_event_options | 50 | 16 | 0.6137 | 2.286 | 0.6948 | 67 | 0.4631 |  | 100 | 50 |
+| edge_reward_kernel_multitask | fixed_B_goal_conditioned_event_options | 89 | 1 | 0.005889 | 0.005889 | 0.005967 | nan | 5.2224891078367364e-11 |  | 3382 | 89 |
+
+## Failure Modes
+
+| failure_mode | evidence | n_rows | endpoint_feasible_rate | robust_feasible_rate | max_endpoint_violation | max_robust_violation | max_ambiguous_set_size | tie_set_certified_rate | max_tie_aware_total_speedup | event_kernel_max_gap | goal_conditioned_max_gap | goal_conditioned_median_break_even | goal_conditioned_best_speedup |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| open_room_soft_over_split_or_hidden_boundary | group constraints expose endpoint infeasibility while incremental/group RD removes group violation | 6 | 0.0 | 1 | 233.2 | 0.0 |  |  |  |  |  |  |  |
+| corridor_top_set_tie | long corridors create large epsilon/tie sets; tie-aware certificate reports cheap top-set exact fallback separately | 4 |  |  |  |  | 126 | 1 | 10.68 |  |  |  |  |
+| terminal_interior_goal_event_gap | fixed-B event kernels expose option/boundary restriction bias; goal-conditioned event options reduce gap but add query-time interface cost | 192 |  |  |  |  |  |  |  | 30.2 | 0.4631 | 30.5 | 2.43 |
 
 ## Solver Validity Aggregate
 
@@ -125,6 +170,8 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 | Margin and top-set certificates separate stable operator decisions from ambiguous ties. | proved_symbol_present | rows=20, final=20, tie_aware_final=20 | Certificate table | Use tie-aware timing as the conservative runtime accounting. |
 | Group-constrained RD makes robustness constraints explicit instead of hiding them in a scalar risk. | proved_symbol_present | rows=18, feasible=12 | Robust objective and main ablation | Use random-maze and held-out probes to show robustness is not hand-tuned to one map. |
 | Incremental insertion scoring is an implementation optimization, not a new theorem yet. | lean_pending | rows=30, selected_match=26, max_score_error=233.2 | Runtime ablation, not core correctness theorem | Formalize the insertion algebra only if it becomes a central claim. |
+| Fixed-boundary reward relabeling keeps task reward support out of the graph topology. | proved_symbol_present | rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.4631 | Multi-task compression and reward relabeling | Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted. |
+| Goal-conditioned event options reduce terminal-goal restriction bias without adding the goal to B. | proved_symbol_present | rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.4631 | Secondary terminal-goal extension | The gap is much smaller and the backend is shared/batched, but larger multitask runs must show amortized speedup beyond the current break-even table. |
 | The extracted graph should generalize across maze instances, not only fixed toy layouts. | empirical_stress_test | rows=6, feasible=3 | Generalization/stress-test section | Scale to larger random maps on node001-node006 for final paper numbers. |
 
 ## Certificate Appendix Summary
@@ -143,6 +190,8 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 - larger group-constrained adaptive: `experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv`
 - random maze generalization: `experiments/output/random_maze_generalization/random_maze_generalization.csv`
 - fair budget frontier: `experiments/output/fair_budget_frontier/fair_budget_frontier_summary.csv`
+- amortized multitask: `experiments/output/amortized_multitask/amortized_multitask.csv`
+- edge reward multitask: `experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv`
 - solver validity: `experiments/output/solver_validity/solver_validity.csv`
 - discovery profile/cache: `experiments/output/discovery_profile_cache/discovery_profile_cache.csv`
 - incremental Green update: `experiments/output/incremental_green_update/incremental_green_update_aggregate.csv`

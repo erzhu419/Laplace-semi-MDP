@@ -28,7 +28,7 @@ if [ "${LAPLACE_USE_SYSTEM_PYTHON:-0}" != "1" ] && [ -d "$VENV" ]; then
 fi
 
 mkdir -p "$OUT_ROOT"
-RUN_PARTS="${LAPLACE_RUN_PARTS:-thread,random,operator,large_scale,amortized,summary}"
+RUN_PARTS="${LAPLACE_RUN_PARTS:-thread,random,operator,large_scale,amortized,edge_reward,option_frontier,summary}"
 
 has_part() {
   case ",$RUN_PARTS," in
@@ -43,8 +43,10 @@ case "$PROFILE" in
     THREAD_SIZES=(96)
     RANDOM_SIZES=(9)
     RANDOM_SEEDS=(0)
+    RANDOM_SLIPS=(0.05)
     RANDOM_METHODS=(endpoints group_constrained_incremental)
     LARGE_MAP_SPECS=(corridor:64 open_room:12 maze:13)
+    LARGE_SLIPS=(0.05)
     LARGE_METHODS=(endpoints graph_rd_surrogate_joint betweenness_sqrt)
     AMORTIZED_MAP_SPECS=(corridor:64 open_room:10 maze:13)
     AMORTIZED_COUNTS=(1 5 10)
@@ -53,14 +55,19 @@ case "$PROFILE" in
     EDGE_REWARD_METHODS=(endpoints turn_articulation)
     EDGE_REWARD_COUNTS=(1 5 10)
     EDGE_REWARD_MAX_TASKS=10
+    OPTION_MAP_SPECS=(maze:9)
+    OPTION_SLIPS=(0.05)
+    OPTION_K_VALUES=(4 8)
     ;;
   large)
     THREAD_GRID=(1 8 16 32 64 96 128 192)
     THREAD_SIZES=(192 384 768)
     RANDOM_SIZES=(9 11 13 15)
     RANDOM_SEEDS=(0 1 2 3 4 5 6 7)
+    RANDOM_SLIPS=(0.0 0.05)
     RANDOM_METHODS=(endpoints group_constrained_incremental)
     LARGE_MAP_SPECS=(corridor:128,256,512 open_room:16,24 four_rooms:15,21 maze:17,21)
+    LARGE_SLIPS=(0.05)
     LARGE_METHODS=(endpoints turn_articulation graph_rd_surrogate_joint betweenness_sqrt coverage_sqrt)
     AMORTIZED_MAP_SPECS=(corridor:128,256 open_room:16,24 four_rooms:15,21 maze:17,21)
     AMORTIZED_COUNTS=(1 5 10 25 50 100)
@@ -69,14 +76,19 @@ case "$PROFILE" in
     EDGE_REWARD_METHODS=(endpoints turn_articulation)
     EDGE_REWARD_COUNTS=(1 5 10 25 50 100)
     EDGE_REWARD_MAX_TASKS=100
+    OPTION_MAP_SPECS=(corridor:128 open_room:16 four_rooms:15 maze:17)
+    OPTION_SLIPS=(0.0 0.05)
+    OPTION_K_VALUES=(4 8 12 16 24)
     ;;
   xl)
     THREAD_GRID=(1 16 32 64 96 128 192)
     THREAD_SIZES=(384 768 1024)
     RANDOM_SIZES=(11 13 15 17 19)
     RANDOM_SEEDS=(0 1 2 3 4 5 6 7 8 9 10 11)
+    RANDOM_SLIPS=(0.0 0.05 0.1)
     RANDOM_METHODS=(endpoints group_constrained_incremental)
     LARGE_MAP_SPECS=(corridor:256,512,1024 open_room:24,32 four_rooms:21,31 maze:21,31)
+    LARGE_SLIPS=(0.0 0.05 0.1)
     LARGE_METHODS=(endpoints turn_articulation graph_rd_surrogate_joint betweenness_sqrt coverage_sqrt)
     AMORTIZED_MAP_SPECS=(corridor:256,512 open_room:24,32 four_rooms:21,31 maze:21,31)
     AMORTIZED_COUNTS=(1 5 10 25 50 100)
@@ -85,6 +97,9 @@ case "$PROFILE" in
     EDGE_REWARD_METHODS=(endpoints turn_articulation)
     EDGE_REWARD_COUNTS=(1 5 10 25 50 100)
     EDGE_REWARD_MAX_TASKS=100
+    OPTION_MAP_SPECS=(corridor:256,512 open_room:24,32 four_rooms:21,31 maze:21,31)
+    OPTION_SLIPS=(0.0 0.05 0.1)
+    OPTION_K_VALUES=(4 8 12 16 24 32)
     ;;
   *)
     echo "Unknown profile: $PROFILE" >&2
@@ -105,8 +120,11 @@ if has_part random; then
   "$PYTHON_CMD" experiments/run_random_maze_generalization.py \
     --sizes "${RANDOM_SIZES[@]}" \
     --maze-seeds "${RANDOM_SEEDS[@]}" \
-    --slips 0.0 0.05 \
+    --slips "${RANDOM_SLIPS[@]}" \
     --methods "${RANDOM_METHODS[@]}" \
+    --shard-index "${LAPLACE_RANDOM_SHARD_INDEX:-0}" \
+    --num-shards "${LAPLACE_RANDOM_NUM_SHARDS:-1}" \
+    --resume \
     --continue-on-error \
     --out-dir "$OUT_ROOT/random_maze_generalization"
 fi
@@ -125,10 +143,13 @@ if has_part large_scale; then
   "$PYTHON_CMD" experiments/run_large_scale_compression.py \
     --map-specs "${LARGE_MAP_SPECS[@]}" \
     --methods "${LARGE_METHODS[@]}" \
-    --slip 0.05 \
+    --slips "${LARGE_SLIPS[@]}" \
     --first-hit-mode adaptive \
     --first-hit-truncation-steps 1024 \
     --first-hit-tail-tol 1e-6 \
+    --shard-index "${LAPLACE_LARGE_SCALE_SHARD_INDEX:-0}" \
+    --num-shards "${LAPLACE_LARGE_SCALE_NUM_SHARDS:-1}" \
+    --resume \
     --continue-on-error \
     --out-dir "$OUT_ROOT/large_scale_compression"
 fi
@@ -159,12 +180,47 @@ if has_part edge_reward; then
     --out-dir "$OUT_ROOT/edge_reward_kernel_multitask"
 fi
 
+if has_part option_frontier; then
+  "$PYTHON_CMD" experiments/run_option_baseline_frontier.py \
+    --map-specs "${OPTION_MAP_SPECS[@]}" \
+    --slips "${OPTION_SLIPS[@]}" \
+    --k-values "${OPTION_K_VALUES[@]}" \
+    --families eigenoptions betweenness random_landmarks coverage \
+    --include-endpoints \
+    --include-graph-rd \
+    --include-dense \
+    --shard-index "${LAPLACE_OPTION_FRONTIER_SHARD_INDEX:-0}" \
+    --num-shards "${LAPLACE_OPTION_FRONTIER_NUM_SHARDS:-1}" \
+    --resume \
+    --continue-on-error \
+    --out-dir "$OUT_ROOT/option_baseline_frontier"
+fi
+
+if has_part fair_frontier; then
+  "$PYTHON_CMD" experiments/run_fair_budget_frontier.py \
+    --large-scale-csv "$OUT_ROOT/large_scale_compression/large_scale_compression.csv" \
+    --random-maze-csv "$OUT_ROOT/random_maze_generalization/random_maze_generalization.csv" \
+    --option-frontier-csv "$OUT_ROOT/option_baseline_frontier/frontier_all.csv" \
+    --out-dir "$OUT_ROOT/fair_budget_frontier"
+fi
+
+if has_part submission_table; then
+  "$PYTHON_CMD" experiments/run_submission_main_table.py \
+    --large-scale-csv "$OUT_ROOT/large_scale_compression/large_scale_compression.csv" \
+    --random-maze-csv "$OUT_ROOT/random_maze_generalization/random_maze_generalization.csv" \
+    --fair-frontier-csv "$OUT_ROOT/fair_budget_frontier/fair_budget_frontier_summary.csv" \
+    --amortized-csv "$OUT_ROOT/amortized_multitask/amortized_multitask.csv" \
+    --edge-reward-csv "$OUT_ROOT/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv" \
+    --out-dir "$OUT_ROOT/submission_main_table"
+fi
+
 if has_part summary; then
   "$PYTHON_CMD" experiments/run_node_large_summary.py \
     --large-scale-csv "$OUT_ROOT/large_scale_compression/large_scale_compression.csv" \
     --amortized-csv "$OUT_ROOT/amortized_multitask/amortized_multitask.csv" \
     --edge-reward-csv "$OUT_ROOT/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv" \
     --random-maze-csv "$OUT_ROOT/random_maze_generalization/random_maze_generalization.csv" \
+    --option-frontier-csv "$OUT_ROOT/option_baseline_frontier/frontier_all.csv" \
     --thread-scaling-csv "$OUT_ROOT/linear_solver_thread_scaling/linear_solver_thread_scaling.csv" \
     --out-dir "$OUT_ROOT/summary"
 fi

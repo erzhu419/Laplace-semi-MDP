@@ -34,12 +34,16 @@ STAGE_EXCLUDES = [
 
 
 SUITE_PARTS = {
-    "thread_random": "thread,random,summary",
+    "thread_random": "thread,summary",
+    "random_maze": "random,summary",
     "large_scale": "large_scale,summary",
     "amortized": "amortized,summary",
     "edge_reward": "edge_reward,summary",
+    "option_frontier": "option_frontier,summary",
+    "fair_frontier": "fair_frontier,summary",
+    "submission_table": "submission_table,summary",
     "operator": "operator,summary",
-    "full": "thread,random,operator,large_scale,amortized,edge_reward,summary",
+    "full": "thread,random,operator,large_scale,amortized,edge_reward,option_frontier,summary",
 }
 
 
@@ -96,8 +100,32 @@ def shell_cmd(
 
 def planned_suites(args: argparse.Namespace) -> List[str]:
     if args.suites == ["all"]:
-        return ["thread_random", "large_scale", "amortized", "edge_reward", "operator"]
+        return ["thread_random", "random_maze", "large_scale", "amortized", "edge_reward", "option_frontier", "operator"]
     return args.suites
+
+
+def default_large_scale_shards(profile: str) -> int:
+    if profile == "smoke":
+        return 1
+    if profile == "xl":
+        return 24
+    return 12
+
+
+def default_random_shards(profile: str) -> int:
+    if profile == "smoke":
+        return 1
+    if profile == "xl":
+        return 24
+    return 16
+
+
+def default_option_frontier_shards(profile: str) -> int:
+    if profile == "smoke":
+        return 1
+    if profile == "xl":
+        return 24
+    return 12
 
 
 def default_amortized_shards(profile: str) -> int:
@@ -112,53 +140,86 @@ def default_edge_reward_shards(profile: str) -> int:
     return 16
 
 
+def shard_range(start: int, stop: int, count: int) -> range:
+    shard_start = max(0, start)
+    shard_stop = count if stop < 0 else min(count, stop)
+    return range(shard_start, max(shard_start, shard_stop))
+
+
+def add_sharded_specs(
+    specs: List[Tuple[str, str, Dict[str, object]]],
+    suite: str,
+    shard_count: int,
+    shard_start: int,
+    shard_stop: int,
+    env_index: str,
+    env_count: str,
+) -> None:
+    shards = shard_range(shard_start, shard_stop, shard_count)
+    if not shards:
+        return
+    if shard_count > 1:
+        width = max(2, len(str(shard_count - 1)))
+        for shard_index in shards:
+            label = f"{suite}_shard_{shard_index:0{width}d}_of_{shard_count:0{width}d}"
+            specs.append((label, suite, {env_index: shard_index, env_count: shard_count}))
+    else:
+        specs.append((suite, suite, {}))
+
+
 def task_specs(args: argparse.Namespace) -> List[Tuple[str, str, Dict[str, object]]]:
     specs: List[Tuple[str, str, Dict[str, object]]] = []
     for suite in planned_suites(args):
-        if suite == "amortized":
-            shard_count = args.amortized_shards or default_amortized_shards(args.profile)
-            shard_start = max(0, args.amortized_shard_start)
-            shard_stop = shard_count if args.amortized_shard_stop < 0 else min(shard_count, args.amortized_shard_stop)
-            if shard_start >= shard_stop:
-                continue
-            if shard_count > 1:
-                width = max(2, len(str(shard_count - 1)))
-                for shard_index in range(shard_start, shard_stop):
-                    label = f"amortized_shard_{shard_index:0{width}d}_of_{shard_count:0{width}d}"
-                    specs.append(
-                        (
-                            label,
-                            "amortized",
-                            {
-                                "LAPLACE_AMORTIZED_SHARD_INDEX": shard_index,
-                                "LAPLACE_AMORTIZED_NUM_SHARDS": shard_count,
-                            },
-                        )
-                    )
-            else:
-                specs.append((suite, suite, {}))
+        if suite == "large_scale":
+            add_sharded_specs(
+                specs,
+                suite,
+                args.large_scale_shards or default_large_scale_shards(args.profile),
+                args.large_scale_shard_start,
+                args.large_scale_shard_stop,
+                "LAPLACE_LARGE_SCALE_SHARD_INDEX",
+                "LAPLACE_LARGE_SCALE_NUM_SHARDS",
+            )
+        elif suite == "random_maze":
+            add_sharded_specs(
+                specs,
+                suite,
+                args.random_shards or default_random_shards(args.profile),
+                args.random_shard_start,
+                args.random_shard_stop,
+                "LAPLACE_RANDOM_SHARD_INDEX",
+                "LAPLACE_RANDOM_NUM_SHARDS",
+            )
+        elif suite == "amortized":
+            add_sharded_specs(
+                specs,
+                suite,
+                args.amortized_shards or default_amortized_shards(args.profile),
+                args.amortized_shard_start,
+                args.amortized_shard_stop,
+                "LAPLACE_AMORTIZED_SHARD_INDEX",
+                "LAPLACE_AMORTIZED_NUM_SHARDS",
+            )
         elif suite == "edge_reward":
-            shard_count = args.edge_reward_shards or default_edge_reward_shards(args.profile)
-            shard_start = max(0, args.edge_reward_shard_start)
-            shard_stop = shard_count if args.edge_reward_shard_stop < 0 else min(shard_count, args.edge_reward_shard_stop)
-            if shard_start >= shard_stop:
-                continue
-            if shard_count > 1:
-                width = max(2, len(str(shard_count - 1)))
-                for shard_index in range(shard_start, shard_stop):
-                    label = f"edge_reward_shard_{shard_index:0{width}d}_of_{shard_count:0{width}d}"
-                    specs.append(
-                        (
-                            label,
-                            "edge_reward",
-                            {
-                                "LAPLACE_EDGE_REWARD_SHARD_INDEX": shard_index,
-                                "LAPLACE_EDGE_REWARD_NUM_SHARDS": shard_count,
-                            },
-                        )
-                    )
-            else:
-                specs.append((suite, suite, {}))
+            add_sharded_specs(
+                specs,
+                suite,
+                args.edge_reward_shards or default_edge_reward_shards(args.profile),
+                args.edge_reward_shard_start,
+                args.edge_reward_shard_stop,
+                "LAPLACE_EDGE_REWARD_SHARD_INDEX",
+                "LAPLACE_EDGE_REWARD_NUM_SHARDS",
+            )
+        elif suite == "option_frontier":
+            add_sharded_specs(
+                specs,
+                suite,
+                args.option_frontier_shards or default_option_frontier_shards(args.profile),
+                args.option_frontier_shard_start,
+                args.option_frontier_shard_stop,
+                "LAPLACE_OPTION_FRONTIER_SHARD_INDEX",
+                "LAPLACE_OPTION_FRONTIER_NUM_SHARDS",
+            )
         else:
             specs.append((suite, suite, {}))
     return specs
@@ -194,6 +255,15 @@ def submit(args: argparse.Namespace) -> List[str]:
         elif suite_kind == "edge_reward":
             task_threads = args.edge_reward_threads
             task_cpu = args.edge_reward_cpu
+        elif suite_kind == "large_scale":
+            task_threads = args.large_scale_threads
+            task_cpu = args.large_scale_cpu
+        elif suite_kind == "random_maze":
+            task_threads = args.random_threads
+            task_cpu = args.random_cpu
+        elif suite_kind == "option_frontier":
+            task_threads = args.option_frontier_threads
+            task_cpu = args.option_frontier_cpu
         else:
             task_threads = args.threads
             task_cpu = args.cpu
@@ -264,21 +334,55 @@ def parse_args() -> argparse.Namespace:
         "--suites",
         nargs="+",
         default=["all"],
-        choices=["all", "thread_random", "large_scale", "amortized", "edge_reward", "operator", "full"],
+        choices=[
+            "all",
+            "thread_random",
+            "random_maze",
+            "large_scale",
+            "amortized",
+            "edge_reward",
+            "option_frontier",
+            "fair_frontier",
+            "submission_table",
+            "operator",
+            "full",
+        ],
     )
     parser.add_argument("--nodes", default=",".join(CPU_NODES))
     parser.add_argument("--threads", type=int, default=192)
     parser.add_argument("--cpu", type=int, default=128)
     parser.add_argument("--ram-mb", type=int, default=65536)
+    parser.add_argument("--large-scale-threads", type=int, default=16)
+    parser.add_argument("--large-scale-cpu", type=int, default=16)
+    parser.add_argument("--random-threads", type=int, default=16)
+    parser.add_argument("--random-cpu", type=int, default=16)
     parser.add_argument("--amortized-threads", type=int, default=16)
     parser.add_argument("--amortized-cpu", type=int, default=16)
     parser.add_argument("--edge-reward-threads", type=int, default=16)
     parser.add_argument("--edge-reward-cpu", type=int, default=16)
+    parser.add_argument("--option-frontier-threads", type=int, default=16)
+    parser.add_argument("--option-frontier-cpu", type=int, default=16)
     parser.add_argument(
         "--scheduler-ckpt-dir",
         action="store_true",
         help="Also declare amortized output dirs as scheduler ckpt dirs; slower because submit scans remote paths.",
     )
+    parser.add_argument(
+        "--large-scale-shards",
+        type=int,
+        default=0,
+        help="Number of large-scale map/slip/method shards; 0 chooses a profile default.",
+    )
+    parser.add_argument("--large-scale-shard-start", type=int, default=0)
+    parser.add_argument("--large-scale-shard-stop", type=int, default=-1)
+    parser.add_argument(
+        "--random-shards",
+        type=int,
+        default=0,
+        help="Number of random-maze size/seed/slip/method shards; 0 chooses a profile default.",
+    )
+    parser.add_argument("--random-shard-start", type=int, default=0)
+    parser.add_argument("--random-shard-stop", type=int, default=-1)
     parser.add_argument(
         "--amortized-shards",
         type=int,
@@ -295,6 +399,14 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--edge-reward-shard-start", type=int, default=0)
     parser.add_argument("--edge-reward-shard-stop", type=int, default=-1)
+    parser.add_argument(
+        "--option-frontier-shards",
+        type=int,
+        default=0,
+        help="Number of option-frontier map/slip/method shards; 0 chooses a profile default.",
+    )
+    parser.add_argument("--option-frontier-shard-start", type=int, default=0)
+    parser.add_argument("--option-frontier-shard-stop", type=int, default=-1)
     parser.add_argument("--dispatch", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()

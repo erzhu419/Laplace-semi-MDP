@@ -95,13 +95,16 @@ that workload did not saturate a whole 192-core node. Each shard writes
 application-level checkpoints (`progress.jsonl` plus an incrementally refreshed
 CSV/summary) after every map/method job; `--scheduler-ckpt-dir` can also declare
 those dirs to scheduler, but it is slower because submit scans remote paths.
-The fixed-`B` edge reward / goal-conditioned event extension can also be
-submitted as scheduler shards (`--suites edge_reward`, default
-`--edge-reward-shards 16`, `--edge-reward-threads 16`). To
-aggregate finished shard outputs:
+The paper-grade suites can be submitted separately as scheduler shards:
+`random_maze`, `large_scale`, `amortized`, `edge_reward`, and
+`option_frontier`.  The XL profile defaults to multi-slip random/topology
+stress tests, scaled compression maps, fixed-`B` edge reward relabeling, and a
+matched option-baseline frontier.  To aggregate finished shard outputs:
 
 ```bash
-python3 experiments/aggregate_amortized_shards.py --run-root experiments/output/scheduler_large_runs/<run_id>
+python3 experiments/aggregate_scheduler_shards.py \
+  --run-root experiments/output/scheduler_large_runs/<run_id> \
+  --publish
 ```
 
 For a cheap scheduler preflight:

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 import time
@@ -128,6 +129,7 @@ def write_report(
         f"seeds = {list(args.maze_seeds)}",
         f"slips = {list(args.slips)}",
         f"methods = {list(args.methods)}",
+        f"shard = {args.shard_index}/{args.num_shards}",
         f"elapsed_sec = {elapsed:.3f}",
         "",
         "This is a topology-family stress test: each row uses a fresh DFS maze instance, then runs the same group-constrained boundary selector and compressed graph-SMDP evaluation.",
@@ -143,6 +145,57 @@ def write_report(
         markdown_table([{col: row.get(col, "") for col in row_columns} for row in rows], row_columns),
     ]
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def read_existing_rows(path: Path) -> List[Dict[str, object]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as handle:
+        return [dict(row) for row in csv.DictReader(handle)]
+
+
+def completed_jobs(rows: Sequence[Mapping[str, object]]) -> set[tuple[str, str, str, str]]:
+    done: set[tuple[str, str, str, str]] = set()
+    for row in rows:
+        key = (
+            str(row.get("map", "")),
+            str(row.get("maze_seed", "")),
+            str(row.get("slip", "")),
+            str(row.get("method", "")),
+        )
+        if all(key):
+            done.add(key)
+    return done
+
+
+def write_outputs(rows: Sequence[Mapping[str, object]], args: argparse.Namespace, elapsed: float) -> None:
+    summary_rows = build_summary_rows(rows)
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    write_csv_all_fields(args.out_dir / "random_maze_generalization.csv", rows)
+    write_csv_all_fields(args.out_dir / "random_maze_generalization_summary.csv", summary_rows)
+    (args.out_dir / "random_maze_generalization.json").write_text(
+        json.dumps(rows, indent=2, default=json_default) + "\n",
+        encoding="utf-8",
+    )
+    write_report(rows, summary_rows, args.out_dir / "summary.md", args, elapsed)
+
+
+def progress_path(args: argparse.Namespace) -> Path:
+    return args.progress_log or (args.out_dir / "progress.jsonl")
+
+
+def log_progress(args: argparse.Namespace, event: str, **payload: object) -> None:
+    path = progress_path(args)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rec = {
+        "ts": time.time(),
+        "event": event,
+        "shard_index": args.shard_index,
+        "num_shards": args.num_shards,
+        **payload,
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(rec, default=json_default) + "\n")
 
 
 def main() -> None:
@@ -208,41 +261,112 @@ def main() -> None:
     parser.add_argument("--first-hit-truncation-steps", type=int, default=512)
     parser.add_argument("--first-hit-tail-tol", type=float, default=1e-6)
     parser.add_argument("--continue-on-error", action="store_true")
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--resume", dest="resume", action="store_true", default=True)
+    parser.add_argument("--no-resume", dest="resume", action="store_false")
+    parser.add_argument("--progress-log", type=Path, default=None)
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/random_maze_generalization"))
     args = parser.parse_args()
+    if args.num_shards < 1:
+        raise ValueError("--num-shards must be >= 1")
+    if args.shard_index < 0 or args.shard_index >= args.num_shards:
+        raise ValueError("--shard-index must satisfy 0 <= shard-index < num-shards")
 
     started = time.perf_counter()
-    rows: List[Dict[str, object]] = []
-    for size in args.sizes:
-        for maze_seed in args.maze_seeds:
-            map_rows = scaled_rows("maze", size, seed=maze_seed)
-            map_label = f"random_maze_{size}_seed{maze_seed}"
-            for slip in args.slips:
+    jobs = [
+        (size, maze_seed, slip, method)
+        for size in args.sizes
+        for maze_seed in args.maze_seeds
+        for slip in args.slips
+        for method in args.methods
+    ]
+    selected_jobs = [
+        (job_index, *job)
+        for job_index, job in enumerate(jobs)
+        if job_index % args.num_shards == args.shard_index
+    ]
+    by_context: Dict[tuple[int, int, float], List[tuple[int, str]]] = {}
+    for job_index, size, maze_seed, slip, method in selected_jobs:
+        by_context.setdefault((size, maze_seed, slip), []).append((job_index, method))
+
+    rows: List[Dict[str, object]] = (
+        read_existing_rows(args.out_dir / "random_maze_generalization.csv") if args.resume else []
+    )
+    done = completed_jobs(rows)
+    log_progress(
+        args,
+        "start",
+        selected_jobs=len(selected_jobs),
+        total_jobs=len(jobs),
+        resumed_completed_jobs=len(done),
+    )
+    for context_index, ((size, maze_seed, slip), indexed_methods) in enumerate(
+        sorted(by_context.items()), start=1
+    ):
+        map_rows = scaled_rows("maze", size, seed=maze_seed)
+        map_label = f"random_maze_{size}_seed{maze_seed}"
+        pending_methods = [
+            (job_index, method)
+            for job_index, method in indexed_methods
+            if not (args.resume and (map_label, str(maze_seed), str(slip), method) in done)
+        ]
+        for job_index, method in indexed_methods:
+            if args.resume and (map_label, str(maze_seed), str(slip), method) in done:
+                log_progress(
+                    args,
+                    "skip_completed",
+                    context_index=context_index,
+                    selected_contexts=len(by_context),
+                    job_index=job_index,
+                    map=map_label,
+                    maze_seed=maze_seed,
+                    slip=slip,
+                    method=method,
+                )
+        if not pending_methods:
+            continue
+        context_started = time.perf_counter()
+        try:
+            _grid, lens_groups, recipe, basis, endpoint_boundary, budgets, context_info = group_context(
+                map_label=map_label,
+                rows=map_rows,
+                slip=slip,
+                args=args,
+            )
+            for job_index, method in pending_methods:
+                job_started = time.perf_counter()
                 try:
-                    _grid, lens_groups, recipe, basis, endpoint_boundary, budgets, context_info = group_context(
+                    row = run_method(
+                        family="random_maze",
+                        size=size,
                         map_label=map_label,
                         rows=map_rows,
                         slip=slip,
+                        method=method,
+                        lens_groups=lens_groups,
+                        recipe=recipe,
+                        basis=basis,
+                        endpoint_boundary=endpoint_boundary,
+                        budgets=budgets,
+                        context_info=context_info,
                         args=args,
                     )
-                    for method in args.methods:
-                        row = run_method(
-                            family="random_maze",
-                            size=size,
-                            map_label=map_label,
-                            rows=map_rows,
-                            slip=slip,
-                            method=method,
-                            lens_groups=lens_groups,
-                            recipe=recipe,
-                            basis=basis,
-                            endpoint_boundary=endpoint_boundary,
-                            budgets=budgets,
-                            context_info=context_info,
-                            args=args,
-                        )
-                        row["maze_seed"] = maze_seed
-                        rows.append(row)
+                    row["maze_seed"] = maze_seed
+                    rows.append(row)
+                    done.add((map_label, str(maze_seed), str(slip), method))
+                    log_progress(
+                        args,
+                        "job_done",
+                        context_index=context_index,
+                        selected_contexts=len(by_context),
+                        job_index=job_index,
+                        map=map_label,
+                        maze_seed=maze_seed,
+                        slip=slip,
+                        method=method,
+                        elapsed_sec=time.perf_counter() - job_started,
+                    )
                 except Exception as exc:
                     if not args.continue_on_error:
                         raise
@@ -253,20 +377,57 @@ def main() -> None:
                             "map": map_label,
                             "maze_seed": maze_seed,
                             "slip": slip,
-                            "method": "",
+                            "method": method,
                             "error": repr(exc),
                         }
                     )
-
-    summary_rows = build_summary_rows(rows)
-    args.out_dir.mkdir(parents=True, exist_ok=True)
-    write_csv_all_fields(args.out_dir / "random_maze_generalization.csv", rows)
-    write_csv_all_fields(args.out_dir / "random_maze_generalization_summary.csv", summary_rows)
-    (args.out_dir / "random_maze_generalization.json").write_text(
-        json.dumps(rows, indent=2, default=json_default) + "\n",
-        encoding="utf-8",
-    )
-    write_report(rows, summary_rows, args.out_dir / "summary.md", args, time.perf_counter() - started)
+                    done.add((map_label, str(maze_seed), str(slip), method))
+                    log_progress(
+                        args,
+                        "job_error",
+                        context_index=context_index,
+                        selected_contexts=len(by_context),
+                        job_index=job_index,
+                        map=map_label,
+                        maze_seed=maze_seed,
+                        slip=slip,
+                        method=method,
+                        elapsed_sec=time.perf_counter() - job_started,
+                        error=repr(exc),
+                    )
+                write_outputs(rows, args, time.perf_counter() - started)
+        except Exception as exc:
+            if not args.continue_on_error:
+                raise
+            for job_index, method in pending_methods:
+                rows.append(
+                    {
+                        "map_family": "random_maze",
+                        "map_size": size,
+                        "map": map_label,
+                        "maze_seed": maze_seed,
+                        "slip": slip,
+                        "method": method,
+                        "error": repr(exc),
+                    }
+                )
+                done.add((map_label, str(maze_seed), str(slip), method))
+                log_progress(
+                    args,
+                    "context_error",
+                    context_index=context_index,
+                    selected_contexts=len(by_context),
+                    job_index=job_index,
+                    map=map_label,
+                    maze_seed=maze_seed,
+                    slip=slip,
+                    method=method,
+                    elapsed_sec=time.perf_counter() - context_started,
+                    error=repr(exc),
+                )
+            write_outputs(rows, args, time.perf_counter() - started)
+    write_outputs(rows, args, time.perf_counter() - started)
+    log_progress(args, "done", rows=len(rows), selected_jobs=len(selected_jobs), total_jobs=len(jobs))
 
 
 if __name__ == "__main__":

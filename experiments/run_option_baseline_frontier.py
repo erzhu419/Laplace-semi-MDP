@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
@@ -11,6 +13,7 @@ from typing import Dict, List, Mapping, Sequence, Tuple
 import thread_limits  # noqa: F401
 import numpy as np
 
+from compression_experiment_utils import parse_map_specs
 from run_first_boundary_targeted import MAPS, markdown_table
 from run_option_algorithm_comparison import (
     evaluate_method,
@@ -103,6 +106,96 @@ def best_by_family(
     return list(best.values())
 
 
+def read_existing_rows(path: Path) -> List[Dict[str, object]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as handle:
+        return [dict(row) for row in csv.DictReader(handle)]
+
+
+def completed_jobs(rows: Sequence[Mapping[str, object]]) -> set[tuple[str, str, str]]:
+    done: set[tuple[str, str, str]] = set()
+    for row in rows:
+        key = (
+            str(row.get("map", "")),
+            str(row.get("slip", "")),
+            str(row.get("method", "")),
+        )
+        if all(key):
+            done.add(key)
+    return done
+
+
+def map_jobs(args: argparse.Namespace) -> List[Tuple[str, int, str, Tuple[str, ...]]]:
+    if args.map_specs:
+        return [
+            (family, size, map_label, tuple(map_rows))
+            for family, size, map_label, map_rows in parse_map_specs(args.map_specs)
+        ]
+    jobs: List[Tuple[str, int, str, Tuple[str, ...]]] = []
+    for map_name in args.maps:
+        if map_name not in MAPS:
+            raise ValueError(f"Unknown map: {map_name}")
+        jobs.append((map_name, len(MAPS[map_name]), map_name, MAPS[map_name]))
+    return jobs
+
+
+def progress_path(args: argparse.Namespace) -> Path:
+    return args.progress_log or (args.out_dir / "progress.jsonl")
+
+
+def log_progress(args: argparse.Namespace, event: str, **payload: object) -> None:
+    path = progress_path(args)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rec = {
+        "ts": time.time(),
+        "event": event,
+        "shard_index": args.shard_index,
+        "num_shards": args.num_shards,
+        **payload,
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(rec, default=json_default) + "\n")
+
+
+def sorted_rows(rows: Sequence[Mapping[str, object]]) -> List[Dict[str, object]]:
+    return sorted(
+        [dict(row) for row in rows],
+        key=lambda row: (
+            str(row.get("map", "")),
+            finite_float(row, "slip"),
+            family_name(str(row.get("method", ""))),
+            finite_float(row, "n_boundary"),
+            str(row.get("method", "")),
+        ),
+    )
+
+
+def write_outputs(rows: Sequence[Mapping[str, object]], args: argparse.Namespace) -> None:
+    ok_rows = [dict(row) for row in rows if not row.get("error")]
+    error_rows = [{**dict(row), "pareto_frontier": False, "pareto_dominated_by": ""} for row in rows if row.get("error")]
+    marked_rows = mark_pareto_frontier(ok_rows, objectives=args.frontier_objectives) + error_rows
+    marked_rows = sorted_rows(marked_rows)
+    frontier_rows = [row for row in marked_rows if bool(row["pareto_frontier"])]
+    frontier_rows = sorted(
+        frontier_rows,
+        key=lambda row: (
+            str(row["map"]),
+            float(row["slip"]),
+            finite_float(row, "description_length_proxy"),
+            finite_float(row, "occupancy_struct_hidden_distinct"),
+        ),
+    )
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    write_csv_all_fields(args.out_dir / "frontier_all.csv", marked_rows)
+    write_csv_all_fields(args.out_dir / "frontier_pareto.csv", frontier_rows)
+    (args.out_dir / "frontier_all.json").write_text(
+        json.dumps(marked_rows, indent=2, default=json_default) + "\n",
+        encoding="utf-8",
+    )
+    write_report(marked_rows, frontier_rows, args.out_dir / "summary.md", args)
+
+
 def write_report(
     rows: Sequence[Mapping[str, object]],
     frontier_rows: Sequence[Mapping[str, object]],
@@ -140,7 +233,8 @@ def write_report(
         f"k_values = {list(args.k_values)}",
         f"families = {list(args.families)}",
         f"objectives = {list(args.frontier_objectives)}",
-        f"maps = {list(args.maps)}, slips = {list(args.slips)}, gamma = {args.gamma}",
+        f"maps = {list(args.maps)}, map_specs = {list(args.map_specs or [])}, slips = {list(args.slips)}, gamma = {args.gamma}",
+        f"shard = {args.shard_index}/{args.num_shards}",
         "",
         "## Pareto Frontier",
         "",
@@ -160,6 +254,7 @@ def write_report(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Sweep k for tabular option baselines and extract a Pareto frontier.")
     parser.add_argument("--maps", nargs="+", default=["maze"])
+    parser.add_argument("--map-specs", nargs="+", default=None)
     parser.add_argument("--slips", type=float, nargs="+", default=[0.05])
     parser.add_argument("--families", nargs="+", default=list(DEFAULT_FAMILIES))
     parser.add_argument("--k-values", type=int, nargs="+", default=list(DEFAULT_K_VALUES))
@@ -185,12 +280,22 @@ def main() -> None:
     parser.add_argument("--residual-threshold-mode", default="struct_distinct")
     parser.add_argument("--residual-reward-weight", type=float, default=0.05)
     parser.add_argument("--residual-hit-weight", type=float, default=0.0)
+    parser.add_argument("--continue-on-error", action="store_true")
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--resume", dest="resume", action="store_true", default=True)
+    parser.add_argument("--no-resume", dest="resume", action="store_false")
+    parser.add_argument("--progress-log", type=Path, default=None)
     parser.add_argument(
         "--out-dir",
         type=Path,
         default=Path("experiments/output/option_baseline_frontier_maze_slip005"),
     )
     args = parser.parse_args()
+    if args.num_shards < 1:
+        raise ValueError("--num-shards must be >= 1")
+    if args.shard_index < 0 or args.shard_index >= args.num_shards:
+        raise ValueError("--shard-index must satisfy 0 <= shard-index < num-shards")
 
     args.methods = expand_methods(
         families=args.families,
@@ -199,44 +304,89 @@ def main() -> None:
         include_graph_rd=args.include_graph_rd,
         include_dense=args.include_dense,
     )
-    rows: List[Dict[str, object]] = []
-    for map_name in args.maps:
-        if map_name not in MAPS:
-            raise ValueError(f"Unknown map: {map_name}")
-        for slip in args.slips:
-            for method in args.methods:
-                rows.append(evaluate_method(method, map_name, MAPS[map_name], slip, args))
+    jobs = [
+        (family, size, map_label, map_rows, slip, method)
+        for family, size, map_label, map_rows in map_jobs(args)
+        for slip in args.slips
+        for method in args.methods
+    ]
+    selected_jobs = [
+        (job_index, *job)
+        for job_index, job in enumerate(jobs)
+        if job_index % args.num_shards == args.shard_index
+    ]
 
-    rows = mark_pareto_frontier(rows, objectives=args.frontier_objectives)
-    frontier_rows = [row for row in rows if bool(row["pareto_frontier"])]
-    frontier_rows = sorted(
-        frontier_rows,
-        key=lambda row: (
-            str(row["map"]),
-            float(row["slip"]),
-            finite_float(row, "description_length_proxy"),
-            finite_float(row, "occupancy_struct_hidden_distinct"),
-        ),
+    rows: List[Dict[str, object]] = read_existing_rows(args.out_dir / "frontier_all.csv") if args.resume else []
+    done = completed_jobs(rows)
+    log_progress(
+        args,
+        "start",
+        selected_jobs=len(selected_jobs),
+        total_jobs=len(jobs),
+        resumed_completed_jobs=len(done),
     )
-    rows = sorted(
-        rows,
-        key=lambda row: (
-            str(row["map"]),
-            float(row["slip"]),
-            family_name(str(row["method"])),
-            int(row["n_boundary"]),
-            str(row["method"]),
-        ),
-    )
-
-    args.out_dir.mkdir(parents=True, exist_ok=True)
-    write_csv_all_fields(args.out_dir / "frontier_all.csv", rows)
-    write_csv_all_fields(args.out_dir / "frontier_pareto.csv", frontier_rows)
-    (args.out_dir / "frontier_all.json").write_text(
-        json.dumps(rows, indent=2, default=json_default) + "\n",
-        encoding="utf-8",
-    )
-    write_report(rows, frontier_rows, args.out_dir / "summary.md", args)
+    for progress_index, (job_index, family, size, map_label, map_rows, slip, method) in enumerate(
+        selected_jobs, start=1
+    ):
+        key = (map_label, str(slip), method)
+        if args.resume and key in done:
+            log_progress(
+                args,
+                "skip_completed",
+                progress_index=progress_index,
+                selected_jobs=len(selected_jobs),
+                job_index=job_index,
+                map=map_label,
+                slip=slip,
+                method=method,
+            )
+            continue
+        started = time.perf_counter()
+        try:
+            row = evaluate_method(method, map_label, map_rows, slip, args)
+            row.update({"map_family": family, "map_size": size})
+            rows.append(row)
+            done.add(key)
+            log_progress(
+                args,
+                "job_done",
+                progress_index=progress_index,
+                selected_jobs=len(selected_jobs),
+                job_index=job_index,
+                map=map_label,
+                slip=slip,
+                method=method,
+                elapsed_sec=time.perf_counter() - started,
+            )
+        except Exception as exc:
+            if not args.continue_on_error:
+                raise
+            rows.append(
+                {
+                    "map_family": family,
+                    "map_size": size,
+                    "map": map_label,
+                    "slip": slip,
+                    "method": method,
+                    "error": repr(exc),
+                }
+            )
+            done.add(key)
+            log_progress(
+                args,
+                "job_error",
+                progress_index=progress_index,
+                selected_jobs=len(selected_jobs),
+                job_index=job_index,
+                map=map_label,
+                slip=slip,
+                method=method,
+                elapsed_sec=time.perf_counter() - started,
+                error=repr(exc),
+            )
+        write_outputs(rows, args)
+    write_outputs(rows, args)
+    log_progress(args, "done", rows=len(rows), selected_jobs=len(selected_jobs), total_jobs=len(jobs))
 
 
 if __name__ == "__main__":
