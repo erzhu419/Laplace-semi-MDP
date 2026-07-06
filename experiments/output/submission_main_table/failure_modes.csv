@@ -1,4 +1,4 @@
 failure_mode,evidence,n_rows,endpoint_feasible_rate,robust_feasible_rate,max_endpoint_violation,max_robust_violation,max_ambiguous_set_size,tie_set_certified_rate,max_tie_aware_total_speedup,event_kernel_max_gap,goal_conditioned_max_gap,goal_conditioned_median_break_even,goal_conditioned_best_speedup
 open_room_soft_over_split_or_hidden_boundary,group constraints expose endpoint infeasibility while incremental/group RD removes group violation,6,0.0,1.0,233.17891857710737,0.0,,,,,,,
-corridor_top_set_tie,long corridors create large epsilon/tie sets; tie-aware certificate reports cheap top-set exact fallback separately,4,,,,,126.0,1.0,10.675939243088584,,,,
-terminal_interior_goal_event_gap,fixed-B event kernels expose option/boundary restriction bias; goal-conditioned event options reduce gap but add query-time interface cost,192,,,,,,,,30.200976627566106,0.46313449525045414,30.5,2.429741536097676
+corridor_top_set_tie,long corridors create large epsilon/tie sets; tie-aware certificate reports cheap top-set exact fallback separately,45,,,,,0.0,nan,10.489483193024855,,,,
+terminal_interior_goal_event_gap,fixed-B event kernels expose option/boundary restriction bias; goal-conditioned event options reduce gap but add query-time interface cost,192,,,,,,,,30.200976627566106,0.5018285435423309,58.5,1.8225773656999025

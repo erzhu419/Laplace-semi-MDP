@@ -120,7 +120,8 @@ scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
 ## Current Artifact Status
 
 - Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.
-- The large-scale adaptive table currently shows planning-only speedups in the thousands on long corridors. The submission table reports both conservative unique-top fallback and tie-aware timing; tie-aware certification separates corridor tie overhead from true curvature fallback.
+- The XL scheduler run `paper_xl_20260706_0659` has been published into the tracked paper-facing outputs: large-scale compression 135 rows, random maze 360 rows, option frontier 648 rows, amortized multitask 192 rows, and fixed-`B` edge reward 384 rows.
+- The large-scale adaptive table currently shows planning-only speedups up to roughly `1e5x` on long corridors and single-task total speedups up to roughly `10.5x`. The submission table reports both planning-only and total-time accounting.
 - The compact benchmark compares full VI, exact RD graph variants, group-constrained RD, eigenoptions, betweenness bottlenecks, random landmarks, and coverage landmarks under the same map/slip suite.
 - Solver-validity diagnostics compare operator-only and exact-refined beam search against small exhaustive oracles.
 - The larger group-constrained adaptive table evaluates `open_room_12`, `four_rooms_11`, and `maze_13` at slip `0` and `0.05`; group-constrained boundaries are feasible on the current suite, while endpoint-only boundaries are not.

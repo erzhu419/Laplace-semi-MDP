@@ -147,6 +147,7 @@ if has_part large_scale; then
     --first-hit-mode adaptive \
     --first-hit-truncation-steps 1024 \
     --first-hit-tail-tol 1e-6 \
+    --local-horizon 1000000000 \
     --shard-index "${LAPLACE_LARGE_SCALE_SHARD_INDEX:-0}" \
     --num-shards "${LAPLACE_LARGE_SCALE_NUM_SHARDS:-1}" \
     --resume \

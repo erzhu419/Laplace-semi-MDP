@@ -343,7 +343,7 @@ def main() -> None:
     parser.add_argument("--audit-top-fraction", type=float, default=0.15)
     parser.add_argument("--soft-kind", default="combined")
     parser.add_argument("--soft-top-fraction", type=float, default=0.15)
-    parser.add_argument("--local-horizon", type=float, default=999.0)
+    parser.add_argument("--local-horizon", type=float, default=1e9)
     parser.add_argument("--hidden-threshold", type=float, default=1e-6)
     parser.add_argument("--soft-threshold", type=float, default=3.0)
     parser.add_argument("--residual-threshold", type=float, default=0.5)
