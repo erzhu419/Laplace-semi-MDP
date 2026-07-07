@@ -62,7 +62,18 @@ SUITES = {
         "publish": "experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv",
         "keys": ["map", "method_spec", "variant", "task_type", "task_count"],
     },
+    "hybrid_refine": {
+        "patterns": [
+            "hybrid_refine/hybrid_surrogate_refine/hybrid_surrogate_refine.csv",
+            "hybrid_refine_shard_*/hybrid_surrogate_refine/hybrid_surrogate_refine.csv",
+        ],
+        "out": "hybrid_surrogate_refine/hybrid_surrogate_refine.csv",
+        "publish": "experiments/output/hybrid_surrogate_refine/hybrid_surrogate_refine.csv",
+        "keys": ["map", "slip", "method", "top_k"],
+    },
 }
+
+DERIVED_INPUT_SUITES = {"large_scale", "random_maze", "option_frontier", "amortized", "edge_reward"}
 
 
 def read_csv_rows(path: Path) -> List[Dict[str, str]]:
@@ -105,7 +116,95 @@ def merge_suite(run_root: Path, out_root: Path, suite: str) -> tuple[Path, int, 
         json.dumps(rows, indent=2, default=json_default) + "\n",
         encoding="utf-8",
     )
+    if suite == "hybrid_refine":
+        write_hybrid_refine_summary(out_path, rows)
     return out_path, len(rows), inputs
+
+
+def _float_or_none(value: object) -> float | None:
+    try:
+        number = float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    if number != number:
+        return None
+    return number
+
+
+def _median(values: Iterable[object]) -> object:
+    finite = sorted(value for raw in values if (value := _float_or_none(raw)) is not None)
+    if not finite:
+        return ""
+    mid = len(finite) // 2
+    if len(finite) % 2:
+        return finite[mid]
+    return 0.5 * (finite[mid - 1] + finite[mid])
+
+
+def write_hybrid_refine_summary(csv_path: Path, rows: Sequence[Mapping[str, object]]) -> None:
+    groups: Dict[tuple[str, str], List[Mapping[str, object]]] = {}
+    for row in rows:
+        groups.setdefault((str(row.get("method", "")), str(row.get("top_k", ""))), []).append(row)
+    summary: List[Dict[str, object]] = []
+    for (method, top_k), group in sorted(groups.items()):
+        n = len(group)
+        recalls = [
+            value
+            for row in group
+            if (value := _float_or_none(row.get("surrogate_topk_recall"))) is not None
+        ]
+        break_evens = [
+            value
+            for row in group
+            if (value := _float_or_none(row.get("break_even_tasks"))) is not None
+        ]
+        summary.append(
+            {
+                "method": method,
+                "top_k": top_k,
+                "n_rows": n,
+                "feasible_rate": sum(str(row.get("group_all_feasible", "")).lower() == "true" for row in group)
+                / max(1, n),
+                "median_n_boundary": _median(row.get("n_boundary") for row in group),
+                "median_selection_time_sec": _median(row.get("selection_time_sec") for row in group),
+                "median_kernel_time_sec": _median(row.get("kernel_time_sec") for row in group),
+                "median_total_speedup": _median(row.get("total_speedup") for row in group),
+                "best_total_speedup": max(
+                    (value for row in group if (value := _float_or_none(row.get("total_speedup"))) is not None),
+                    default="",
+                ),
+                "median_break_even_tasks": _median(break_evens),
+                "max_group_total_violation": max(
+                    (value for row in group if (value := _float_or_none(row.get("group_total_violation"))) is not None),
+                    default=0.0,
+                ),
+                "max_start_gap": max(
+                    (value for row in group if (value := _float_or_none(row.get("start_gap"))) is not None),
+                    default=0.0,
+                ),
+                "mean_surrogate_topk_recall": (sum(recalls) / len(recalls)) if recalls else "",
+                "total_exact_refine_calls": sum(int(_float_or_none(row.get("exact_refine_calls")) or 0) for row in group),
+            }
+        )
+    out_dir = csv_path.parent
+    write_csv_all_fields(out_dir / "hybrid_surrogate_refine_summary.csv", summary)
+    (out_dir / "hybrid_surrogate_refine_summary.json").write_text(
+        json.dumps(summary, indent=2, default=json_default) + "\n",
+        encoding="utf-8",
+    )
+    lines = ["# Hybrid surrogate refine summary", ""]
+    lines.append(f"- rows: {len(rows)}")
+    lines.append(f"- methods: {len(summary)}")
+    lines.append("")
+    lines.append("| method | top_k | n_rows | feasible_rate | median_selection_sec | median_total_speedup |")
+    lines.append("|---|---:|---:|---:|---:|---:|")
+    for row in summary:
+        lines.append(
+            "| {method} | {top_k} | {n_rows} | {feasible_rate:.3g} | {median_selection_time_sec} | {median_total_speedup} |".format(
+                **row
+            )
+        )
+    (out_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def run_cmd(cmd: Sequence[object]) -> None:
@@ -127,6 +226,8 @@ def maybe_publish(combined_paths: Mapping[str, Path], suites: Sequence[str]) -> 
             json.dumps(rows, indent=2, default=json_default) + "\n",
             encoding="utf-8",
         )
+        if suite == "hybrid_refine":
+            write_hybrid_refine_summary(publish_path, rows)
         published[suite] = publish_path
     return published
 
@@ -197,11 +298,13 @@ def main() -> None:
         json.dumps(summary_rows, indent=2, default=json_default) + "\n",
         encoding="utf-8",
     )
-    if not args.skip_derived:
+    should_build_derived = any(suite in combined_paths for suite in DERIVED_INPUT_SUITES)
+    if not args.skip_derived and should_build_derived:
         build_derived_tables(combined_paths, out_root)
     if args.publish:
         published = maybe_publish(combined_paths, args.suites)
-        if not args.skip_derived:
+        should_publish_derived = any(suite in published for suite in DERIVED_INPUT_SUITES)
+        if not args.skip_derived and should_publish_derived:
             if "option_frontier" in published:
                 fair_paths = dict(published)
                 build_derived_tables(fair_paths, ROOT / "experiments/output")

@@ -58,6 +58,10 @@ case "$PROFILE" in
     OPTION_MAP_SPECS=(maze:9)
     OPTION_SLIPS=(0.05)
     OPTION_K_VALUES=(4 8)
+    HYBRID_MAP_SPECS=(open_room:7)
+    HYBRID_SLIPS=(0.0)
+    HYBRID_TOP_K=(2)
+    HYBRID_METHODS=(endpoints incremental_group_rd surrogate_topk_certified_refine)
     ;;
   large)
     THREAD_GRID=(1 8 16 32 64 96 128 192)
@@ -79,6 +83,10 @@ case "$PROFILE" in
     OPTION_MAP_SPECS=(corridor:128 open_room:16 four_rooms:15 maze:17)
     OPTION_SLIPS=(0.0 0.05)
     OPTION_K_VALUES=(4 8 12 16 24)
+    HYBRID_MAP_SPECS=(open_room:12 four_rooms:11 maze:13)
+    HYBRID_SLIPS=(0.0 0.05)
+    HYBRID_TOP_K=(4)
+    HYBRID_METHODS=(endpoints exact_group_rd incremental_group_rd surrogate_topk_exact_refine surrogate_topk_certified_refine heuristic_topk_exact_refine)
     ;;
   xl)
     THREAD_GRID=(1 16 32 64 96 128 192)
@@ -100,6 +108,10 @@ case "$PROFILE" in
     OPTION_MAP_SPECS=(corridor:256,512 open_room:24,32 four_rooms:21,31 maze:21,31)
     OPTION_SLIPS=(0.0 0.05 0.1)
     OPTION_K_VALUES=(4 8 12 16 24 32)
+    HYBRID_MAP_SPECS=(open_room:12,16 four_rooms:11,15 maze:13,17)
+    HYBRID_SLIPS=(0.0 0.05 0.1)
+    HYBRID_TOP_K=(4)
+    HYBRID_METHODS=(endpoints exact_group_rd incremental_group_rd surrogate_topk_exact_refine surrogate_topk_certified_refine heuristic_topk_exact_refine)
     ;;
   *)
     echo "Unknown profile: $PROFILE" >&2
@@ -195,6 +207,19 @@ if has_part option_frontier; then
     --resume \
     --continue-on-error \
     --out-dir "$OUT_ROOT/option_baseline_frontier"
+fi
+
+if has_part hybrid_refine; then
+  "$PYTHON_CMD" experiments/run_hybrid_surrogate_refine.py \
+    --map-specs "${HYBRID_MAP_SPECS[@]}" \
+    --slips "${HYBRID_SLIPS[@]}" \
+    --methods "${HYBRID_METHODS[@]}" \
+    --top-k "${HYBRID_TOP_K[@]}" \
+    --max-splits "${LAPLACE_HYBRID_MAX_SPLITS:-4}" \
+    --shard-index "${LAPLACE_HYBRID_REFINE_SHARD_INDEX:-0}" \
+    --num-shards "${LAPLACE_HYBRID_REFINE_NUM_SHARDS:-1}" \
+    --resume \
+    --out-dir "$OUT_ROOT/hybrid_surrogate_refine"
 fi
 
 if has_part fair_frontier; then
