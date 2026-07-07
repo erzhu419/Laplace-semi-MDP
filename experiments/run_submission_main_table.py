@@ -467,6 +467,45 @@ def build_random_maze_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, 
     return out
 
 
+def build_general_env_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    eligible = [
+        row
+        for row in rows
+        if row.get("method") and row.get("method") != "full_vi" and not row.get("error")
+    ]
+    out: List[Dict[str, object]] = []
+    for (env, method), group in sorted(group_rows(eligible, ["env", "method"]).items()):
+        best = min(
+            group,
+            key=lambda row: (
+                finite_float(row.get("start_value_gap"), float("inf")),
+                finite_float(row.get("n_boundary"), float("inf")),
+            ),
+        )
+        out.append(
+            {
+                "env": env,
+                "source": best.get("source", ""),
+                "method": method,
+                "n_rows": len(group),
+                "best_target_count": best.get("target_count", ""),
+                "n_states": best.get("n_states", ""),
+                "best_n_boundary": best.get("n_boundary", ""),
+                "best_state_compression": best.get("state_compression_ratio", ""),
+                "best_start_gap": best.get("start_value_gap", ""),
+                "best_value_gap_max": best.get("value_gap_max", ""),
+                "n_terminal": best.get("n_terminal", ""),
+                "n_start_support": best.get("n_start_support", ""),
+                "interpretation": (
+                    "structured task-variable failure"
+                    if env.startswith("Taxi")
+                    else "finite-MDP portability smoke"
+                ),
+            }
+        )
+    return out
+
+
 def build_fair_frontier_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
     for row in rows:
@@ -651,6 +690,7 @@ def write_report(
     compact_rows: Sequence[Mapping[str, object]],
     group_adaptive_rows: Sequence[Mapping[str, object]],
     random_maze_rows: Sequence[Mapping[str, object]],
+    general_env_rows: Sequence[Mapping[str, object]],
     fair_frontier_rows: Sequence[Mapping[str, object]],
     multitask_rows: Sequence[Mapping[str, object]],
     failure_mode_rows: Sequence[Mapping[str, object]],
@@ -740,6 +780,19 @@ def write_report(
         "median_total_speedup",
         "max_start_gap",
         "max_group_total_violation",
+    ]
+    general_env_columns = [
+        "env",
+        "source",
+        "method",
+        "n_rows",
+        "best_target_count",
+        "n_states",
+        "best_n_boundary",
+        "best_state_compression",
+        "best_start_gap",
+        "best_value_gap_max",
+        "interpretation",
     ]
     fair_frontier_columns = [
         "method_group",
@@ -979,6 +1032,17 @@ def write_report(
         if random_maze_rows
         else "_No random-maze rows found._",
         "",
+        "## General Finite-MDP Portability Smoke",
+        "",
+        "These rows are adapter/claim-boundary evidence, not a replacement for the main grid compression table. PointMaze is a discretized empirical MDP; Taxi highlights structured state variables that purely spatial boundary selection does not preserve.",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in general_env_columns} for row in general_env_rows],
+            general_env_columns,
+        )
+        if general_env_rows
+        else "_No general-environment rows found._",
+        "",
         "## Fair Budget Frontier",
         "",
         markdown_table(
@@ -1092,6 +1156,7 @@ def write_report(
         f"- adaptive certification: `{args.adaptive_cert_csv}`",
         f"- larger group-constrained adaptive: `{args.group_adaptive_csv}`",
         f"- random maze generalization: `{args.random_maze_csv}`",
+        f"- general finite-MDP smoke: `{args.general_env_csv}`",
         f"- fair budget frontier: `{args.fair_frontier_csv}`",
         f"- amortized multitask: `{args.amortized_csv}`",
         f"- edge reward multitask: `{args.edge_reward_csv}`",
@@ -1117,6 +1182,7 @@ def main() -> None:
     parser.add_argument("--adaptive-cert-csv", type=Path, default=Path("experiments/output/adaptive_green_certification/certification_summary.csv"))
     parser.add_argument("--group-adaptive-csv", type=Path, default=Path("experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv"))
     parser.add_argument("--random-maze-csv", type=Path, default=Path("experiments/output/random_maze_generalization/random_maze_generalization.csv"))
+    parser.add_argument("--general-env-csv", type=Path, default=Path("experiments/output/general_env_benchmark/general_env_benchmark.csv"))
     parser.add_argument("--fair-frontier-csv", type=Path, default=Path("experiments/output/fair_budget_frontier/fair_budget_frontier_summary.csv"))
     parser.add_argument("--amortized-csv", type=Path, default=Path("experiments/output/amortized_multitask/amortized_multitask.csv"))
     parser.add_argument("--edge-reward-csv", type=Path, default=Path("experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv"))
@@ -1149,6 +1215,7 @@ def main() -> None:
     adaptive_rows = read_csv_rows(args.adaptive_cert_csv)
     group_adaptive_raw = read_csv_rows(args.group_adaptive_csv)
     random_maze_raw = read_csv_rows(args.random_maze_csv)
+    general_env_raw = read_csv_rows(args.general_env_csv)
     fair_frontier_raw = read_csv_rows(args.fair_frontier_csv)
     amortized_raw = read_csv_rows(args.amortized_csv)
     edge_reward_raw = read_csv_rows(args.edge_reward_csv)
@@ -1172,6 +1239,7 @@ def main() -> None:
     compact_rows = build_compact_baseline_rows(core_rows)
     group_adaptive_rows = build_group_adaptive_rows(group_adaptive_raw)
     random_maze_rows = build_random_maze_rows(random_maze_raw)
+    general_env_rows = build_general_env_rows(general_env_raw)
     fair_frontier_rows = build_fair_frontier_rows(fair_frontier_raw)
     multitask_rows = build_multitask_rows(amortized_raw, edge_reward_raw)
     failure_mode_rows = build_failure_mode_rows(main_rows, group_adaptive_rows, edge_reward_raw)
@@ -1186,6 +1254,7 @@ def main() -> None:
     write_csv_all_fields(args.out_dir / "compact_baseline_aggregate.csv", compact_rows)
     write_csv_all_fields(args.out_dir / "group_constrained_adaptive_table.csv", group_adaptive_rows)
     write_csv_all_fields(args.out_dir / "random_maze_generalization_aggregate.csv", random_maze_rows)
+    write_csv_all_fields(args.out_dir / "general_env_portability_smoke.csv", general_env_rows)
     write_csv_all_fields(args.out_dir / "fair_budget_frontier_aggregate.csv", fair_frontier_rows)
     write_csv_all_fields(args.out_dir / "multitask_edge_reward_aggregate.csv", multitask_rows)
     write_csv_all_fields(args.out_dir / "failure_modes.csv", failure_mode_rows)
@@ -1208,6 +1277,7 @@ def main() -> None:
                 "compact_baseline_aggregate": compact_rows,
                 "group_constrained_adaptive_table": group_adaptive_rows,
                 "random_maze_generalization_aggregate": random_maze_rows,
+                "general_env_portability_smoke": general_env_rows,
                 "fair_budget_frontier_aggregate": fair_frontier_rows,
                 "multitask_edge_reward_aggregate": multitask_rows,
                 "failure_modes": failure_mode_rows,
@@ -1231,6 +1301,7 @@ def main() -> None:
         compact_rows,
         group_adaptive_rows,
         random_maze_rows,
+        general_env_rows,
         fair_frontier_rows,
         multitask_rows,
         failure_mode_rows,

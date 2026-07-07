@@ -29,6 +29,9 @@ Artifacts:
 - `experiments/run_random_maze_generalization.py`
 - `experiments/run_rd_operator_generalization.py`
 - `experiments/run_solver_validity.py`
+- `experiments/run_general_env_benchmark.py`
+
+The general-environment benchmark should be framed as finite-MDP interface portability. Gymnasium ToyText and discretized PointMaze strengthen the claim that the implementation is not hardwired to one hand-authored grid class, while Taxi should be reported as a structured failure mode when task variables such as passenger/destination identity are compressed away by purely spatial boundary selection.
 
 ## 5. Fair Baselines And Budget Frontier
 

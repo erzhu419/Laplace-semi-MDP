@@ -9,7 +9,8 @@
 5. Boundary overlay panels: selected vertices on open-room, four-room, and maze maps for endpoints, group-constrained operator, and incremental selector.
 6. Certificate panel: adaptive Green tail bound, top-set fallback frequency, and exact fallback/tie-aware timing.
 7. Adaptive top-k backend panel: fixed top-`K` versus adaptive cap-`K` feasible rate, median selection time, refined-candidate count, and k-used histogram.
-8. Failure modes: corridor tie fallback, adaptive top-k cap-hit/no-feasible cases, and random-maze cases where held-out probes disagree with the training residual lens.
+8. General finite-MDP smoke panel or appendix table: ToyText and discretized PointMaze value-gap/compression rows, with Taxi highlighted as a task-variable abstraction failure.
+9. Failure modes: corridor tie fallback, adaptive top-k cap-hit/no-feasible cases, Taxi passenger/destination compression failure, and random-maze cases where held-out probes disagree with the training residual lens.
 
 ## Generated Figure Artifacts
 
@@ -31,6 +32,13 @@ Adaptive top-k diagnostic artifacts:
 ```text
 experiments/output/adaptive_topk_diagnostics/
 experiments/output/submission_main_table/adaptive_topk_summary.csv
+```
+
+General finite-MDP smoke artifacts:
+
+```text
+experiments/output/general_env_benchmark/general_env_benchmark.csv
+experiments/output/general_env_benchmark/summary.md
 ```
 
 ## Caption Discipline

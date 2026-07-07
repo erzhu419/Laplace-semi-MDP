@@ -169,6 +169,21 @@ offers an auditable compression objective: rate, occupancy/value/audit
 distortions, hidden boundary crossing, and planning gap are all measured in the
 same table.
 
+### General finite-MDP adapters test interface portability
+
+To check that the implementation is not only a hand-written `GridWorld`
+artifact, we add a generic finite-MDP adapter that accepts explicit transition
+kernels, rewards, start distributions, terminal states, and optional coordinates.
+The first smoke suite runs Gymnasium ToyText tasks (`Taxi-v3`,
+`FrozenLake8x8-v1`, `CliffWalking-v1`) and a discretized sampled PointMaze. This
+is not yet a new main benchmark; it is an interface-portability and
+failure-mode test. FrozenLake, CliffWalking, and PointMaze keep the navigation
+structure close to the boundary-graph assumption, while Taxi exposes a useful
+negative case: a purely spatial boundary graph can compress away
+passenger/destination variables that are essential to Bellman value. The paper
+should report this as evidence for the method boundary, not as a defect hidden
+by averaging.
+
 ## Discussion Draft
 
 The central contribution is a proof-backed graph abstraction objective for
@@ -207,6 +222,7 @@ the method from a black-box option discovery heuristic.
 | The RD Boundary Green Operator is the reference mathematical object. | Lean finite-difference, Green legality, Neumann tail, Bellman contraction, and value-gap theorems. | supported |
 | Compression is the main story, not universal single-task speed. | Submission table separates planning-only speedup, total speedup, break-even tasks, and multi-task amortization. | supported |
 | Fixed-`B` reward relabeling preserves multi-task compression. | Edge reward multitask table and theorem stack T10/T11. | supported |
+| The implementation can leave the custom grid class. | General finite-MDP smoke: Gymnasium ToyText plus discretized PointMaze; Taxi reported as structured variable-abstraction failure. | initial smoke |
 
 ## Writing Notes
 
@@ -214,3 +230,4 @@ the method from a black-box option discovery heuristic.
 - Adaptive top-k can be the main backend, but the guarantee is feasible-envelope preservation rather than RD-optimal split selection.
 - Fixed top-4 is the ablation/reference envelope; score optimality requires interval dominance.
 - The results narrative should always separate planning-only speedup, single-task total speedup, and multi-task amortized speedup.
+- General-environment rows should be framed as portability/failure-mode evidence until they are upgraded to a full fair-budget table.

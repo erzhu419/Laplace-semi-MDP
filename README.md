@@ -24,6 +24,7 @@ It aligns the large-scale certified adaptive result, compact baselines, exhausti
 
 - `experiments/`: executable benchmark and diagnostic scripts.
 - `experiments/output/`: checked-in CSV/JSON/Markdown experiment artifacts.
+- `experiments/finite_mdp_adapter.py`: generic finite known-model MDP interface for non-grid smoke tests.
 - `proof/`: Lean 4 proof layer for the frozen RD operator, Green/Neumann certificates, Bellman contraction/value-gap statements, top-set fallback, and bits-curvature bounds.
 - `paper/`: paper-facing claim, terminology, related-work, theorem, experiment, figure, and reviewer-risk planning docs.
 - `markdown/`: working research notes and GPT critique/advice logs.
@@ -35,6 +36,12 @@ Install Python dependencies:
 
 ```bash
 python3 -m pip install -r requirements.txt
+```
+
+Optional general-environment adapters for MiniGrid and Gymnasium-Robotics:
+
+```bash
+python3 -m pip install -r requirements-general-envs.txt
 ```
 
 Run the proof layer:
@@ -54,6 +61,19 @@ Rebuild the core paper-facing experiments:
 ```bash
 bash scripts/reproduce_core.sh
 ```
+
+Run the finite-MDP general-environment smoke benchmark:
+
+```bash
+python3 experiments/run_general_env_benchmark.py
+```
+
+This benchmark currently covers Gymnasium ToyText (`Taxi-v3`,
+`FrozenLake8x8-v1`, `CliffWalking-v1`) plus a discretized sampled PointMaze.
+MiniGrid symbolic BFS specs such as `minigrid:MiniGrid-FourRooms-v0` are
+supported when the optional `minigrid` package is installed. PointMaze rows are
+claims about the discretized empirical MDP, not exact continuous-control
+theorems.
 
 By default, experiment scripts cap BLAS/OpenMP to one CPU thread so local WSL
 runs do not monopolize all cores. These experiments are NumPy/OpenBLAS linear
@@ -123,6 +143,7 @@ scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
 - Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.
 - Adaptive feasible top-k diagnostics now support using it as the main discovery backend: paired adaptive/fixed top-4 rows match feasibility on the current suite (`36/36`), certified feasible rate stays at `0.7222`, median selection time drops from about `47.18s` to `23.58s`, and the Lean proof layer states the feasible-envelope/work-bound guarantee plus the score-optimality caveat.
 - The XL scheduler run `paper_xl_20260706_0659` has been published into the tracked paper-facing outputs: large-scale compression 135 rows, random maze 360 rows, option frontier 648 rows, amortized multitask 192 rows, and fixed-`B` edge reward 384 rows.
+- The generic finite-MDP adapter now runs non-handwritten-grid smoke tests on Gymnasium ToyText and discretized PointMaze. The first tracked table has 56 rows in `experiments/output/general_env_benchmark/`; it is evidence for portability of the finite-MDP interface, not a replacement for the main grid compression claims.
 - The large-scale adaptive table currently shows planning-only speedups up to roughly `1e5x` on long corridors and single-task total speedups up to roughly `10.5x`. The submission table reports both planning-only and total-time accounting.
 - The compact benchmark compares full VI, exact RD graph variants, group-constrained RD, eigenoptions, betweenness bottlenecks, random landmarks, and coverage landmarks under the same map/slip suite.
 - Solver-validity diagnostics compare operator-only and exact-refined beam search against small exhaustive oracles.

@@ -2,6 +2,13 @@
 
 The paper should package the proof layer in the same order a reviewer needs it.
 
+Scope note: the Lean statements are finite-kernel statements. The new generic
+finite-MDP adapter for Gymnasium ToyText, symbolic MiniGrid, and discretized
+PointMaze is covered only after the environment has been converted to an
+explicit finite transition kernel. For sampled/discretized continuous domains,
+the theorem applies to that empirical finite MDP, not directly to the original
+continuous simulator.
+
 ## T1: Frozen Finite-Difference Identity
 
 Claim: for a fixed candidate universe, options, edge weights, and local rate costs, the RD split score is exactly the finite difference of the frozen objective.
