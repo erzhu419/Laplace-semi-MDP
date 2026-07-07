@@ -161,6 +161,31 @@ def exact_eval_timed(
     return out, time.perf_counter() - started
 
 
+def objective_first_gap(
+    better: Tuple[float, float, int, float],
+    worse: Tuple[float, float, int, float],
+    *,
+    eps: float = 1e-12,
+) -> float:
+    """Positive when `better` is lexicographically better than `worse`."""
+    for best_value, worse_value in zip(better, worse):
+        gap = float(worse_value) - float(best_value)
+        if abs(gap) > eps:
+            return gap
+    return 0.0
+
+
+def adaptive_topk_schedule(top_k_cap: int, args: argparse.Namespace) -> List[int]:
+    cap = max(1, int(top_k_cap))
+    raw = [int(k) for k in getattr(args, "adaptive_topk_schedule", [1, 2, 4, 8]) if int(k) > 0]
+    if not raw:
+        raw = [1, 2, 4, 8]
+    schedule = sorted({min(cap, k) for k in raw if k <= cap})
+    if cap not in schedule:
+        schedule.append(cap)
+    return schedule
+
+
 def run_refine_solver(
     *,
     map_label: str,
@@ -174,6 +199,7 @@ def run_refine_solver(
     budgets: Mapping[str, float],
     proposal_backend: str,
     top_k: int,
+    adaptive_topk: bool = False,
     args: argparse.Namespace,
 ) -> Tuple[List[int], Dict[str, object], List[Dict[str, object]], float]:
     boundary = sorted(set(int(state) for state in start_boundary))
@@ -185,6 +211,9 @@ def run_refine_solver(
     exact_refine_calls = 0
     recall_hits = 0
     recall_steps = 0
+    adaptive_topk_used_values: List[int] = []
+    adaptive_topk_stop_reasons: List[str] = []
+    refined_candidates_total = 0
     last_eval: Dict[str, object] | None = None
     stop_reason = "max_splits"
     args.current_slip = slip
@@ -211,7 +240,7 @@ def run_refine_solver(
                 {
                     "map": map_label,
                     "slip": slip,
-                    "solver": f"{proposal_backend}_top{top_k}_refine",
+                    "solver": f"{proposal_backend}_{'adaptive_' if adaptive_topk else ''}top{top_k}_refine",
                     "step": step,
                     "selected_state": "",
                     "stop_reason": stop_reason,
@@ -228,7 +257,7 @@ def run_refine_solver(
                 {
                     "map": map_label,
                     "slip": slip,
-                    "solver": f"{proposal_backend}_top{top_k}_refine",
+                    "solver": f"{proposal_backend}_{'adaptive_' if adaptive_topk else ''}top{top_k}_refine",
                     "step": step,
                     "selected_state": "",
                     "stop_reason": stop_reason,
@@ -254,7 +283,8 @@ def run_refine_solver(
             args=args,
         )
         proposal_time += prop_time
-        proposed = proposed[: max(1, top_k)]
+        top_k_cap = max(1, top_k)
+        proposed = proposed[:top_k_cap]
 
         exact_best_state = None
         exact_rank_in_proposal = None
@@ -286,7 +316,7 @@ def run_refine_solver(
                 {
                     "map": map_label,
                     "slip": slip,
-                    "solver": f"{proposal_backend}_top{top_k}_refine",
+                    "solver": f"{proposal_backend}_{'adaptive_' if adaptive_topk else ''}top{top_k}_refine",
                     "step": step,
                     "selected_state": "",
                     "stop_reason": stop_reason,
@@ -300,35 +330,77 @@ def run_refine_solver(
             break
 
         trial_rows: List[Dict[str, object]] = []
-        for rank, proposal in enumerate(proposed, start=1):
-            candidate = int(proposal["candidate_state"])
-            trial_boundary = sorted(set(boundary).union({candidate}))
-            trial_eval, trial_time = exact_eval_timed(
-                map_label=map_label,
-                rows=rows,
-                slip=slip,
-                boundary=trial_boundary,
-                lens_groups=lens_groups,
-                recipe=recipe,
-                basis=basis,
-                budgets=budgets,
-                args=args,
-            )
-            refine_time += trial_time
-            exact_refine_calls += 1
-            trial_rows.append(
-                {
-                    "rank": rank,
-                    "candidate_state": candidate,
-                    "proposal_score": finite_float(proposal.get("operator_score"), 0.0),
-                    "estimated_violation_after": proposal.get("violation_after", ""),
-                    "eval": trial_eval,
-                    "eval_time_sec": trial_time,
-                    "objective": objective_tuple(trial_eval, len(trial_boundary)),
-                }
-            )
+        evaluated_ranks: set[int] = set()
+        adaptive_used = min(top_k_cap, len(proposed))
+        adaptive_decision = "fixed_topk"
+        adaptive_margin = float("nan")
+        adaptive_improvement = float("nan")
+        schedule = adaptive_topk_schedule(top_k_cap, args) if adaptive_topk else [top_k_cap]
+        for target_k in schedule:
+            adaptive_used = min(target_k, len(proposed))
+            for rank, proposal in enumerate(proposed[:adaptive_used], start=1):
+                if rank in evaluated_ranks:
+                    continue
+                evaluated_ranks.add(rank)
+                candidate = int(proposal["candidate_state"])
+                trial_boundary = sorted(set(boundary).union({candidate}))
+                trial_eval, trial_time = exact_eval_timed(
+                    map_label=map_label,
+                    rows=rows,
+                    slip=slip,
+                    boundary=trial_boundary,
+                    lens_groups=lens_groups,
+                    recipe=recipe,
+                    basis=basis,
+                    budgets=budgets,
+                    args=args,
+                )
+                refine_time += trial_time
+                exact_refine_calls += 1
+                trial_rows.append(
+                    {
+                        "rank": rank,
+                        "candidate_state": candidate,
+                        "proposal_score": finite_float(proposal.get("operator_score"), 0.0),
+                        "estimated_violation_after": proposal.get("violation_after", ""),
+                        "eval": trial_eval,
+                        "eval_time_sec": trial_time,
+                        "objective": objective_tuple(trial_eval, len(trial_boundary)),
+                    }
+                )
+            trial_rows.sort(key=lambda row: row["objective"])  # type: ignore[index]
+            if not adaptive_topk or not trial_rows:
+                break
+            best_eval_so_far = trial_rows[0]["eval"]
+            best_obj_so_far = trial_rows[0]["objective"]  # type: ignore[assignment]
+            adaptive_improvement = objective_first_gap(best_obj_so_far, current_obj)
+            if len(trial_rows) >= 2:
+                adaptive_margin = objective_first_gap(
+                    best_obj_so_far,
+                    trial_rows[1]["objective"],  # type: ignore[arg-type]
+                )
+            best_is_feasible = bool(best_eval_so_far.get("all_groups_feasible", False))
+            if (
+                len(trial_rows) >= 2
+                and best_is_feasible
+                and adaptive_improvement >= args.adaptive_topk_margin
+                and adaptive_margin >= args.adaptive_topk_margin
+            ):
+                adaptive_decision = "clear_margin"
+                break
+            if best_is_feasible:
+                adaptive_decision = "feasible"
+                break
+            if adaptive_used >= min(top_k_cap, len(proposed)):
+                adaptive_decision = "cap"
+                break
+            adaptive_decision = "expand"
 
         trial_rows.sort(key=lambda row: row["objective"])  # type: ignore[index]
+        refined_candidates_total += len(trial_rows)
+        if adaptive_topk:
+            adaptive_topk_used_values.append(len(trial_rows))
+            adaptive_topk_stop_reasons.append(adaptive_decision)
         best = trial_rows[0]
         best_obj = best["objective"]  # type: ignore[assignment]
         best_proposal_score = finite_float(best.get("proposal_score"), 0.0)
@@ -338,7 +410,7 @@ def run_refine_solver(
                 {
                     "map": map_label,
                     "slip": slip,
-                    "solver": f"{proposal_backend}_top{top_k}_refine",
+                    "solver": f"{proposal_backend}_{'adaptive_' if adaptive_topk else ''}top{top_k}_refine",
                     "step": step,
                     "selected_state": "",
                     "stop_reason": stop_reason,
@@ -353,6 +425,10 @@ def run_refine_solver(
                     if exact_rank_in_proposal is not None
                     else "",
                     "exact_refine_calls_cumulative": exact_refine_calls,
+                    "adaptive_topk_used": len(trial_rows) if adaptive_topk else "",
+                    "adaptive_decision": adaptive_decision if adaptive_topk else "",
+                    "adaptive_margin": adaptive_margin if adaptive_topk else "",
+                    "adaptive_improvement": adaptive_improvement if adaptive_topk else "",
                 }
             )
             break
@@ -364,7 +440,7 @@ def run_refine_solver(
             {
                 "map": map_label,
                 "slip": slip,
-                "solver": f"{proposal_backend}_top{top_k}_refine",
+                "solver": f"{proposal_backend}_{'adaptive_' if adaptive_topk else ''}top{top_k}_refine",
                 "step": step,
                 "selected_state": selected,
                 "stop_reason": "continue_nonmonotone" if accepted_nonmonotone else "continue",
@@ -372,6 +448,10 @@ def run_refine_solver(
                 "proposal_top_k": top_k,
                 "proposal_time_sec": prop_time,
                 "refined_candidates": len(trial_rows),
+                "adaptive_topk_used": len(trial_rows) if adaptive_topk else "",
+                "adaptive_decision": adaptive_decision if adaptive_topk else "",
+                "adaptive_margin": adaptive_margin if adaptive_topk else "",
+                "adaptive_improvement": adaptive_improvement if adaptive_topk else "",
                 "current_total_violation": current_obj[0],
                 "selected_total_violation": finite_float(selected_eval.get("total_violation"), 0.0),
                 "selected_max_violation": finite_float(selected_eval.get("max_violation"), 0.0),
@@ -400,6 +480,17 @@ def run_refine_solver(
         "surrogate_topk_recall_steps": recall_steps,
         "surrogate_topk_recall_hits": recall_hits,
         "surrogate_topk_recall": recall_hits / max(1, recall_steps) if recall_steps else "",
+        "adaptive_topk": adaptive_topk,
+        "adaptive_topk_schedule": ",".join(str(k) for k in adaptive_topk_schedule(top_k, args)) if adaptive_topk else "",
+        "adaptive_topk_margin": args.adaptive_topk_margin if adaptive_topk else "",
+        "adaptive_topk_used_mean": (
+            sum(adaptive_topk_used_values) / len(adaptive_topk_used_values) if adaptive_topk_used_values else ""
+        ),
+        "adaptive_topk_used_max": max(adaptive_topk_used_values) if adaptive_topk_used_values else "",
+        "adaptive_topk_cap_hits": sum(1 for reason in adaptive_topk_stop_reasons if reason == "cap"),
+        "adaptive_topk_clear_margin_steps": sum(1 for reason in adaptive_topk_stop_reasons if reason == "clear_margin"),
+        "adaptive_topk_feasible_steps": sum(1 for reason in adaptive_topk_stop_reasons if reason == "feasible"),
+        "refined_candidates_total": refined_candidates_total,
         "nonmonotone_min_proposal_score": args.nonmonotone_min_proposal_score,
         "final_eval": last_eval or {},
     }
@@ -564,6 +655,24 @@ def run_method(
         )
         final_kernel_mode = args.reference_first_hit_mode
         refine_mode = "exact"
+    elif method == "adaptive_topk_exact_refine":
+        boundary, profile, step_rows, selection_time = run_refine_solver(
+            map_label=map_label,
+            rows=rows,
+            slip=slip,
+            grid=grid,
+            lens_groups=lens_groups,
+            recipe=recipe,
+            basis=basis,
+            start_boundary=start_boundary,
+            budgets=budgets,
+            proposal_backend="insertion_score",
+            top_k=top_k,
+            adaptive_topk=True,
+            args=args,
+        )
+        final_kernel_mode = args.reference_first_hit_mode
+        refine_mode = "adaptive_exact"
     elif method == "surrogate_topk_certified_refine":
         boundary, profile, step_rows, selection_time = run_refine_solver(
             map_label=map_label,
@@ -581,6 +690,24 @@ def run_method(
         )
         final_kernel_mode = args.certified_first_hit_mode
         refine_mode = "certified_adaptive_green"
+    elif method == "adaptive_topk_certified_refine":
+        boundary, profile, step_rows, selection_time = run_refine_solver(
+            map_label=map_label,
+            rows=rows,
+            slip=slip,
+            grid=grid,
+            lens_groups=lens_groups,
+            recipe=recipe,
+            basis=basis,
+            start_boundary=start_boundary,
+            budgets=budgets,
+            proposal_backend="insertion_score",
+            top_k=top_k,
+            adaptive_topk=True,
+            args=args,
+        )
+        final_kernel_mode = args.certified_first_hit_mode
+        refine_mode = "adaptive_certified_adaptive_green"
     elif method == "heuristic_topk_exact_refine":
         boundary, profile, step_rows, selection_time = run_refine_solver(
             map_label=map_label,
@@ -665,6 +792,15 @@ def run_method(
         "surrogate_topk_recall": profile.get("surrogate_topk_recall", ""),
         "surrogate_topk_recall_hits": profile.get("surrogate_topk_recall_hits", ""),
         "surrogate_topk_recall_steps": profile.get("surrogate_topk_recall_steps", ""),
+        "adaptive_topk": profile.get("adaptive_topk", ""),
+        "adaptive_topk_schedule": profile.get("adaptive_topk_schedule", ""),
+        "adaptive_topk_margin": profile.get("adaptive_topk_margin", ""),
+        "adaptive_topk_used_mean": profile.get("adaptive_topk_used_mean", ""),
+        "adaptive_topk_used_max": profile.get("adaptive_topk_used_max", ""),
+        "adaptive_topk_cap_hits": profile.get("adaptive_topk_cap_hits", ""),
+        "adaptive_topk_clear_margin_steps": profile.get("adaptive_topk_clear_margin_steps", ""),
+        "adaptive_topk_feasible_steps": profile.get("adaptive_topk_feasible_steps", ""),
+        "refined_candidates_total": profile.get("refined_candidates_total", ""),
         "kernel_time_sec": float(model["kernel_time_sec"]),
         "smdp_solve_time_sec": float(smdp["time_sec"]),
         "upfront_time_sec": float(model["construction_time_sec"]) + float(model["kernel_time_sec"]),
@@ -735,6 +871,19 @@ def aggregate_rows(rows: Sequence[Mapping[str, object]]) -> List[Dict[str, objec
                 "max_start_gap": max((finite_float(row.get("start_gap"), 0.0) for row in group), default=0.0),
                 "mean_surrogate_topk_recall": sum(recalls) / len(recalls) if recalls else "",
                 "total_exact_refine_calls": sum(int(finite_float(row.get("exact_refine_calls"), 0.0)) for row in group),
+                "median_adaptive_topk_used_mean": median(
+                    [finite_float(row.get("adaptive_topk_used_mean")) for row in group]
+                ),
+                "max_adaptive_topk_used": max(
+                    (finite_float(row.get("adaptive_topk_used_max"), 0.0) for row in group),
+                    default=0.0,
+                ),
+                "total_adaptive_topk_cap_hits": sum(
+                    int(finite_float(row.get("adaptive_topk_cap_hits"), 0.0)) for row in group
+                ),
+                "total_refined_candidates": sum(
+                    int(finite_float(row.get("refined_candidates_total"), 0.0)) for row in group
+                ),
             }
         )
     return out
@@ -763,6 +912,10 @@ def write_report(
         "max_start_gap",
         "mean_surrogate_topk_recall",
         "total_exact_refine_calls",
+        "median_adaptive_topk_used_mean",
+        "max_adaptive_topk_used",
+        "total_adaptive_topk_cap_hits",
+        "total_refined_candidates",
     ]
     row_columns = [
         "map",
@@ -781,6 +934,12 @@ def write_report(
         "refine_time_sec",
         "exact_refine_calls",
         "surrogate_topk_recall",
+        "adaptive_topk_used_mean",
+        "adaptive_topk_used_max",
+        "adaptive_topk_cap_hits",
+        "adaptive_topk_clear_margin_steps",
+        "adaptive_topk_feasible_steps",
+        "refined_candidates_total",
         "kernel_time_sec",
         "planning_speedup",
         "total_speedup",
@@ -870,6 +1029,8 @@ def main() -> None:
             "incremental_group_rd",
             "surrogate_topk_exact_refine",
             "surrogate_topk_certified_refine",
+            "adaptive_topk_exact_refine",
+            "adaptive_topk_certified_refine",
             "heuristic_topk_exact_refine",
         ],
         default=[
@@ -878,10 +1039,22 @@ def main() -> None:
             "incremental_group_rd",
             "surrogate_topk_exact_refine",
             "surrogate_topk_certified_refine",
+            "adaptive_topk_exact_refine",
+            "adaptive_topk_certified_refine",
             "heuristic_topk_exact_refine",
         ],
     )
     parser.add_argument("--top-k", nargs="+", type=int, default=[4, 8])
+    parser.add_argument("--adaptive-topk-schedule", nargs="+", type=int, default=[1, 2, 4, 8])
+    parser.add_argument(
+        "--adaptive-topk-margin",
+        type=float,
+        default=1e-9,
+        help=(
+            "Stop adaptive top-k refinement on a clear-margin certificate only when the "
+            "exact best split is already group-feasible."
+        ),
+    )
     parser.add_argument("--recipe", default="learned_rd_surrogate_joint_occ2_audit2")
     parser.add_argument(
         "--lens-groups",

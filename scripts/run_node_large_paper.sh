@@ -66,6 +66,10 @@ case "$PROFILE" in
     HYBRID_TOPK_SLIPS=(0.0)
     HYBRID_TOPK_VALUES=(1 2)
     HYBRID_TOPK_METHODS=(surrogate_topk_certified_refine)
+    HYBRID_ADAPTIVE_MAP_SPECS=(open_room:7)
+    HYBRID_ADAPTIVE_SLIPS=(0.0)
+    HYBRID_ADAPTIVE_CAPS=(4)
+    HYBRID_ADAPTIVE_METHODS=(adaptive_topk_certified_refine)
     ;;
   large)
     THREAD_GRID=(1 8 16 32 64 96 128 192)
@@ -95,6 +99,10 @@ case "$PROFILE" in
     HYBRID_TOPK_SLIPS=(0.0 0.05)
     HYBRID_TOPK_VALUES=(1 2 4 8 16)
     HYBRID_TOPK_METHODS=(surrogate_topk_exact_refine surrogate_topk_certified_refine)
+    HYBRID_ADAPTIVE_MAP_SPECS=(open_room:12 four_rooms:11 maze:13)
+    HYBRID_ADAPTIVE_SLIPS=(0.0 0.05)
+    HYBRID_ADAPTIVE_CAPS=(4)
+    HYBRID_ADAPTIVE_METHODS=(adaptive_topk_exact_refine adaptive_topk_certified_refine)
     ;;
   xl)
     THREAD_GRID=(1 16 32 64 96 128 192)
@@ -124,6 +132,10 @@ case "$PROFILE" in
     HYBRID_TOPK_SLIPS=(0.0 0.05 0.1)
     HYBRID_TOPK_VALUES=(1 2 4 8 16)
     HYBRID_TOPK_METHODS=(surrogate_topk_exact_refine surrogate_topk_certified_refine)
+    HYBRID_ADAPTIVE_MAP_SPECS=(open_room:12,16 four_rooms:11,15 maze:13,17)
+    HYBRID_ADAPTIVE_SLIPS=(0.0 0.05 0.1)
+    HYBRID_ADAPTIVE_CAPS=(4)
+    HYBRID_ADAPTIVE_METHODS=(adaptive_topk_exact_refine adaptive_topk_certified_refine)
     ;;
   *)
     echo "Unknown profile: $PROFILE" >&2
@@ -247,6 +259,19 @@ if has_part hybrid_topk; then
     --out-dir "$OUT_ROOT/hybrid_topk_ablation"
 fi
 
+if has_part hybrid_adaptive; then
+  "$PYTHON_CMD" experiments/run_hybrid_surrogate_refine.py \
+    --map-specs "${HYBRID_ADAPTIVE_MAP_SPECS[@]}" \
+    --slips "${HYBRID_ADAPTIVE_SLIPS[@]}" \
+    --methods "${HYBRID_ADAPTIVE_METHODS[@]}" \
+    --top-k "${HYBRID_ADAPTIVE_CAPS[@]}" \
+    --max-splits "${LAPLACE_HYBRID_MAX_SPLITS:-4}" \
+    --shard-index "${LAPLACE_HYBRID_ADAPTIVE_SHARD_INDEX:-0}" \
+    --num-shards "${LAPLACE_HYBRID_ADAPTIVE_NUM_SHARDS:-1}" \
+    --resume \
+    --out-dir "$OUT_ROOT/hybrid_adaptive_topk_refine"
+fi
+
 if has_part fair_frontier; then
   "$PYTHON_CMD" experiments/run_fair_budget_frontier.py \
     --large-scale-csv "$OUT_ROOT/large_scale_compression/large_scale_compression.csv" \
@@ -262,7 +287,7 @@ if has_part submission_table; then
     --fair-frontier-csv "$OUT_ROOT/fair_budget_frontier/fair_budget_frontier_summary.csv" \
     --amortized-csv "$OUT_ROOT/amortized_multitask/amortized_multitask.csv" \
     --edge-reward-csv "$OUT_ROOT/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv" \
-    --hybrid-refine-csv "$OUT_ROOT/hybrid_surrogate_refine/hybrid_surrogate_refine.csv" "$OUT_ROOT/hybrid_topk_ablation/hybrid_surrogate_refine.csv" \
+    --hybrid-refine-csv "$OUT_ROOT/hybrid_surrogate_refine/hybrid_surrogate_refine.csv" "$OUT_ROOT/hybrid_topk_ablation/hybrid_surrogate_refine.csv" "$OUT_ROOT/hybrid_adaptive_topk_refine/hybrid_surrogate_refine.csv" \
     --out-dir "$OUT_ROOT/submission_main_table"
 fi
 

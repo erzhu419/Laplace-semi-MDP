@@ -417,6 +417,19 @@ def build_hybrid_refine_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str
                 ),
                 "mean_surrogate_topk_recall": mean(recalls) if recalls else "",
                 "total_exact_refine_calls": sum(int(finite_float(row.get("exact_refine_calls"), 0.0)) for row in ok),
+                "median_adaptive_topk_used_mean": median(
+                    finite_float(row.get("adaptive_topk_used_mean")) for row in ok
+                ),
+                "max_adaptive_topk_used": max(
+                    (finite_float(row.get("adaptive_topk_used_max"), 0.0) for row in ok),
+                    default=float("nan"),
+                ),
+                "total_adaptive_topk_cap_hits": sum(
+                    int(finite_float(row.get("adaptive_topk_cap_hits"), 0.0)) for row in ok
+                ),
+                "total_refined_candidates": sum(
+                    int(finite_float(row.get("refined_candidates_total"), 0.0)) for row in ok
+                ),
                 "median_probe_green_kernel_time_sec": median(
                     finite_float(row.get("probe_green_kernel_time_sec")) for row in ok
                 ),
@@ -827,6 +840,10 @@ def write_report(
         "max_start_gap",
         "mean_surrogate_topk_recall",
         "total_exact_refine_calls",
+        "median_adaptive_topk_used_mean",
+        "max_adaptive_topk_used",
+        "total_adaptive_topk_cap_hits",
+        "total_refined_candidates",
         "median_probe_green_kernel_time_sec",
         "median_active_weight_time_sec",
         "median_candidate_score_time_sec",
@@ -1024,7 +1041,11 @@ def main() -> None:
         "--hybrid-refine-csv",
         type=Path,
         nargs="*",
-        default=[Path("experiments/output/hybrid_surrogate_refine/hybrid_surrogate_refine.csv")],
+        default=[
+            Path("experiments/output/hybrid_surrogate_refine/hybrid_surrogate_refine.csv"),
+            Path("experiments/output/hybrid_topk_ablation/hybrid_surrogate_refine.csv"),
+            Path("experiments/output/hybrid_adaptive_topk_refine/hybrid_surrogate_refine.csv"),
+        ],
         help="One or more hybrid surrogate/refine CSVs to aggregate into the discovery acceleration table.",
     )
     parser.add_argument("--incremental-green-csv", type=Path, default=Path("experiments/output/incremental_green_update/incremental_green_update_aggregate.csv"))

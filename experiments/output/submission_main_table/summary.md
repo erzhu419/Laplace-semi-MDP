@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-07T13:00:17
+Generated: 2026-07-07T14:24:18
 
 This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.
 
@@ -288,24 +288,26 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 
 ## Hybrid Discovery Acceleration
 
-| source | method | top_k | n_rows | feasible_rate | median_n_boundary | median_selection_time_sec | median_proposal_time_sec | median_refine_time_sec | median_kernel_time_sec | median_upfront_time_sec | median_total_speedup | best_total_speedup | median_break_even_tasks | max_group_total_violation | max_start_gap | mean_surrogate_topk_recall | total_exact_refine_calls | median_probe_green_kernel_time_sec | median_active_weight_time_sec | median_candidate_score_time_sec |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| hybrid_surrogate_refine | endpoints |  | 18 | 0.0 | 2 | 4.727 | 0.0 | 4.727 | 0.06631 | 4.789 | 0.03787 | 0.04259 | 27 | 174.9 | 0.1888 |  | 18 | 0.0 | 0.0 | 0.0 |
-| hybrid_surrogate_refine | exact_group_rd |  | 18 | 0.1111 | 3 | 17.63 | 12.92 | 5.151 | 0.1241 | 17.79 | 0.01217 | 0.02024 | 83 | 1.094e+08 | 0.1888 |  | 18 | 4.537 | 0.0 | 0.002032 |
-| hybrid_surrogate_refine | heuristic_topk_exact_refine | 4 | 18 | 0.05556 | 6 | 122.4 | 0.7386 | 121.6 | 0.3773 | 123.1 | 0.001594 | 0.00484 | 651.5 | 2288 | 0.1888 |  | 356 | 0.0 | 0.0 | 0.0 |
-| hybrid_surrogate_refine | incremental_group_rd |  | 18 | 0.6111 | 3 | 11.09 | 4.909 | 5.357 | 0.1305 | 11.23 | 0.01624 | 0.02367 | 62.5 | 308.7 | 0.1888 |  | 18 | 0.07444 | 0.1128 | 0.002796 |
-| hybrid_surrogate_refine | surrogate_topk_certified_refine | 4 | 18 | 0.6667 | 3 | 47.75 | 2.833 | 44.92 | 0.1289 | 47.92 | 0.004265 | 0.006585 | 236 | 126.1 | 0.1888 |  | 178 | 0.0 | 0.0 | 0.0 |
-| hybrid_surrogate_refine | surrogate_topk_exact_refine | 4 | 18 | 0.6667 | 3 | 48.48 | 2.888 | 45.59 | 0.2112 | 48.71 | 0.004223 | 0.006599 | 239 | 126.1 | 0.1888 |  | 178 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_certified_refine | 1 | 18 | 0.6111 | 3 | 25.63 | 2.883 | 22.74 | 0.1569 | 25.86 | 0.007654 | 0.01218 | 136.5 | 346.5 | 0.1888 |  | 82 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_certified_refine | 2 | 18 | 0.6111 | 3 | 32.84 | 2.853 | 29.98 | 0.1674 | 33.04 | 0.005914 | 0.009495 | 173.5 | 128.2 | 0.1888 |  | 117 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_certified_refine | 4 | 18 | 0.7222 | 3 | 47.18 | 2.773 | 44.41 | 0.1482 | 47.39 | 0.004016 | 0.00641 | 253 | 128.2 | 0.1888 |  | 174 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_certified_refine | 8 | 18 | 0.7222 | 3 | 73.07 | 2.519 | 70.55 | 0.1303 | 73.25 | 0.002565 | 0.003948 | 399.5 | 116.6 | 0.1888 |  | 274 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_certified_refine | 16 | 18 | 0.6667 | 3 | 132.2 | 2.51 | 129.7 | 0.1265 | 132.4 | 0.001422 | 0.00225 | 720.5 | 116.6 | 0.1888 |  | 454 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_exact_refine | 1 | 18 | 0.6111 | 3 | 25.26 | 2.862 | 22.4 | 0.235 | 25.49 | 0.007785 | 0.01212 | 132.5 | 346.5 | 0.1888 |  | 82 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_exact_refine | 2 | 18 | 0.6111 | 3 | 32.18 | 2.776 | 29.4 | 0.2432 | 32.41 | 0.005678 | 0.009438 | 181 | 128.2 | 0.1888 |  | 117 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_exact_refine | 4 | 18 | 0.7222 | 3 | 48.69 | 2.856 | 45.83 | 0.2351 | 48.93 | 0.00407 | 0.006495 | 251.5 | 128.2 | 0.1888 |  | 174 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_exact_refine | 8 | 18 | 0.7222 | 3 | 73.76 | 2.546 | 71.22 | 0.1875 | 73.95 | 0.002465 | 0.003961 | 410 | 116.6 | 0.1888 |  | 274 | 0.0 | 0.0 | 0.0 |
-| hybrid_topk_ablation | surrogate_topk_exact_refine | 16 | 18 | 0.6667 | 3 | 131.3 | 2.498 | 128.8 | 0.1958 | 131.6 | 0.001444 | 0.002269 | 711.5 | 116.6 | 0.1888 |  | 454 | 0.0 | 0.0 | 0.0 |
+| source | method | top_k | n_rows | feasible_rate | median_n_boundary | median_selection_time_sec | median_proposal_time_sec | median_refine_time_sec | median_kernel_time_sec | median_upfront_time_sec | median_total_speedup | best_total_speedup | median_break_even_tasks | max_group_total_violation | max_start_gap | mean_surrogate_topk_recall | total_exact_refine_calls | median_adaptive_topk_used_mean | max_adaptive_topk_used | total_adaptive_topk_cap_hits | total_refined_candidates | median_probe_green_kernel_time_sec | median_active_weight_time_sec | median_candidate_score_time_sec |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| hybrid_adaptive_topk_refine | adaptive_topk_certified_refine | 4 | 18 | 0.7222 | 3 | 23.58 | 2.628 | 20.95 | 0.1461 | 23.76 | 0.007529 | 0.01212 | 136 | 128.2 | 0.1888 |  | 141 | 1 | 4 | 19 | 95 | 0.0 | 0.0 | 0.0 |
+| hybrid_adaptive_topk_refine | adaptive_topk_exact_refine | 4 | 18 | 0.7222 | 3 | 24.23 | 2.674 | 21.56 | 0.2637 | 24.51 | 0.007407 | 0.01219 | 139 | 128.2 | 0.1888 |  | 141 | 1 | 4 | 19 | 95 | 0.0 | 0.0 | 0.0 |
+| hybrid_surrogate_refine | endpoints |  | 18 | 0.0 | 2 | 4.727 | 0.0 | 4.727 | 0.06631 | 4.789 | 0.03787 | 0.04259 | 27 | 174.9 | 0.1888 |  | 18 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_surrogate_refine | exact_group_rd |  | 18 | 0.1111 | 3 | 17.63 | 12.92 | 5.151 | 0.1241 | 17.79 | 0.01217 | 0.02024 | 83 | 1.094e+08 | 0.1888 |  | 18 | nan | 0.0 | 0 | 0 | 4.537 | 0.0 | 0.002032 |
+| hybrid_surrogate_refine | heuristic_topk_exact_refine | 4 | 18 | 0.05556 | 6 | 122.4 | 0.7386 | 121.6 | 0.3773 | 123.1 | 0.001594 | 0.00484 | 651.5 | 2288 | 0.1888 |  | 356 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_surrogate_refine | incremental_group_rd |  | 18 | 0.6111 | 3 | 11.09 | 4.909 | 5.357 | 0.1305 | 11.23 | 0.01624 | 0.02367 | 62.5 | 308.7 | 0.1888 |  | 18 | nan | 0.0 | 0 | 0 | 0.07444 | 0.1128 | 0.002796 |
+| hybrid_surrogate_refine | surrogate_topk_certified_refine | 4 | 18 | 0.6667 | 3 | 47.75 | 2.833 | 44.92 | 0.1289 | 47.92 | 0.004265 | 0.006585 | 236 | 126.1 | 0.1888 |  | 178 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_surrogate_refine | surrogate_topk_exact_refine | 4 | 18 | 0.6667 | 3 | 48.48 | 2.888 | 45.59 | 0.2112 | 48.71 | 0.004223 | 0.006599 | 239 | 126.1 | 0.1888 |  | 178 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_certified_refine | 1 | 18 | 0.6111 | 3 | 25.63 | 2.883 | 22.74 | 0.1569 | 25.86 | 0.007654 | 0.01218 | 136.5 | 346.5 | 0.1888 |  | 82 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_certified_refine | 2 | 18 | 0.6111 | 3 | 32.84 | 2.853 | 29.98 | 0.1674 | 33.04 | 0.005914 | 0.009495 | 173.5 | 128.2 | 0.1888 |  | 117 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_certified_refine | 4 | 18 | 0.7222 | 3 | 47.18 | 2.773 | 44.41 | 0.1482 | 47.39 | 0.004016 | 0.00641 | 253 | 128.2 | 0.1888 |  | 174 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_certified_refine | 8 | 18 | 0.7222 | 3 | 73.07 | 2.519 | 70.55 | 0.1303 | 73.25 | 0.002565 | 0.003948 | 399.5 | 116.6 | 0.1888 |  | 274 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_certified_refine | 16 | 18 | 0.6667 | 3 | 132.2 | 2.51 | 129.7 | 0.1265 | 132.4 | 0.001422 | 0.00225 | 720.5 | 116.6 | 0.1888 |  | 454 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_exact_refine | 1 | 18 | 0.6111 | 3 | 25.26 | 2.862 | 22.4 | 0.235 | 25.49 | 0.007785 | 0.01212 | 132.5 | 346.5 | 0.1888 |  | 82 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_exact_refine | 2 | 18 | 0.6111 | 3 | 32.18 | 2.776 | 29.4 | 0.2432 | 32.41 | 0.005678 | 0.009438 | 181 | 128.2 | 0.1888 |  | 117 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_exact_refine | 4 | 18 | 0.7222 | 3 | 48.69 | 2.856 | 45.83 | 0.2351 | 48.93 | 0.00407 | 0.006495 | 251.5 | 128.2 | 0.1888 |  | 174 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_exact_refine | 8 | 18 | 0.7222 | 3 | 73.76 | 2.546 | 71.22 | 0.1875 | 73.95 | 0.002465 | 0.003961 | 410 | 116.6 | 0.1888 |  | 274 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
+| hybrid_topk_ablation | surrogate_topk_exact_refine | 16 | 18 | 0.6667 | 3 | 131.3 | 2.498 | 128.8 | 0.1958 | 131.6 | 0.001444 | 0.002269 | 711.5 | 116.6 | 0.1888 |  | 454 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
 
 ## Incremental Green Update Aggregate
 
@@ -353,7 +355,7 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 - edge reward multitask: `experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv`
 - solver validity: `experiments/output/solver_validity/solver_validity.csv`
 - discovery profile/cache: `experiments/output/discovery_profile_cache/discovery_profile_cache.csv`
-- hybrid surrogate/refine: `experiments/output/hybrid_surrogate_refine/hybrid_surrogate_refine.csv, experiments/output/hybrid_topk_ablation/hybrid_surrogate_refine.csv`
+- hybrid surrogate/refine: `experiments/output/hybrid_surrogate_refine/hybrid_surrogate_refine.csv, experiments/output/hybrid_topk_ablation/hybrid_surrogate_refine.csv, experiments/output/hybrid_adaptive_topk_refine/hybrid_surrogate_refine.csv`
 - incremental Green update: `experiments/output/incremental_green_update/incremental_green_update_aggregate.csv`
 - incremental group semantic diff: `experiments/output/group_incremental_semantic_diff/summary.md`
 - graph abstraction figures: `experiments/output/graph_abstraction_figures/summary.md`

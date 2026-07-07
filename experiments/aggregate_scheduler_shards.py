@@ -80,6 +80,15 @@ SUITES = {
         "publish": "experiments/output/hybrid_topk_ablation/hybrid_surrogate_refine.csv",
         "keys": ["map", "slip", "method", "top_k"],
     },
+    "hybrid_adaptive": {
+        "patterns": [
+            "hybrid_adaptive/hybrid_adaptive_topk_refine/hybrid_surrogate_refine.csv",
+            "hybrid_adaptive_shard_*/hybrid_adaptive_topk_refine/hybrid_surrogate_refine.csv",
+        ],
+        "out": "hybrid_adaptive_topk_refine/hybrid_surrogate_refine.csv",
+        "publish": "experiments/output/hybrid_adaptive_topk_refine/hybrid_surrogate_refine.csv",
+        "keys": ["map", "slip", "method", "top_k"],
+    },
 }
 
 DERIVED_INPUT_SUITES = {
@@ -90,6 +99,7 @@ DERIVED_INPUT_SUITES = {
     "edge_reward",
     "hybrid_refine",
     "hybrid_topk",
+    "hybrid_adaptive",
 }
 PUBLISH_DERIVED_INPUT_SUITES = {"large_scale", "random_maze", "option_frontier", "amortized", "edge_reward"}
 
@@ -134,7 +144,7 @@ def merge_suite(run_root: Path, out_root: Path, suite: str) -> tuple[Path, int, 
         json.dumps(rows, indent=2, default=json_default) + "\n",
         encoding="utf-8",
     )
-    if suite in {"hybrid_refine", "hybrid_topk"}:
+    if suite in {"hybrid_refine", "hybrid_topk", "hybrid_adaptive"}:
         write_hybrid_refine_summary(out_path, rows)
     return out_path, len(rows), inputs
 
@@ -202,6 +212,17 @@ def write_hybrid_refine_summary(csv_path: Path, rows: Sequence[Mapping[str, obje
                 ),
                 "mean_surrogate_topk_recall": (sum(recalls) / len(recalls)) if recalls else "",
                 "total_exact_refine_calls": sum(int(_float_or_none(row.get("exact_refine_calls")) or 0) for row in group),
+                "median_adaptive_topk_used_mean": _median(row.get("adaptive_topk_used_mean") for row in group),
+                "max_adaptive_topk_used": max(
+                    (value for row in group if (value := _float_or_none(row.get("adaptive_topk_used_max"))) is not None),
+                    default="",
+                ),
+                "total_adaptive_topk_cap_hits": sum(
+                    int(_float_or_none(row.get("adaptive_topk_cap_hits")) or 0) for row in group
+                ),
+                "total_refined_candidates": sum(
+                    int(_float_or_none(row.get("refined_candidates_total")) or 0) for row in group
+                ),
             }
         )
     out_dir = csv_path.parent
@@ -244,7 +265,7 @@ def maybe_publish(combined_paths: Mapping[str, Path], suites: Sequence[str]) -> 
             json.dumps(rows, indent=2, default=json_default) + "\n",
             encoding="utf-8",
         )
-        if suite in {"hybrid_refine", "hybrid_topk"}:
+        if suite in {"hybrid_refine", "hybrid_topk", "hybrid_adaptive"}:
             write_hybrid_refine_summary(publish_path, rows)
         published[suite] = publish_path
     return published
@@ -284,6 +305,7 @@ def build_derived_tables(paths: Mapping[str, Path], out_root: Path) -> None:
             "--hybrid-refine-csv",
             paths.get("hybrid_refine", Path("missing")).as_posix(),
             paths.get("hybrid_topk", Path("missing")).as_posix(),
+            paths.get("hybrid_adaptive", Path("missing")).as_posix(),
             "--out-dir",
             submission_out.as_posix(),
         ]
