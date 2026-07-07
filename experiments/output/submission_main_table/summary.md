@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-07T16:32:50
+Generated: 2026-07-07T16:49:39
 
 This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.
 
@@ -202,28 +202,30 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 
 These rows are adapter/claim-boundary evidence, not a replacement for the main grid compression table. PointMaze is a discretized empirical MDP; Taxi highlights structured state variables that purely spatial boundary selection does not preserve.
 
-| env | source | method | n_rows | best_target_count | n_states | best_n_boundary | best_state_compression | best_start_gap | best_value_gap_max | interpretation |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| CliffWalking-v1 | gymnasium_toy_text | betweenness | 3 | 32 | 48 | 32 | 1.5 | 0.0 | 0.0 | finite-MDP portability smoke |
-| CliffWalking-v1 | gymnasium_toy_text | coverage | 3 | 32 | 48 | 32 | 1.5 | 1.325863367626182 | 1.8535729999999997 | finite-MDP portability smoke |
-| CliffWalking-v1 | gymnasium_toy_text | endpoints | 1 | 8 | 48 | 2 | 24.0 | 22.434236335623368 | 31.363333333333273 | finite-MDP portability smoke |
-| CliffWalking-v1 | gymnasium_toy_text | green | 3 | 8 | 48 | 4 | 12.0 | 22.434236335623368 | 31.363333330952095 | finite-MDP portability smoke |
-| CliffWalking-v1 | gymnasium_toy_text | spectral | 3 | 32 | 48 | 32 | 1.5 | 0.0 | 3.08938138976832 | finite-MDP portability smoke |
-| FrozenLake8x8-v1 | gymnasium_toy_text | betweenness | 3 | 32 | 64 | 32 | 2.0 | 0.06913238354823054 | 0.0940176048038468 | finite-MDP portability smoke |
-| FrozenLake8x8-v1 | gymnasium_toy_text | coverage | 3 | 32 | 64 | 32 | 2.0 | 0.024622990029267863 | 0.09828831237302955 | finite-MDP portability smoke |
-| FrozenLake8x8-v1 | gymnasium_toy_text | endpoints | 1 | 8 | 64 | 12 | 5.333333333333333 | 0.07444398742335015 | 0.10453031682674908 | finite-MDP portability smoke |
-| FrozenLake8x8-v1 | gymnasium_toy_text | green | 3 | 16 | 64 | 14 | 4.571428571428571 | 0.0665679422505367 | 0.10453031682674908 | finite-MDP portability smoke |
-| FrozenLake8x8-v1 | gymnasium_toy_text | spectral | 3 | 32 | 64 | 32 | 2.0 | 0.046771218811063484 | 0.08827404947601364 | finite-MDP portability smoke |
-| PointMaze-umaze-b3 | discretized_point_maze | betweenness | 3 | 32 | 63 | 32 | 1.96875 | 5.921189464667501e-16 | 2.093041505517416 | finite-MDP portability smoke |
-| PointMaze-umaze-b3 | discretized_point_maze | coverage | 3 | 32 | 63 | 32 | 1.96875 | 2.497711423611146 | 3.699751374892564 | finite-MDP portability smoke |
-| PointMaze-umaze-b3 | discretized_point_maze | endpoints | 1 | 8 | 63 | 18 | 3.5 | 21.7746718687881 | 25.341035285538286 | finite-MDP portability smoke |
-| PointMaze-umaze-b3 | discretized_point_maze | green | 3 | 32 | 63 | 27 | 2.3333333333333335 | 3.636979786111949 | 5.47547750490347 | finite-MDP portability smoke |
-| PointMaze-umaze-b3 | discretized_point_maze | spectral | 3 | 32 | 63 | 32 | 1.96875 | 2.2246141761477816 | 6.13868342211615 | finite-MDP portability smoke |
-| Taxi-v3 | gymnasium_toy_text | betweenness | 3 | 8 | 500 | 21 | 23.80952380952381 | 37.04194108647269 | 51.733333333333285 | structured task-variable failure |
-| Taxi-v3 | gymnasium_toy_text | coverage | 3 | 32 | 500 | 32 | 15.625 | 37.041941086044865 | 51.733333333333285 | structured task-variable failure |
-| Taxi-v3 | gymnasium_toy_text | endpoints | 1 | 8 | 500 | 20 | 25.0 | 37.04194108647269 | 51.733333333333285 | structured task-variable failure |
-| Taxi-v3 | gymnasium_toy_text | green | 3 | 32 | 500 | 32 | 15.625 | 37.041941086346405 | 51.733333333333285 | structured task-variable failure |
-| Taxi-v3 | gymnasium_toy_text | spectral | 3 | 32 | 500 | 32 | 15.625 | 37.0419410864423 | 51.733333333333285 | structured task-variable failure |
+| env | source | method | n_rows | best_option_mode | best_n_options | best_target_count | n_states | best_n_boundary | best_state_compression | best_start_gap | best_value_gap_max | interpretation |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| CliffWalking-v1 | gymnasium_toy_text | betweenness | 6 | primitive | 4 | 32 | 48 | 32 | 1.5 | 0.0 | 0.0 | finite-MDP portability smoke |
+| CliffWalking-v1 | gymnasium_toy_text | coverage | 6 | primitive | 4 | 32 | 48 | 32 | 1.5 | 1.325863367626182 | 1.8535729999999997 | finite-MDP portability smoke |
+| CliffWalking-v1 | gymnasium_toy_text | endpoints | 2 | boundary_targeted | 2 | 8 | 48 | 2 | 24.0 | 10.899096994480836 | 31.363333333333273 | finite-MDP portability smoke |
+| CliffWalking-v1 | gymnasium_toy_text | green | 6 | boundary_targeted | 4 | 8 | 48 | 4 | 12.0 | 10.899096994480836 | 30.422433333333274 | finite-MDP portability smoke |
+| CliffWalking-v1 | gymnasium_toy_text | spectral | 6 | primitive | 4 | 32 | 48 | 32 | 1.5 | 0.0 | 3.08938138976832 | finite-MDP portability smoke |
+| FrozenLake8x8-v1 | gymnasium_toy_text | betweenness | 6 | primitive | 4 | 32 | 64 | 32 | 2.0 | 0.06913238354823054 | 0.0940176048038468 | finite-MDP portability smoke |
+| FrozenLake8x8-v1 | gymnasium_toy_text | coverage | 6 | boundary_targeted | 32 | 32 | 64 | 32 | 2.0 | 0.0243607972688233 | 0.09672974396743755 | finite-MDP portability smoke |
+| FrozenLake8x8-v1 | gymnasium_toy_text | endpoints | 2 | primitive | 4 | 8 | 64 | 12 | 5.333333333333333 | 0.07444398742335015 | 0.10453031682674908 | finite-MDP portability smoke |
+| FrozenLake8x8-v1 | gymnasium_toy_text | green | 6 | primitive | 4 | 16 | 64 | 14 | 4.571428571428571 | 0.0665679422505367 | 0.10453031682674908 | finite-MDP portability smoke |
+| FrozenLake8x8-v1 | gymnasium_toy_text | spectral | 6 | primitive | 4 | 32 | 64 | 32 | 2.0 | 0.046771218811063484 | 0.08827404947601364 | finite-MDP portability smoke |
+| PointMaze-umaze-b3 | discretized_point_maze | betweenness | 6 | primitive | 8 | 32 | 63 | 32 | 1.96875 | 5.921189464667501e-16 | 2.093041505517416 | finite-MDP portability smoke |
+| PointMaze-umaze-b3 | discretized_point_maze | coverage | 6 | primitive | 8 | 32 | 63 | 32 | 1.96875 | 2.497711423611146 | 3.699751374892564 | finite-MDP portability smoke |
+| PointMaze-umaze-b3 | discretized_point_maze | endpoints | 2 | boundary_targeted | 18 | 8 | 63 | 18 | 3.5 | 11.558661461316014 | 12.858211551243807 | finite-MDP portability smoke |
+| PointMaze-umaze-b3 | discretized_point_maze | green | 6 | primitive | 8 | 32 | 63 | 27 | 2.3333333333333335 | 3.636979786111949 | 5.47547750490347 | finite-MDP portability smoke |
+| PointMaze-umaze-b3 | discretized_point_maze | spectral | 6 | primitive | 8 | 32 | 63 | 32 | 1.96875 | 2.2246141761477816 | 6.13868342211615 | finite-MDP portability smoke |
+| Taxi-v3 | gymnasium_toy_text | betweenness | 6 | boundary_targeted | 21 | 8 | 500 | 21 | 23.80952380952381 | 26.63745552465558 | 51.733333333333285 | structured task-variable failure |
+| Taxi-v3 | gymnasium_toy_text | coverage | 6 | boundary_targeted | 32 | 32 | 500 | 32 | 15.625 | 21.860857800883405 | 51.733333333333285 | structured task-variable failure |
+| Taxi-v3 | gymnasium_toy_text | endpoints | 2 | boundary_targeted | 20 | 8 | 500 | 20 | 25.0 | 26.63745552465558 | 51.733333333333285 | structured task-variable failure |
+| Taxi-v3 | gymnasium_toy_text | green | 6 | boundary_targeted | 32 | 32 | 500 | 32 | 15.625 | 25.00489992151151 | 51.733333333333285 | structured task-variable failure |
+| Taxi-v3 | gymnasium_toy_text | spectral | 5 | boundary_targeted | 20 | 8 | 500 | 20 | 25.0 | 26.63745552465558 | 51.733333333333285 | structured task-variable failure |
+| Taxi-v3 | gymnasium_toy_text | taxi_factor | 2 | boundary_targeted | 45 | 8 | 500 | 45 | 11.11111111111111 | 21.21365703742432 | 50.181333333333285 | structured task-variable failure |
+| Taxi-v3 | gymnasium_toy_text | taxi_landmark_modes | 2 | boundary_targeted | 84 | 8 | 500 | 84 | 5.9523809523809526 | 10.728371262606668 | 50.181333333333285 | structured task-variable failure |
 
 ## Fair Budget Frontier
 

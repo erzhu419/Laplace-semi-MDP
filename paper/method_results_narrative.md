@@ -180,9 +180,17 @@ is not yet a new main benchmark; it is an interface-portability and
 failure-mode test. FrozenLake, CliffWalking, and PointMaze keep the navigation
 structure close to the boundary-graph assumption, while Taxi exposes a useful
 negative case: a purely spatial boundary graph can compress away
-passenger/destination variables that are essential to Bellman value. The paper
-should report this as evidence for the method boundary, not as a defect hidden
-by averaging.
+passenger/destination variables that are essential to Bellman value.
+
+The Taxi repair ablation confirms the diagnosis. Adding boundary-targeted
+options reduces the start gap relative to primitive repeated-action options,
+and retaining all task-variable modes at Taxi's landmark cells reduces the
+start gap further, from about `37.04` to `10.73`. This repair is not free: the
+boundary grows to `84` states and the option interface grows to `84` targeted
+options. The paper should present this as a claim-boundary result. The method
+can diagnose which variables must remain explicit, but compositional
+task-variable abstraction is a separate extension rather than something that a
+purely spatial boundary selector should be expected to solve automatically.
 
 ## Discussion Draft
 
@@ -222,7 +230,7 @@ the method from a black-box option discovery heuristic.
 | The RD Boundary Green Operator is the reference mathematical object. | Lean finite-difference, Green legality, Neumann tail, Bellman contraction, and value-gap theorems. | supported |
 | Compression is the main story, not universal single-task speed. | Submission table separates planning-only speedup, total speedup, break-even tasks, and multi-task amortization. | supported |
 | Fixed-`B` reward relabeling preserves multi-task compression. | Edge reward multitask table and theorem stack T10/T11. | supported |
-| The implementation can leave the custom grid class. | General finite-MDP smoke: Gymnasium ToyText plus discretized PointMaze; Taxi reported as structured variable-abstraction failure. | initial smoke |
+| The implementation can leave the custom grid class. | General finite-MDP smoke: Gymnasium ToyText plus discretized PointMaze; Taxi reported as structured variable-abstraction failure/repair. | initial smoke |
 
 ## Writing Notes
 

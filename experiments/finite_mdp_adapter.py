@@ -433,6 +433,16 @@ def transition_graph(mdp: FiniteMDP, threshold: float = 1e-12) -> nx.Graph:
     return graph
 
 
+def transition_digraph(mdp: FiniteMDP, threshold: float = 1e-12) -> nx.DiGraph:
+    graph = nx.DiGraph()
+    graph.add_nodes_from(range(mdp.n_states))
+    for action in range(mdp.n_actions):
+        src, dst = np.nonzero(mdp.P[action] > threshold)
+        for s, ns in zip(src.tolist(), dst.tolist()):
+            graph.add_edge(int(s), int(ns))
+    return graph
+
+
 def adjacency_matrix(mdp: FiniteMDP, threshold: float = 1e-12) -> np.ndarray:
     A = np.zeros((mdp.n_states, mdp.n_states), dtype=float)
     for action in range(mdp.n_actions):
@@ -506,6 +516,53 @@ def coverage_boundary(mdp: FiniteMDP, target_count: int) -> List[int]:
             break
         boundary.add(int(best_state))
     return sorted(boundary)
+
+
+def taxi_factor_boundary(mdp: FiniteMDP) -> List[int]:
+    """Taxi-specific task-variable boundary for the structured failure ablation.
+
+    A purely spatial boundary can hide passenger/destination variables.  This
+    selector keeps the states where the passenger status can change: successful
+    pickup configurations, in-taxi landmark configurations, and successful
+    dropoff configurations.  It is intentionally labeled Taxi-specific rather
+    than a generic theorem-level selector.
+    """
+
+    if not mdp.name.startswith("Taxi") or mdp.n_states != 500:
+        raise ValueError("taxi_factor_boundary only applies to Taxi-v3 style 500-state MDPs.")
+    taxi_locs = ((0, 0), (0, 4), (4, 0), (4, 3))
+
+    def encode(row: int, col: int, passenger: int, destination: int) -> int:
+        return (((row * 5 + col) * 5 + passenger) * 4 + destination)
+
+    boundary = set(endpoint_boundary(mdp))
+    for passenger in range(4):
+        pickup_row, pickup_col = taxi_locs[passenger]
+        for destination in range(4):
+            dest_row, dest_col = taxi_locs[destination]
+            boundary.add(encode(pickup_row, pickup_col, passenger, destination))
+            boundary.add(encode(pickup_row, pickup_col, 4, destination))
+            boundary.add(encode(dest_row, dest_col, 4, destination))
+            boundary.add(encode(dest_row, dest_col, destination, destination))
+    return sorted(state for state in boundary if 0 <= state < mdp.n_states)
+
+
+def taxi_landmark_modes_boundary(mdp: FiniteMDP) -> List[int]:
+    """Stronger Taxi ablation retaining every passenger/destination mode at landmarks."""
+
+    if not mdp.name.startswith("Taxi") or mdp.n_states != 500:
+        raise ValueError("taxi_landmark_modes_boundary only applies to Taxi-v3 style 500-state MDPs.")
+    taxi_locs = ((0, 0), (0, 4), (4, 0), (4, 3))
+
+    def encode(row: int, col: int, passenger: int, destination: int) -> int:
+        return (((row * 5 + col) * 5 + passenger) * 4 + destination)
+
+    boundary = set(endpoint_boundary(mdp))
+    for row, col in taxi_locs:
+        for passenger in range(5):
+            for destination in range(4):
+                boundary.add(encode(row, col, passenger, destination))
+    return sorted(state for state in boundary if 0 <= state < mdp.n_states)
 
 
 def value_gradient_saliency(mdp: FiniteMDP, V: np.ndarray) -> np.ndarray:
@@ -636,6 +693,61 @@ def build_smdp_reductions(mdp: FiniteMDP, boundary: Sequence[int], gamma: float)
     return reductions
 
 
+def build_targeted_smdp_reductions(
+    mdp: FiniteMDP,
+    boundary: Sequence[int],
+    gamma: float,
+) -> Dict[str, BellmanKronReduction]:
+    reductions: Dict[str, BellmanKronReduction] = {}
+    for target in sorted(set(int(state) for state in boundary)):
+        P_policy, R_policy = shortest_path_target_policy_kernel(mdp, target)
+        reductions[f"to_{target}"] = bellman_kron_reduce(P_policy, R_policy, boundary, gamma)
+    return reductions
+
+
+def shortest_path_target_policy_kernel(mdp: FiniteMDP, target: int) -> Tuple[np.ndarray, np.ndarray]:
+    """Deterministic option policy that greedily heads toward one target state.
+
+    The policy is computed on the directed transition support graph, so it can
+    use non-movement actions such as Taxi pickup/dropoff when those actions are
+    required to reach a target factored state.
+    """
+
+    target = int(target)
+    graph = transition_digraph(mdp)
+    try:
+        distances = nx.single_source_shortest_path_length(graph.reverse(copy=False), target)
+    except nx.NetworkXError:
+        distances = {target: 0}
+    P_policy = np.zeros((mdp.n_states, mdp.n_states), dtype=float)
+    R_policy = np.zeros(mdp.n_states, dtype=float)
+    for state in range(mdp.n_states):
+        if state == target:
+            P_policy[state, state] = 1.0
+            R_policy[state] = 0.0
+            continue
+        best_action = 0
+        best_score = float("inf")
+        for action in range(mdp.n_actions):
+            score = 0.0
+            unreachable_mass = 0.0
+            for next_state, prob in enumerate(mdp.P[action, state]):
+                if prob <= 1e-12:
+                    continue
+                dist = distances.get(next_state)
+                if dist is None:
+                    unreachable_mass += float(prob)
+                else:
+                    score += float(prob) * float(dist)
+            score += unreachable_mass * float(mdp.n_states + 1)
+            if score < best_score - 1e-12:
+                best_score = score
+                best_action = action
+        P_policy[state] = mdp.P[best_action, state]
+        R_policy[state] = mdp.R[best_action, state]
+    return P_policy, R_policy
+
+
 def lifted_graph_value(
     mdp: FiniteMDP,
     boundary: Sequence[int],
@@ -674,13 +786,19 @@ def evaluate_boundary_graph(
     boundary: Sequence[int],
     gamma: float,
     full_value: np.ndarray | None = None,
+    option_mode: str = "primitive",
 ) -> Dict[str, object]:
     boundary = sorted(set(int(s) for s in boundary))
     if full_value is None:
         full_value, full_iterations = full_value_iteration(mdp, gamma=gamma)
     else:
         full_iterations = 0
-    reductions = build_smdp_reductions(mdp, boundary, gamma=gamma)
+    if option_mode == "primitive":
+        reductions = build_smdp_reductions(mdp, boundary, gamma=gamma)
+    elif option_mode == "boundary_targeted":
+        reductions = build_targeted_smdp_reductions(mdp, boundary, gamma=gamma)
+    else:
+        raise ValueError(f"Unknown option_mode: {option_mode}")
     boundary_pos = {state: pos for pos, state in enumerate(boundary)}
     terminal_positions = [boundary_pos[s] for s in mdp.terminal_states if s in boundary_pos]
     V_boundary, smdp_iterations = graph_smdp_value_iteration(reductions, terminal_positions=terminal_positions)
@@ -700,5 +818,7 @@ def evaluate_boundary_graph(
         "value_gap_mean": float(start_dist @ value_error),
         "value_gap_max": float(np.max(value_error)),
         "kernel_nnz": int(sum(np.count_nonzero(red.gamma_terminal) for red in reductions.values())),
+        "n_options": len(reductions),
+        "option_mode": option_mode,
         "full_transition_nnz": int(np.count_nonzero(mdp.P)),
     }

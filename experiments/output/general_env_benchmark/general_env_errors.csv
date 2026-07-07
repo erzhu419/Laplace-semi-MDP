@@ -1,0 +1,2 @@
+env_spec,env,method,option_mode,target_count,error
+toytext:Taxi-v3,Taxi-v3,spectral,boundary_targeted,32,LinAlgError('SVD did not converge')

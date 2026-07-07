@@ -46,6 +46,7 @@ python3 experiments/run_random_maze_generalization.py \
 
 python3 experiments/run_general_env_benchmark.py \
   --env-specs toytext:Taxi-v3 toytext:FrozenLake8x8-v1 toytext:CliffWalking-v1 pointmaze:umaze:3 \
+  --option-modes primitive boundary_targeted \
   --out-dir experiments/output/general_env_benchmark
 
 python3 experiments/run_group_incremental_semantic_diff.py \

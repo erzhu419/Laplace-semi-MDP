@@ -23,6 +23,8 @@ from finite_mdp_adapter import (
     full_value_iteration,
     green_occupancy_boundary,
     spectral_boundary,
+    taxi_factor_boundary,
+    taxi_landmark_modes_boundary,
 )
 
 
@@ -33,7 +35,15 @@ DEFAULT_ENV_SPECS = (
     "pointmaze:umaze:3",
 )
 
-DEFAULT_METHODS = ("endpoints", "betweenness", "spectral", "coverage", "green")
+DEFAULT_METHODS = (
+    "endpoints",
+    "betweenness",
+    "spectral",
+    "coverage",
+    "green",
+    "taxi_factor",
+    "taxi_landmark_modes",
+)
 
 
 def load_env_from_spec(spec: str, seed: int, max_states: int) -> FiniteMDP:
@@ -79,7 +89,17 @@ def construct_boundary(
             V=full_value,
             saliency_kind="combined",
         )
+    if method == "taxi_factor":
+        return taxi_factor_boundary(mdp)
+    if method == "taxi_landmark_modes":
+        return taxi_landmark_modes_boundary(mdp)
     raise ValueError(f"Unknown method: {method}")
+
+
+def method_applicable(mdp: FiniteMDP, method: str) -> bool:
+    if method in {"taxi_factor", "taxi_landmark_modes"}:
+        return mdp.name.startswith("Taxi") and mdp.n_states == 500
+    return True
 
 
 def write_csv(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
@@ -92,7 +112,7 @@ def write_csv(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
             if key not in fields:
                 fields.append(key)
     with path.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({key: row.get(key, "") for key in fields})
@@ -114,14 +134,21 @@ def write_summary(path: Path, rows: Sequence[Mapping[str, object]], errors: Sequ
         for row in rows:
             by_env.setdefault(str(row["env"]), []).append(row)
         lines += ["## Best Rows By Env", ""]
-        table = [["env", "method", "target", "B", "compression", "start_gap", "max_gap", "construct_s"]]
+        table = [["env", "method", "options", "target", "B", "compression", "start_gap", "max_gap", "construct_s"]]
         for env, env_rows in sorted(by_env.items()):
-            graph_rows = [row for row in env_rows if row.get("method") != "full_vi"]
+            graph_rows = [
+                row
+                for row in env_rows
+                if row.get("method") != "full_vi" and not row.get("error") and "start_value_gap" in row
+            ]
+            if not graph_rows:
+                continue
             best = min(graph_rows, key=lambda row: (float(row["start_value_gap"]), int(row["n_boundary"])))
             table.append(
                 [
                     env,
                     str(best["method"]),
+                    str(best.get("option_mode", "")),
                     str(best["target_count"]),
                     str(best["n_boundary"]),
                     f"{float(best['state_compression_ratio']):.2f}",
@@ -134,9 +161,17 @@ def write_summary(path: Path, rows: Sequence[Mapping[str, object]], errors: Sequ
         lines.append("")
     if errors:
         lines += ["## Skipped Or Failed Specs", ""]
-        table = [["env_spec", "error"]]
+        table = [["env_spec", "method", "options", "target", "error"]]
         for error in errors:
-            table.append([str(error.get("env_spec", "")), str(error.get("error", ""))[:160]])
+            table.append(
+                [
+                    str(error.get("env_spec", "")),
+                    str(error.get("method", "")),
+                    str(error.get("option_mode", "")),
+                    str(error.get("target_count", "")),
+                    str(error.get("error", ""))[:160],
+                ]
+            )
         lines += markdown_table(table)
         lines.append("")
     path.write_text("\n".join(lines) + "\n")
@@ -186,6 +221,8 @@ def run_env(spec: str, args: argparse.Namespace) -> Tuple[List[Dict[str, object]
             "construction_time_sec": 0.0,
             "smdp_eval_time_sec": full_time,
             "kernel_nnz": int((mdp.P != 0.0).sum()),
+            "n_options": mdp.n_actions,
+            "option_mode": "full_mdp",
             "full_transition_nnz": int((mdp.P != 0.0).sum()),
             "n_terminal": len(mdp.terminal_states),
             "n_start_support": int((start_dist > 0.0).sum()),
@@ -194,50 +231,63 @@ def run_env(spec: str, args: argparse.Namespace) -> Tuple[List[Dict[str, object]
     )
 
     for method in args.methods:
+        if not method_applicable(mdp, method):
+            continue
         for target in args.target_counts:
             if method == "endpoints" and target != args.target_counts[0]:
                 continue
-            try:
-                construct_started = time.perf_counter()
-                boundary = construct_boundary(
-                    mdp=mdp,
-                    method=method,
-                    target_count=int(target),
-                    gamma=args.gamma,
-                    full_value=full_value,
-                )
-                construct_time = time.perf_counter() - construct_started
-                eval_started = time.perf_counter()
-                metrics = evaluate_boundary_graph(mdp, boundary=boundary, gamma=args.gamma, full_value=full_value)
-                eval_time = time.perf_counter() - eval_started
-                row: Dict[str, object] = {
-                    "env_spec": spec,
-                    "env": mdp.name,
-                    "source": (mdp.metadata or {}).get("source", ""),
-                    "method": method,
-                    "target_count": int(target),
-                    "full_vi_iterations": full_iterations,
-                    "full_vi_time_sec": full_time,
-                    "construction_time_sec": construct_time,
-                    "smdp_eval_time_sec": eval_time,
-                    "n_terminal": len(mdp.terminal_states),
-                    "n_start_support": int((start_dist > 0.0).sum()),
-                    "timestamp": datetime.utcnow().isoformat(),
-                }
-                row.update(metrics)
-                rows.append(row)
-            except Exception as exc:
-                rows.append(
-                    {
+            if method in {"taxi_factor", "taxi_landmark_modes"} and target != args.target_counts[0]:
+                continue
+            for option_mode in args.option_modes:
+                try:
+                    construct_started = time.perf_counter()
+                    boundary = construct_boundary(
+                        mdp=mdp,
+                        method=method,
+                        target_count=int(target),
+                        gamma=args.gamma,
+                        full_value=full_value,
+                    )
+                    construct_time = time.perf_counter() - construct_started
+                    eval_started = time.perf_counter()
+                    metrics = evaluate_boundary_graph(
+                        mdp,
+                        boundary=boundary,
+                        gamma=args.gamma,
+                        full_value=full_value,
+                        option_mode=option_mode,
+                    )
+                    eval_time = time.perf_counter() - eval_started
+                    row: Dict[str, object] = {
                         "env_spec": spec,
                         "env": mdp.name,
                         "source": (mdp.metadata or {}).get("source", ""),
                         "method": method,
                         "target_count": int(target),
-                        "error": repr(exc),
+                        "option_mode": option_mode,
+                        "full_vi_iterations": full_iterations,
+                        "full_vi_time_sec": full_time,
+                        "construction_time_sec": construct_time,
+                        "smdp_eval_time_sec": eval_time,
+                        "n_terminal": len(mdp.terminal_states),
+                        "n_start_support": int((start_dist > 0.0).sum()),
                         "timestamp": datetime.utcnow().isoformat(),
                     }
-                )
+                    row.update(metrics)
+                    rows.append(row)
+                except Exception as exc:
+                    rows.append(
+                        {
+                            "env_spec": spec,
+                            "env": mdp.name,
+                            "source": (mdp.metadata or {}).get("source", ""),
+                            "method": method,
+                            "target_count": int(target),
+                            "option_mode": option_mode,
+                            "error": repr(exc),
+                            "timestamp": datetime.utcnow().isoformat(),
+                        }
+                    )
     return rows, None
 
 
@@ -247,6 +297,7 @@ def main() -> None:
     )
     parser.add_argument("--env-specs", nargs="+", default=list(DEFAULT_ENV_SPECS))
     parser.add_argument("--methods", nargs="+", default=list(DEFAULT_METHODS))
+    parser.add_argument("--option-modes", nargs="+", default=["primitive"])
     parser.add_argument("--target-counts", nargs="+", type=int, default=[8, 16, 32])
     parser.add_argument("--gamma", type=float, default=0.97)
     parser.add_argument("--tol", type=float, default=1e-10)
@@ -263,14 +314,26 @@ def main() -> None:
         rows.extend(env_rows)
         if error is not None:
             errors.append(error)
+    row_errors = [
+        {
+            "env_spec": row.get("env_spec", ""),
+            "env": row.get("env", ""),
+            "method": row.get("method", ""),
+            "option_mode": row.get("option_mode", ""),
+            "target_count": row.get("target_count", ""),
+            "error": row.get("error", ""),
+        }
+        for row in rows
+        if row.get("error")
+    ]
+    all_errors = list(errors) + row_errors
     write_csv(args.out_dir / "general_env_benchmark.csv", rows)
-    write_csv(args.out_dir / "general_env_errors.csv", errors)
+    write_csv(args.out_dir / "general_env_errors.csv", all_errors)
     (args.out_dir / "general_env_benchmark.json").write_text(
-        json.dumps({"rows": rows, "errors": errors}, indent=2, sort_keys=True)
+        json.dumps({"rows": rows, "errors": all_errors}, indent=2, sort_keys=True)
     )
-    write_summary(args.out_dir / "summary.md", rows, errors)
+    write_summary(args.out_dir / "summary.md", rows, all_errors)
 
 
 if __name__ == "__main__":
     main()
-
