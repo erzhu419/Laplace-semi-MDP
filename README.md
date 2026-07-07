@@ -8,8 +8,9 @@ The current paper-facing path is:
 
 1. **Reference operator:** exact first-hit Green kernels define the frozen RD split score.
 2. **Runtime implementation:** certified adaptive Green intervals are used first; uniqueness failures are separated into epsilon-optimal/tie-set certificates versus true curvature fallback.
-3. **Planner:** the selected boundary states become graph vertices, first-boundary options become graph-SMDP actions, and value iteration/planning runs on that compressed graph.
-4. **Appendix certificates:** weighted spectral and conditioned rational Collatz certificates justify convergence/safety as sufficient certificates, but they are not the main runtime decision rule.
+3. **Discovery backend:** adaptive feasible top-k refinement scans the proposal order until a hard/group-feasible split is certified. It is the main feasible-discovery backend; fixed top-k is the ablation envelope, and RD score optimality is claimed only under interval dominance.
+4. **Planner:** the selected boundary states become graph vertices, first-boundary options become graph-SMDP actions, and value iteration/planning runs on that compressed graph.
+5. **Appendix certificates:** weighted spectral and conditioned rational Collatz certificates justify convergence/safety as sufficient certificates, but they are not the main runtime decision rule.
 
 The most useful entry-point table is generated at:
 
@@ -120,6 +121,7 @@ scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
 ## Current Artifact Status
 
 - Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.
+- Adaptive feasible top-k diagnostics now support using it as the main discovery backend: paired adaptive/fixed top-4 rows match feasibility on the current suite (`36/36`), certified feasible rate stays at `0.7222`, median selection time drops from about `47.18s` to `23.58s`, and the Lean proof layer states the feasible-envelope/work-bound guarantee plus the score-optimality caveat.
 - The XL scheduler run `paper_xl_20260706_0659` has been published into the tracked paper-facing outputs: large-scale compression 135 rows, random maze 360 rows, option frontier 648 rows, amortized multitask 192 rows, and fixed-`B` edge reward 384 rows.
 - The large-scale adaptive table currently shows planning-only speedups up to roughly `1e5x` on long corridors and single-task total speedups up to roughly `10.5x`. The submission table reports both planning-only and total-time accounting.
 - The compact benchmark compares full VI, exact RD graph variants, group-constrained RD, eigenoptions, betweenness bottlenecks, random landmarks, and coverage landmarks under the same map/slip suite.
@@ -137,7 +139,7 @@ scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
   keeps `B` fixed and reduces terminal-goal gaps using one shared policy and
   one batched event solve per queried goal, while reporting the extra
   goal-interface cost and break-even task count separately.
-- Paper-facing scaffolding now lives under `paper/`, including the main claim, related-work matrix, theorem stack, experiment matrix, and figure plan.
+- Paper-facing scaffolding now lives under `paper/`, including the main claim, method/results narrative scaffold, related-work matrix, theorem stack, experiment matrix, and figure plan.
 - `experiments/run_random_maze_generalization.py`, `experiments/run_fair_budget_frontier.py`, `experiments/plot_graph_abstraction_figures.py`, and `experiments/run_theorem_experiment_bridge.py` add random-topology stress tests, shared budget-frontier aggregation, interpretability figures, and theorem/proof/experiment alignment.
 
 Use `experiments/output/submission_main_table/summary.md` as the first reviewer-facing artifact rather than reading every historical output directory.

@@ -98,7 +98,25 @@ Experiment hooks:
 
 - `experiments/run_adaptive_green_certification.py`
 
-## T7: Group Constraint Feasibility
+## T7: Adaptive Feasible Top-K Envelope
+
+Claim: adaptive feasible top-k is a solver wrapper with a precise feasible-discovery guarantee. Given a shared candidate order, feasibility oracle, and cap `K`, adaptive refinement succeeds if and only if the corresponding fixed top-`K` prefix contains at least one feasible candidate. It refines at most `K` candidates and usually fewer when the first feasible candidate appears early.
+
+Boundary: this theorem certifies the feasible envelope, not RD-optimal split selection. Score optimality inside the prefix requires a separate score-interval dominance certificate: the selected candidate's lower score bound must exceed every competing upper score bound. Without this dominance condition, feasible-only early stopping can return a feasible candidate that is not the best-scoring feasible candidate.
+
+Lean hooks:
+
+- `proof/AdaptiveTopK.lean`: `adaptive_feasible_envelope_equivalence`
+- `proof/AdaptiveTopK.lean`: `adaptive_refinement_work_bound`
+- `proof/AdaptiveTopK.lean`: `score_interval_dominance_certifies_best_feasible`
+- `proof/AdaptiveTopK.lean`: `feasible_only_counterexample`
+
+Experiment hooks:
+
+- `experiments/run_adaptive_topk_diagnostics.py`
+- `experiments/output/adaptive_topk_diagnostics/summary.md`
+
+## T8: Group Constraint Feasibility
 
 Claim: group-wise risk constraints turn robustness into explicit feasibility conditions.
 
@@ -112,7 +130,7 @@ Experiment hooks:
 - `experiments/run_group_constrained_adaptive_table.py`
 - `experiments/run_random_maze_generalization.py`
 
-## T8: Incremental Insertion Update
+## T9: Incremental Insertion Update
 
 Current status: executable diagnostic only. Keep it as a runtime optimization unless the paper makes it a theorem-level contribution.
 
@@ -121,7 +139,7 @@ Experiment hooks:
 - `experiments/run_incremental_green_update_check.py`
 - `experiments/run_group_incremental_semantic_diff.py`
 
-## T9: Edge Reward/Event Kernel Relabeling
+## T10: Edge Reward/Event Kernel Relabeling
 
 Claim: multi-task rewards should not change the boundary graph topology.  For a
 fixed boundary set `B` and option library, exact edge occupancy kernels
@@ -181,7 +199,7 @@ Experiment hooks:
 - `experiments/run_edge_reward_kernel_multitask.py`
 - `experiments/output/edge_reward_kernel_multitask/summary.md`
 
-## T10: Goal-Event Kernels and Option-Restriction Bias
+## T11: Goal-Event Kernels and Option-Restriction Bias
 
 Claim: terminal interior goals are exact only relative to the option family used
 to query them.  For a fixed boundary graph `B`, query goal `g`, and

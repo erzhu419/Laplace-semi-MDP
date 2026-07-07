@@ -16,7 +16,7 @@ Artifact: `paper/related_work_matrix.md`.
 
 ## 3. Paper-Readable Theorem Stack
 
-State the proof layer as a sequence: frozen finite difference, first-hit Green legality, Neumann/adaptive tail certification, bits curvature, graph-SMDP contraction, top-set fallback, and group-constraint feasibility.
+State the proof layer as a sequence: frozen finite difference, first-hit Green legality, Neumann/adaptive tail certification, bits curvature, graph-SMDP contraction, top-set fallback, adaptive feasible top-k envelope, group-constraint feasibility, and reward/event-kernel relabeling.
 
 Artifact: `paper/theorem_stack.md`.
 
@@ -36,13 +36,23 @@ Compare methods at a shared rate/distortion vocabulary: boundary fraction, value
 
 Artifact: `experiments/run_fair_budget_frontier.py`.
 
-## 6. Figures And Interpretability
+## 6. Adaptive Backend Claim Discipline
+
+Use adaptive feasible top-k as the main discovery backend, fixed top-k as the ablation envelope, and interval dominance as the only route to a score-optimal split claim. The paper should say the backend preserves the fixed-prefix feasible envelope while reducing refinements; it should not say it globally optimizes the adaptive RD objective.
+
+Artifacts:
+
+- `proof/AdaptiveTopK.lean`
+- `experiments/run_adaptive_topk_diagnostics.py`
+- `experiments/output/adaptive_topk_diagnostics/summary.md`
+
+## 7. Figures And Interpretability
 
 Make the graph visible. Reviewers should see which states become vertices and where the abstraction hides structure.
 
 Artifact: `experiments/plot_graph_abstraction_figures.py`.
 
-## 7. Theorem-To-Experiment Bridge
+## 8. Theorem-To-Experiment Bridge
 
 Every theorem-level statement must have a Lean symbol and an experiment output. Every implementation heuristic must be labeled as such.
 
@@ -50,4 +60,4 @@ Artifact: `experiments/run_theorem_experiment_bridge.py`.
 
 ## Current Verdict
 
-The project now has the shape of a paper contribution, but final top-conference readiness still depends on large-scale node runs and polished manuscript writing. The method story is defensible if we keep the theorem claims frozen/local, present adaptive/incremental selection as certified implementations or ablations, and show amortized compression wins at scale.
+The project now has the shape of a paper contribution. Large-scale node runs, adaptive top-k diagnostics, proof bridges, and fixed-`B` reward relabeling are in place; the remaining risk is manuscript discipline. The method story is defensible if we keep the theorem claims frozen/local, present adaptive top-k as feasible discovery rather than RD-optimal split selection, label incremental selection as an optimization/ablation, and show amortized compression wins without hiding upfront cost.
