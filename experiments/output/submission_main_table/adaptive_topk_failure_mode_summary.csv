@@ -1,0 +1,5 @@
+mode,failure_class,n_rows,max_adaptive_group_total_violation,maps,slips
+certified,cap_envelope_or_boundary_budget_not_met,1,128.17685001041116,four_rooms_11,0.1
+certified,cap_exhausted_no_positive_feasible_gain,4,116.58945928855368,four_rooms_15;open_room_12;open_room_16,0.05;0.1
+exact,cap_envelope_or_boundary_budget_not_met,1,128.17685001041116,four_rooms_11,0.1
+exact,cap_exhausted_no_positive_feasible_gain,4,116.58945928855368,four_rooms_15;open_room_12;open_room_16,0.05;0.1

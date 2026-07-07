@@ -1,0 +1,5 @@
+method,top_k_cap,k_used,n_steps,n_feasible_stop,n_clear_margin_stop,n_cap_hit,n_cap_without_selected_feasible,n_expand_marker
+adaptive_topk_certified_refine,4,1,11,11,0,0,0,0
+adaptive_topk_certified_refine,4,4,21,0,2,19,19,0
+adaptive_topk_exact_refine,4,1,11,11,0,0,0,0
+adaptive_topk_exact_refine,4,4,21,0,2,19,19,0

@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-07T14:24:18
+Generated: 2026-07-07T15:32:16
 
 This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.
 
@@ -12,6 +12,7 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 - adaptive final certified decisions under unique-top fallback: `20/20`
 - adaptive final certified decisions under tie-aware reporting: `20/20`
 - larger group-constrained adaptive feasible rows: `6/6`
+- adaptive top-k paired feasible matches: `36/36`
 - exact Green is the reference operator; certified adaptive Green plus tie-aware top-set/epsilon certificates are the runtime implementation; fixed-K and weighted spectral certificates are ablations/appendix diagnostics.
 
 ## Main Runtime Table
@@ -309,6 +310,84 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 | hybrid_topk_ablation | surrogate_topk_exact_refine | 8 | 18 | 0.7222 | 3 | 73.76 | 2.546 | 71.22 | 0.1875 | 73.95 | 0.002465 | 0.003961 | 410 | 116.6 | 0.1888 |  | 274 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
 | hybrid_topk_ablation | surrogate_topk_exact_refine | 16 | 18 | 0.6667 | 3 | 131.3 | 2.498 | 128.8 | 0.1958 | 131.6 | 0.001444 | 0.002269 | 711.5 | 116.6 | 0.1888 |  | 454 | nan | 0.0 | 0 | 0 | 0.0 | 0.0 | 0.0 |
 
+## Adaptive Top-K Diagnostics
+
+### Paired Feasibility
+
+| mode | map | slip | fixed_top4_feasible | adaptive_topk_feasible | feasible_match | adaptive_k_used_mean | selection_speedup_fixed_over_adaptive | lexicographic_regret_vs_fixed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| certified | four_rooms_11 | 0.0 | True | True | True | 1.0 | 1.9809225334844147 | 0.0 |
+| certified | four_rooms_11 | 0.05 | True | True | True | 3.0 | 1.2917481258906074 | 0.0 |
+| certified | four_rooms_11 | 0.1 | False | False | True | 4.0 | 1.0227274851121877 | 0.0 |
+| certified | four_rooms_15 | 0.0 | True | True | True | 1.0 | 2.0523569986524732 | 0.0 |
+| certified | four_rooms_15 | 0.05 | False | False | True | 4.0 | 1.0403975952874398 | 0.0 |
+| certified | four_rooms_15 | 0.1 | True | True | True | 4.0 | 1.0299159157143836 | 0.0 |
+| certified | maze_13 | 0.0 | True | True | True | 1.0 | 1.9165760216062036 | 0.0 |
+| certified | maze_13 | 0.05 | True | True | True | 1.0 | 1.973676558692511 | 0.0 |
+| certified | maze_13 | 0.1 | True | True | True | 1.0 | 1.9235773906230542 | 0.0 |
+| certified | maze_17 | 0.0 | True | True | True | 1.0 | 2.0474250560069427 | 0.0 |
+| certified | maze_17 | 0.05 | True | True | True | 1.0 | 2.0020909968516047 | 0.0 |
+| certified | maze_17 | 0.1 | True | True | True | 1.0 | 1.9104051991839082 | 0.0 |
+| certified | open_room_12 | 0.0 | True | True | True | 1.0 | 2.1754896581686687 | 0.0 |
+| certified | open_room_12 | 0.05 | True | True | True | 4.0 | 1.0624194221579948 | 0.0 |
+| certified | open_room_12 | 0.1 | False | False | True | 4.0 | 1.002695982235208 | 0.0 |
+| certified | open_room_16 | 0.0 | True | True | True | 1.0 | 2.084450691696202 | 0.0 |
+| certified | open_room_16 | 0.05 | False | False | True | 4.0 | 1.0441562449015103 | 0.0 |
+| certified | open_room_16 | 0.1 | False | False | True | 4.0 | 1.0150720860857465 | 0.0 |
+| exact | four_rooms_11 | 0.0 | True | True | True | 1.0 | 2.0662672918212177 | 0.0 |
+| exact | four_rooms_11 | 0.05 | True | True | True | 3.0 | 1.3761496533051576 | 0.0 |
+| exact | four_rooms_11 | 0.1 | False | False | True | 4.0 | 1.0300934750236677 | 0.0 |
+| exact | four_rooms_15 | 0.0 | True | True | True | 1.0 | 1.9849137738493123 | 0.0 |
+| exact | four_rooms_15 | 0.05 | False | False | True | 4.0 | 1.0818399085493329 | 0.0 |
+| exact | four_rooms_15 | 0.1 | True | True | True | 4.0 | 1.0681286183607728 | 0.0 |
+| exact | maze_13 | 0.0 | True | True | True | 1.0 | 1.9011631147919805 | 0.0 |
+| exact | maze_13 | 0.05 | True | True | True | 1.0 | 2.0524515196815964 | 0.0 |
+| exact | maze_13 | 0.1 | True | True | True | 1.0 | 2.01296293445069 | 0.0 |
+| exact | maze_17 | 0.0 | True | True | True | 1.0 | 1.926947748753271 | 0.0 |
+| exact | maze_17 | 0.05 | True | True | True | 1.0 | 2.1106502995653744 | 0.0 |
+| exact | maze_17 | 0.1 | True | True | True | 1.0 | 2.0644665478377617 | 0.0 |
+| exact | open_room_12 | 0.0 | True | True | True | 1.0 | 2.0497941691617214 | 0.0 |
+| exact | open_room_12 | 0.05 | True | True | True | 4.0 | 1.0850715008844412 | 0.0 |
+| exact | open_room_12 | 0.1 | False | False | True | 4.0 | 1.046393704718393 | 0.0 |
+| exact | open_room_16 | 0.0 | True | True | True | 1.0 | 1.9608309188476378 | 0.0 |
+| exact | open_room_16 | 0.05 | False | False | True | 4.0 | 1.0975796195938656 | 0.0 |
+| exact | open_room_16 | 0.1 | False | False | True | 4.0 | 1.0843370106887176 | 0.0 |
+
+### K-Used Histogram
+
+| method | top_k_cap | k_used | n_steps | n_feasible_stop | n_cap_hit | n_cap_without_selected_feasible |
+| --- | --- | --- | --- | --- | --- | --- |
+| adaptive_topk_certified_refine | 4 | 1 | 11 | 11 | 0 | 0 |
+| adaptive_topk_certified_refine | 4 | 4 | 21 | 0 | 19 | 19 |
+| adaptive_topk_exact_refine | 4 | 1 | 11 | 11 | 0 | 0 |
+| adaptive_topk_exact_refine | 4 | 4 | 21 | 0 | 19 | 19 |
+
+### Fixed-K Vs Adaptive Cap
+
+| source | method | top_k_or_cap | n_rows | feasible_rate | median_selection_time_sec | total_exact_refine_calls | total_refined_candidates | median_adaptive_topk_used_mean |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| fixed_topk_ablation | surrogate_topk_certified_refine | 1 | 18 | 0.6111111111111112 | 25.627451439999277 | 82 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_certified_refine | 2 | 18 | 0.6111111111111112 | 32.837170812505065 | 117 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_certified_refine | 4 | 18 | 0.7222222222222222 | 47.18378464298439 | 174 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_certified_refine | 8 | 18 | 0.7222222222222222 | 73.07360589801101 | 274 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_certified_refine | 16 | 18 | 0.6666666666666666 | 132.19928522451664 | 454 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_exact_refine | 1 | 18 | 0.6111111111111112 | 25.25970465550199 | 82 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_exact_refine | 2 | 18 | 0.6111111111111112 | 32.18061363900779 | 117 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_exact_refine | 4 | 18 | 0.7222222222222222 | 48.68884417702793 | 174 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_exact_refine | 8 | 18 | 0.7222222222222222 | 73.76086592450156 | 274 | 0 | nan |
+| fixed_topk_ablation | surrogate_topk_exact_refine | 16 | 18 | 0.6666666666666666 | 131.33958206299576 | 454 | 0 | nan |
+| adaptive_topk | adaptive_topk_certified_refine | 4 | 18 | 0.7222222222222222 | 23.579303502454422 | 141 | 95 | 1.0 |
+| adaptive_topk | adaptive_topk_exact_refine | 4 | 18 | 0.7222222222222222 | 24.231489408470225 | 141 | 95 | 1.0 |
+
+### Adaptive Failure Summary
+
+| mode | failure_class | n_rows | max_adaptive_group_total_violation | maps | slips |
+| --- | --- | --- | --- | --- | --- |
+| certified | cap_envelope_or_boundary_budget_not_met | 1 | 128.17685001041116 | four_rooms_11 | 0.1 |
+| certified | cap_exhausted_no_positive_feasible_gain | 4 | 116.58945928855368 | four_rooms_15;open_room_12;open_room_16 | 0.05;0.1 |
+| exact | cap_envelope_or_boundary_budget_not_met | 1 | 128.17685001041116 | four_rooms_11 | 0.1 |
+| exact | cap_exhausted_no_positive_feasible_gain | 4 | 116.58945928855368 | four_rooms_15;open_room_12;open_room_16 | 0.05;0.1 |
+
 ## Incremental Green Update Aggregate
 
 | mode | n_rows | selected_state_match_rate | median_wall_time_sec | median_speedup_vs_full_recompute | max_speedup_vs_full_recompute | max_score_error_vs_exact | max_kernel_error_vs_exact | max_hidden_error_vs_exact | median_n_green_solves | median_n_green_updates | median_parent_update_rate |
@@ -329,11 +408,12 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 | Bits distortion admits a controlled finite-difference/Taylor approximation. | proved_symbol_present | rows=9, margin_condition=1, stable_when_checked=1 | Operator approximation and ablation | Keep finite-difference score as the main theorem; gradient score is an approximation. |
 | The graph-SMDP Bellman backup is a sup-norm contraction under finite options and gamma<1. | proved_symbol_present | rows=80, graph_rows=70, max_start_gap=0.04973 | Planning correctness lemma | Tie value-gap reporting to residual diagnostics in each benchmark table. |
 | Margin and top-set certificates separate stable operator decisions from ambiguous ties. | proved_symbol_present | rows=20, final=20, tie_aware_final=20 | Certificate table | Use tie-aware timing as the conservative runtime accounting. |
+| Adaptive feasible top-k has the same feasible envelope as fixed top-K under a shared candidate order and feasibility oracle. | proved_symbol_present | rows=36, feasible_match=36, max_regret=0, median_speedup=1.917 | Main discovery backend and fixed-topK ablation | Claim feasible discovery and refinement work savings; do not claim score-optimal split selection without interval dominance. |
 | Group-constrained RD makes robustness constraints explicit instead of hiding them in a scalar risk. | proved_symbol_present | rows=18, feasible=12 | Robust objective and main ablation | Use random-maze and held-out probes to show robustness is not hand-tuned to one map. |
 | Incremental insertion scoring is an implementation optimization, not a new theorem yet. | lean_pending | rows=30, selected_match=26, max_score_error=233.2 | Runtime ablation, not core correctness theorem | Formalize the insertion algebra only if it becomes a central claim. |
-| Fixed-boundary reward relabeling keeps task reward support out of the graph topology. | proved_symbol_present | rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.4631 | Multi-task compression and reward relabeling | Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted. |
-| Goal-conditioned event options reduce terminal-goal restriction bias without adding the goal to B. | proved_symbol_present | rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.4631 | Secondary terminal-goal extension | The gap is much smaller and the backend is shared/batched, but larger multitask runs must show amortized speedup beyond the current break-even table. |
-| The extracted graph should generalize across maze instances, not only fixed toy layouts. | empirical_stress_test | rows=6, feasible=3 | Generalization/stress-test section | Scale to larger random maps on node001-node006 for final paper numbers. |
+| Fixed-boundary reward relabeling keeps task reward support out of the graph topology. | proved_symbol_present | rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.5018 | Multi-task compression and reward relabeling | Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted. |
+| Goal-conditioned event options reduce terminal-goal restriction bias without adding the goal to B. | proved_symbol_present | rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.5018 | Secondary terminal-goal extension | The gap is much smaller and the backend is shared/batched, but larger multitask runs must show amortized speedup beyond the current break-even table. |
+| The extracted graph should generalize across maze instances, not only fixed toy layouts. | empirical_stress_test | rows=360, feasible=173 | Generalization/stress-test section | Scale to larger random maps on node001-node006 for final paper numbers. |
 
 ## Certificate Appendix Summary
 
@@ -356,6 +436,7 @@ This report is the paper-facing aggregation layer. It does not rerun heavy exper
 - solver validity: `experiments/output/solver_validity/solver_validity.csv`
 - discovery profile/cache: `experiments/output/discovery_profile_cache/discovery_profile_cache.csv`
 - hybrid surrogate/refine: `experiments/output/hybrid_surrogate_refine/hybrid_surrogate_refine.csv, experiments/output/hybrid_topk_ablation/hybrid_surrogate_refine.csv, experiments/output/hybrid_adaptive_topk_refine/hybrid_surrogate_refine.csv`
+- adaptive top-k diagnostics: `experiments/output/adaptive_topk_diagnostics`
 - incremental Green update: `experiments/output/incremental_green_update/incremental_green_update_aggregate.csv`
 - incremental group semantic diff: `experiments/output/group_incremental_semantic_diff/summary.md`
 - graph abstraction figures: `experiments/output/graph_abstraction_figures/summary.md`

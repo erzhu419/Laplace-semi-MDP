@@ -8,6 +8,7 @@ Run:
 
 ```bash
 lean proof/RDOperator.lean
+lean proof/AdaptiveTopK.lean
 cd proof && lake env lean RDOperatorReal.lean
 ```
 
@@ -71,6 +72,12 @@ What is formalized now:
   `(P,w,q)` inequalities with exact Python `Fraction` arithmetic.  The Lean
   layer remains the conditional real theorem applied after such inequalities
   are audited.
+- adaptive feasible top-k wrapper:
+  `AdaptiveTopK.lean` proves that, for a fixed candidate order, feasibility
+  oracle, and cap `K`, adaptive feasible stopping has the same feasible envelope
+  as fixed top-`K`, refines at most `K` candidates, and requires an interval
+  dominance certificate before it can claim score-optimal rather than merely
+  feasible stopping.
 - bits-curvature layer:
   the derivative of `bitsPhiDeriv` is `bitsPhiSecond`, a positive margin
   `delta <= 1 - h + eps` bounds `|bitsPhiSecond|`, and Mathlib Taylor gives the

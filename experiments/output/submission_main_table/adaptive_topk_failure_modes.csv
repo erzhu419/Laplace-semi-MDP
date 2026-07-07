@@ -1,0 +1,11 @@
+mode,map,slip,failure_class,fixed_top4_feasible,adaptive_topk_feasible,fixed_group_total_violation,adaptive_group_total_violation,adaptive_k_used_mean,adaptive_k_used_max,adaptive_cap_hits,fixed_stop_reason,adaptive_stop_reason,adaptive_decisions
+certified,four_rooms_11,0.1,cap_envelope_or_boundary_budget_not_met,False,False,128.17685001041116,128.17685001041116,4.0,4.0,4,budget_not_met,budget_not_met,cap;cap;cap;cap
+certified,four_rooms_15,0.05,cap_exhausted_no_positive_feasible_gain,False,False,116.58945928855368,116.58945928855368,4.0,4.0,3,no_positive_exact_refine_gain,no_positive_exact_refine_gain,cap;cap;cap
+certified,open_room_12,0.1,cap_exhausted_no_positive_feasible_gain,False,False,38.86315309618456,38.86315309618456,4.0,4.0,3,no_positive_exact_refine_gain,no_positive_exact_refine_gain,cap;cap;cap
+certified,open_room_16,0.05,cap_exhausted_no_positive_feasible_gain,False,False,19.43157654809228,19.43157654809228,4.0,4.0,2,no_positive_exact_refine_gain,no_positive_exact_refine_gain,cap;cap
+certified,open_room_16,0.1,cap_exhausted_no_positive_feasible_gain,False,False,116.58945928855368,116.58945928855368,4.0,4.0,3,no_positive_exact_refine_gain,no_positive_exact_refine_gain,cap;cap;cap
+exact,four_rooms_11,0.1,cap_envelope_or_boundary_budget_not_met,False,False,128.17685001041116,128.17685001041116,4.0,4.0,4,budget_not_met,budget_not_met,cap;cap;cap;cap
+exact,four_rooms_15,0.05,cap_exhausted_no_positive_feasible_gain,False,False,116.58945928855368,116.58945928855368,4.0,4.0,3,no_positive_exact_refine_gain,no_positive_exact_refine_gain,cap;cap;cap
+exact,open_room_12,0.1,cap_exhausted_no_positive_feasible_gain,False,False,38.86315309618456,38.86315309618456,4.0,4.0,3,no_positive_exact_refine_gain,no_positive_exact_refine_gain,cap;cap;cap
+exact,open_room_16,0.05,cap_exhausted_no_positive_feasible_gain,False,False,19.43157654809228,19.43157654809228,4.0,4.0,2,no_positive_exact_refine_gain,no_positive_exact_refine_gain,cap;cap
+exact,open_room_16,0.1,cap_exhausted_no_positive_feasible_gain,False,False,116.58945928855368,116.58945928855368,4.0,4.0,3,no_positive_exact_refine_gain,no_positive_exact_refine_gain,cap;cap;cap

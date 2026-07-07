@@ -660,6 +660,7 @@ def write_report(
     hybrid_refine_rows: Sequence[Mapping[str, object]],
     incremental_green_rows: Sequence[Mapping[str, object]],
     theorem_bridge_rows: Sequence[Mapping[str, object]],
+    adaptive_topk_tables: Mapping[str, Sequence[Mapping[str, object]]],
     args: argparse.Namespace,
 ) -> None:
     main_columns = [
@@ -869,6 +870,45 @@ def write_report(
         "manuscript_location",
         "remaining_gap",
     ]
+    adaptive_topk_paired_columns = [
+        "mode",
+        "map",
+        "slip",
+        "fixed_top4_feasible",
+        "adaptive_topk_feasible",
+        "feasible_match",
+        "adaptive_k_used_mean",
+        "selection_speedup_fixed_over_adaptive",
+        "lexicographic_regret_vs_fixed",
+    ]
+    adaptive_topk_hist_columns = [
+        "method",
+        "top_k_cap",
+        "k_used",
+        "n_steps",
+        "n_feasible_stop",
+        "n_cap_hit",
+        "n_cap_without_selected_feasible",
+    ]
+    adaptive_topk_summary_columns = [
+        "source",
+        "method",
+        "top_k_or_cap",
+        "n_rows",
+        "feasible_rate",
+        "median_selection_time_sec",
+        "total_exact_refine_calls",
+        "total_refined_candidates",
+        "median_adaptive_topk_used_mean",
+    ]
+    adaptive_topk_failure_columns = [
+        "mode",
+        "failure_class",
+        "n_rows",
+        "max_adaptive_group_total_violation",
+        "maps",
+        "slips",
+    ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
     best_multitask = max((finite_float(row.get("best_amortized_speedup")) for row in multitask_rows), default=float("nan"))
@@ -892,6 +932,11 @@ def write_report(
     solver_display = [{col: row.get(col, "") for col in solver_columns} for row in solver_rows]
     certificate_display = [{col: row.get(col, "") for col in certificate_columns} for row in certificate_rows]
     hybrid_refine_display = [{col: row.get(col, "") for col in hybrid_refine_columns} for row in hybrid_refine_rows]
+    adaptive_paired = list(adaptive_topk_tables.get("paired_equivalence", []))
+    adaptive_hist = list(adaptive_topk_tables.get("k_used_histogram", []))
+    adaptive_summary = list(adaptive_topk_tables.get("fixedk_vs_adaptive_summary", []))
+    adaptive_failure = list(adaptive_topk_tables.get("failure_mode_summary", []))
+    paired_match = sum(1 for row in adaptive_paired if parse_bool(row.get("feasible_match")) is True)
     group_rows = [row for row in group_adaptive_rows if row.get("method") == "group_constrained"]
     group_feasible = sum(1 for row in group_rows if parse_bool(row.get("group_all_feasible")))
     hybrid_inputs = ", ".join(str(path) for path in args.hybrid_refine_csv)
@@ -910,6 +955,7 @@ def write_report(
         f"- adaptive final certified decisions under unique-top fallback: `{final_certs.get('final_certified', '')}/{final_certs.get('rows', '')}`",
         f"- adaptive final certified decisions under tie-aware reporting: `{final_certs.get('tie_aware_final_certified', '')}/{final_certs.get('rows', '')}`",
         f"- larger group-constrained adaptive feasible rows: `{group_feasible}/{len(group_rows)}`",
+        f"- adaptive top-k paired feasible matches: `{paired_match}/{len(adaptive_paired)}`",
         "- exact Green is the reference operator; certified adaptive Green plus tie-aware top-set/epsilon certificates are the runtime implementation; fixed-K and weighted spectral certificates are ablations/appendix diagnostics.",
         "",
         "## Main Runtime Table",
@@ -979,6 +1025,44 @@ def write_report(
         if hybrid_refine_display
         else "_No hybrid surrogate/refine rows found._",
         "",
+        "## Adaptive Top-K Diagnostics",
+        "",
+        "### Paired Feasibility",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in adaptive_topk_paired_columns} for row in adaptive_paired],
+            adaptive_topk_paired_columns,
+        )
+        if adaptive_paired
+        else "_No adaptive top-k paired rows found._",
+        "",
+        "### K-Used Histogram",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in adaptive_topk_hist_columns} for row in adaptive_hist],
+            adaptive_topk_hist_columns,
+        )
+        if adaptive_hist
+        else "_No adaptive top-k histogram rows found._",
+        "",
+        "### Fixed-K Vs Adaptive Cap",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in adaptive_topk_summary_columns} for row in adaptive_summary],
+            adaptive_topk_summary_columns,
+        )
+        if adaptive_summary
+        else "_No adaptive top-k summary rows found._",
+        "",
+        "### Adaptive Failure Summary",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in adaptive_topk_failure_columns} for row in adaptive_failure],
+            adaptive_topk_failure_columns,
+        )
+        if adaptive_failure
+        else "_No adaptive top-k failure rows found._",
+        "",
         "## Incremental Green Update Aggregate",
         "",
         markdown_table(
@@ -1014,6 +1098,7 @@ def write_report(
         f"- solver validity: `{args.solver_csv}`",
         f"- discovery profile/cache: `{args.discovery_profile_csv}`",
         f"- hybrid surrogate/refine: `{hybrid_inputs}`",
+        f"- adaptive top-k diagnostics: `{args.adaptive_topk_diagnostics_dir}`",
         f"- incremental Green update: `{args.incremental_green_csv}`",
         f"- incremental group semantic diff: `{args.incremental_semantic_summary}`",
         f"- graph abstraction figures: `{args.figure_summary}`",
@@ -1055,6 +1140,7 @@ def main() -> None:
     parser.add_argument("--thread-scaling-summary", type=Path, default=Path("experiments/output/linear_solver_thread_scaling/summary.md"))
     parser.add_argument("--weighted-cert-csv", type=Path, default=Path("experiments/output/weighted_spectral_certificate/spectral_certificate_summary.csv"))
     parser.add_argument("--conditioned-cert-csv", type=Path, default=Path("experiments/output/conditioned_weighted_certificate/conditioned_certificate_summary.csv"))
+    parser.add_argument("--adaptive-topk-diagnostics-dir", type=Path, default=Path("experiments/output/adaptive_topk_diagnostics"))
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/submission_main_table"))
     args = parser.parse_args()
 
@@ -1073,6 +1159,14 @@ def main() -> None:
     theorem_bridge_raw = read_csv_rows(args.theorem_bridge_csv)
     weighted_rows = read_csv_rows(args.weighted_cert_csv)
     conditioned_rows = read_csv_rows(args.conditioned_cert_csv)
+    adaptive_topk_tables = {
+        "paired_equivalence": read_csv_rows(args.adaptive_topk_diagnostics_dir / "paired_equivalence.csv"),
+        "k_used_histogram": read_csv_rows(args.adaptive_topk_diagnostics_dir / "k_used_histogram.csv"),
+        "fixedk_vs_adaptive_summary": read_csv_rows(args.adaptive_topk_diagnostics_dir / "fixedk_vs_adaptive_summary.csv"),
+        "score_regret": read_csv_rows(args.adaptive_topk_diagnostics_dir / "score_regret.csv"),
+        "failure_modes": read_csv_rows(args.adaptive_topk_diagnostics_dir / "failure_modes.csv"),
+        "failure_mode_summary": read_csv_rows(args.adaptive_topk_diagnostics_dir / "failure_mode_summary.csv"),
+    }
 
     main_rows = build_main_runtime_rows(large_rows, adaptive_rows)
     compact_rows = build_compact_baseline_rows(core_rows)
@@ -1098,6 +1192,12 @@ def main() -> None:
     write_csv_all_fields(args.out_dir / "solver_validity_aggregate.csv", solver_rows)
     write_csv_all_fields(args.out_dir / "discovery_profile_aggregate.csv", discovery_profile_rows)
     write_csv_all_fields(args.out_dir / "discovery_acceleration_table.csv", hybrid_refine_rows)
+    write_csv_all_fields(args.out_dir / "adaptive_topk_paired_equivalence.csv", adaptive_topk_tables["paired_equivalence"])
+    write_csv_all_fields(args.out_dir / "adaptive_topk_k_used_histogram.csv", adaptive_topk_tables["k_used_histogram"])
+    write_csv_all_fields(args.out_dir / "adaptive_topk_fixedk_vs_adaptive_summary.csv", adaptive_topk_tables["fixedk_vs_adaptive_summary"])
+    write_csv_all_fields(args.out_dir / "adaptive_topk_score_regret.csv", adaptive_topk_tables["score_regret"])
+    write_csv_all_fields(args.out_dir / "adaptive_topk_failure_modes.csv", adaptive_topk_tables["failure_modes"])
+    write_csv_all_fields(args.out_dir / "adaptive_topk_failure_mode_summary.csv", adaptive_topk_tables["failure_mode_summary"])
     write_csv_all_fields(args.out_dir / "incremental_green_update_aggregate.csv", incremental_green_rows)
     write_csv_all_fields(args.out_dir / "theorem_experiment_bridge.csv", theorem_bridge_rows)
     write_csv_all_fields(args.out_dir / "certificate_appendix_summary.csv", certificate_rows)
@@ -1114,6 +1214,7 @@ def main() -> None:
                 "solver_validity_aggregate": solver_rows,
                 "discovery_profile_aggregate": discovery_profile_rows,
                 "discovery_acceleration_table": hybrid_refine_rows,
+                "adaptive_topk_diagnostics": adaptive_topk_tables,
                 "incremental_green_update_aggregate": incremental_green_rows,
                 "theorem_experiment_bridge": theorem_bridge_rows,
                 "certificate_appendix_summary": certificate_rows,
@@ -1139,6 +1240,7 @@ def main() -> None:
         hybrid_refine_rows,
         incremental_green_rows,
         theorem_bridge_rows,
+        adaptive_topk_tables,
         args,
     )
 

@@ -28,7 +28,7 @@ def finite_float(value: object, default: float = float("nan")) -> float:
 
 def symbol_status(proof_root: Path, symbols: Sequence[str]) -> str:
     text = ""
-    for path in [proof_root / "RDOperator.lean", proof_root / "RDOperatorReal.lean"]:
+    for path in sorted(proof_root.glob("*.lean")):
         if path.exists():
             text += path.read_text(encoding="utf-8")
     missing = [symbol for symbol in symbols if symbol not in text]
@@ -74,6 +74,13 @@ def metric_status(name: str, rows: Sequence[Mapping[str, str]]) -> str:
             f"rows={len(rows)}, additive={len(additive)}, event_gap={max_event_gap:.4g}, "
             f"goal_conditioned_gap={max_gc_gap:.4g}"
         )
+    if name == "adaptive_topk":
+        matches = sum(1 for row in rows if str(row.get("feasible_match", "")).lower() == "true")
+        max_regret = max((finite_float(row.get("lexicographic_regret_vs_fixed"), 0.0) for row in rows), default=0.0)
+        speedups = [finite_float(row.get("selection_speedup_fixed_over_adaptive")) for row in rows]
+        speedups = [value for value in speedups if value == value]
+        median_speedup = sorted(speedups)[len(speedups) // 2] if speedups else float("nan")
+        return f"rows={len(rows)}, feasible_match={matches}, max_regret={max_regret:.4g}, median_speedup={median_speedup:.4g}"
     return f"rows={len(rows)}"
 
 
@@ -85,6 +92,7 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
     incremental_rows = read_csv_rows(args.incremental_green_csv)
     random_rows = read_csv_rows(args.random_maze_csv)
     edge_reward_rows = read_csv_rows(args.edge_reward_csv)
+    adaptive_topk_rows = read_csv_rows(args.adaptive_topk_paired_csv)
     return [
         {
             "paper_claim": "The frozen split score is an exact finite difference of a fixed local RD objective.",
@@ -168,6 +176,24 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
             "experiment_status": metric_status("adaptive_certification", adaptive_rows),
             "manuscript_location": "Certificate table",
             "remaining_gap": "Use tie-aware timing as the conservative runtime accounting.",
+        },
+        {
+            "paper_claim": "Adaptive feasible top-k has the same feasible envelope as fixed top-K under a shared candidate order and feasibility oracle.",
+            "math_object": "AdaptiveFeasibleTopK succeeds iff exists j<K with F(x_j)",
+            "proof_symbols": "adaptive_feasible_envelope_equivalence; adaptive_refinement_work_bound; score_interval_dominance_certifies_best_feasible",
+            "proof_status": symbol_status(
+                args.proof_root,
+                [
+                    "adaptive_feasible_envelope_equivalence",
+                    "adaptive_refinement_work_bound",
+                    "score_interval_dominance_certifies_best_feasible",
+                    "feasible_only_counterexample",
+                ],
+            ),
+            "experiment_artifact": args.adaptive_topk_paired_csv,
+            "experiment_status": metric_status("adaptive_topk", adaptive_topk_rows),
+            "manuscript_location": "Main discovery backend and fixed-topK ablation",
+            "remaining_gap": "Claim feasible discovery and refinement work savings; do not claim score-optimal split selection without interval dominance.",
         },
         {
             "paper_claim": "Group-constrained RD makes robustness constraints explicit instead of hiding them in a scalar risk.",
@@ -298,6 +324,11 @@ def main() -> None:
         "--edge-reward-csv",
         type=Path,
         default=Path("experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv"),
+    )
+    parser.add_argument(
+        "--adaptive-topk-paired-csv",
+        type=Path,
+        default=Path("experiments/output/adaptive_topk_diagnostics/paired_equivalence.csv"),
     )
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/theorem_experiment_bridge"))
     args = parser.parse_args()

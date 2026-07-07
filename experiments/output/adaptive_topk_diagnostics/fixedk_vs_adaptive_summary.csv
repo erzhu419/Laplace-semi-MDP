@@ -1,0 +1,13 @@
+source,method,top_k_or_cap,n_rows,feasible_rate,median_selection_time_sec,median_upfront_time_sec,total_exact_refine_calls,total_refined_candidates,median_adaptive_topk_used_mean,max_adaptive_topk_used
+fixed_topk_ablation,surrogate_topk_certified_refine,1,18,0.6111111111111112,25.627451439999277,25.857426513481187,82,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_certified_refine,2,18,0.6111111111111112,32.837170812505065,33.041426443494856,117,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_certified_refine,4,18,0.7222222222222222,47.18378464298439,47.38629582198337,174,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_certified_refine,8,18,0.7222222222222222,73.07360589801101,73.24859137850581,274,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_certified_refine,16,18,0.6666666666666666,132.19928522451664,132.37805047701113,454,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_exact_refine,1,18,0.6111111111111112,25.25970465550199,25.48632214553072,82,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_exact_refine,2,18,0.6111111111111112,32.18061363900779,32.41482194449054,117,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_exact_refine,4,18,0.7222222222222222,48.68884417702793,48.931523020524764,174,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_exact_refine,8,18,0.7222222222222222,73.76086592450156,73.95366845250828,274,0,nan,0.0
+fixed_topk_ablation,surrogate_topk_exact_refine,16,18,0.6666666666666666,131.33958206299576,131.59938424950815,454,0,nan,0.0
+adaptive_topk,adaptive_topk_certified_refine,4,18,0.7222222222222222,23.579303502454422,23.761458716442576,141,95,1.0,4.0
+adaptive_topk,adaptive_topk_exact_refine,4,18,0.7222222222222222,24.231489408470225,24.511145069467602,141,95,1.0,4.0
