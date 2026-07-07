@@ -44,10 +44,11 @@ SUITE_PARTS = {
     "edge_reward": "edge_reward,summary",
     "option_frontier": "option_frontier,summary",
     "hybrid_refine": "hybrid_refine",
+    "hybrid_topk": "hybrid_topk",
     "fair_frontier": "fair_frontier,summary",
     "submission_table": "submission_table,summary",
     "operator": "operator,summary",
-    "full": "thread,random,operator,large_scale,amortized,edge_reward,option_frontier,hybrid_refine,summary",
+    "full": "thread,random,operator,large_scale,amortized,edge_reward,option_frontier,hybrid_refine,hybrid_topk,summary",
 }
 
 
@@ -208,6 +209,7 @@ def planned_suites(args: argparse.Namespace) -> List[str]:
             "edge_reward",
             "option_frontier",
             "hybrid_refine",
+            "hybrid_topk",
             "operator",
         ]
     return args.suites
@@ -243,6 +245,14 @@ def default_hybrid_refine_shards(profile: str) -> int:
     if profile == "xl":
         return 108
     return 36
+
+
+def default_hybrid_topk_shards(profile: str) -> int:
+    if profile == "smoke":
+        return 1
+    if profile == "xl":
+        return 180
+    return 60
 
 
 def default_amortized_shards(profile: str) -> int:
@@ -347,6 +357,16 @@ def task_specs(args: argparse.Namespace) -> List[Tuple[str, str, Dict[str, objec
                 "LAPLACE_HYBRID_REFINE_SHARD_INDEX",
                 "LAPLACE_HYBRID_REFINE_NUM_SHARDS",
             )
+        elif suite == "hybrid_topk":
+            add_sharded_specs(
+                specs,
+                suite,
+                args.hybrid_topk_shards or default_hybrid_topk_shards(args.profile),
+                args.hybrid_topk_shard_start,
+                args.hybrid_topk_shard_stop,
+                "LAPLACE_HYBRID_TOPK_SHARD_INDEX",
+                "LAPLACE_HYBRID_TOPK_NUM_SHARDS",
+            )
         else:
             specs.append((suite, suite, {}))
     return specs
@@ -397,7 +417,7 @@ def submit(args: argparse.Namespace) -> List[str]:
             elif suite_kind == "option_frontier":
                 task_threads = args.option_frontier_threads
                 task_cpu = args.option_frontier_cpu
-            elif suite_kind == "hybrid_refine":
+            elif suite_kind in {"hybrid_refine", "hybrid_topk"}:
                 task_threads = args.hybrid_refine_threads
                 task_cpu = args.hybrid_refine_cpu
                 task_ram_mb = args.hybrid_refine_ram_mb
@@ -405,7 +425,7 @@ def submit(args: argparse.Namespace) -> List[str]:
                 task_threads = args.threads
                 task_cpu = args.cpu
                 task_ram_mb = args.ram_mb
-            if suite_kind != "hybrid_refine":
+            if suite_kind not in {"hybrid_refine", "hybrid_topk"}:
                 task_ram_mb = args.ram_mb
             cmd = [
                 sys.executable,
@@ -505,6 +525,7 @@ def parse_args() -> argparse.Namespace:
             "edge_reward",
             "option_frontier",
             "hybrid_refine",
+            "hybrid_topk",
             "fair_frontier",
             "submission_table",
             "operator",
@@ -586,6 +607,14 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--hybrid-refine-shard-start", type=int, default=0)
     parser.add_argument("--hybrid-refine-shard-stop", type=int, default=-1)
+    parser.add_argument(
+        "--hybrid-topk-shards",
+        type=int,
+        default=0,
+        help="Number of hybrid top-k ablation shards; 0 chooses a profile default.",
+    )
+    parser.add_argument("--hybrid-topk-shard-start", type=int, default=0)
+    parser.add_argument("--hybrid-topk-shard-stop", type=int, default=-1)
     parser.add_argument(
         "--pause-watch-during-submit",
         action="store_true",

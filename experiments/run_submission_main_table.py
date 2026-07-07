@@ -21,6 +21,17 @@ def read_csv_rows(path: Path) -> List[Dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def read_csv_many(paths: Sequence[Path]) -> List[Dict[str, str]]:
+    rows: List[Dict[str, str]] = []
+    for path in paths:
+        source = path.parent.name or path.stem
+        for row in read_csv_rows(path):
+            enriched = dict(row)
+            enriched.setdefault("source", source)
+            rows.append(enriched)
+    return rows
+
+
 def write_csv_all_fields(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
     if not rows:
         path.write_text("", encoding="utf-8")
@@ -361,6 +372,65 @@ def build_discovery_profile_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict
     return sorted(out, key=lambda row: str(row["mode"]))
 
 
+def build_hybrid_refine_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    def sort_key(item: Tuple[Tuple[str, ...], List[Mapping[str, object]]]) -> Tuple[str, str, int, str]:
+        source, method, top_k = item[0]
+        top_k_value = int(finite_float(top_k, -1.0)) if str(top_k).strip() else -1
+        return source, method, top_k_value, top_k
+
+    for (source, method, top_k), group in sorted(group_rows(rows, ["source", "method", "top_k"]).items(), key=sort_key):
+        if not method:
+            continue
+        ok = [row for row in group if not row.get("error")]
+        recalls = [
+            finite_float(row.get("surrogate_topk_recall"))
+            for row in ok
+            if math.isfinite(finite_float(row.get("surrogate_topk_recall")))
+        ]
+        out.append(
+            {
+                "source": source,
+                "method": method,
+                "top_k": top_k,
+                "n_rows": len(ok),
+                "feasible_rate": rate(parse_bool(row.get("group_all_feasible")) for row in ok),
+                "median_n_boundary": median(finite_float(row.get("n_boundary")) for row in ok),
+                "median_selection_time_sec": median(finite_float(row.get("selection_time_sec")) for row in ok),
+                "median_proposal_time_sec": median(finite_float(row.get("proposal_time_sec")) for row in ok),
+                "median_refine_time_sec": median(finite_float(row.get("refine_time_sec")) for row in ok),
+                "median_kernel_time_sec": median(finite_float(row.get("kernel_time_sec")) for row in ok),
+                "median_upfront_time_sec": median(finite_float(row.get("upfront_time_sec")) for row in ok),
+                "median_total_speedup": median(finite_float(row.get("total_speedup")) for row in ok),
+                "best_total_speedup": max(
+                    (finite_float(row.get("total_speedup")) for row in ok),
+                    default=float("nan"),
+                ),
+                "median_break_even_tasks": median(finite_float(row.get("break_even_tasks")) for row in ok),
+                "max_group_total_violation": max(
+                    (finite_float(row.get("group_total_violation"), 0.0) for row in ok),
+                    default=float("nan"),
+                ),
+                "max_start_gap": max(
+                    (finite_float(row.get("start_gap"), 0.0) for row in ok),
+                    default=float("nan"),
+                ),
+                "mean_surrogate_topk_recall": mean(recalls) if recalls else "",
+                "total_exact_refine_calls": sum(int(finite_float(row.get("exact_refine_calls"), 0.0)) for row in ok),
+                "median_probe_green_kernel_time_sec": median(
+                    finite_float(row.get("probe_green_kernel_time_sec")) for row in ok
+                ),
+                "median_active_weight_time_sec": median(
+                    finite_float(row.get("active_weight_time_sec")) for row in ok
+                ),
+                "median_candidate_score_time_sec": median(
+                    finite_float(row.get("candidate_score_time_sec")) for row in ok
+                ),
+            }
+        )
+    return out
+
+
 def build_random_maze_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
     for (method,), group in sorted(group_rows(rows, ["method"]).items()):
@@ -574,6 +644,7 @@ def write_report(
     solver_rows: Sequence[Mapping[str, object]],
     certificate_rows: Sequence[Mapping[str, object]],
     discovery_profile_rows: Sequence[Mapping[str, object]],
+    hybrid_refine_rows: Sequence[Mapping[str, object]],
     incremental_green_rows: Sequence[Mapping[str, object]],
     theorem_bridge_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
@@ -737,6 +808,29 @@ def write_report(
         "median_candidate_score_time_sec",
         "median_probe_cache_hit_rate",
     ]
+    hybrid_refine_columns = [
+        "source",
+        "method",
+        "top_k",
+        "n_rows",
+        "feasible_rate",
+        "median_n_boundary",
+        "median_selection_time_sec",
+        "median_proposal_time_sec",
+        "median_refine_time_sec",
+        "median_kernel_time_sec",
+        "median_upfront_time_sec",
+        "median_total_speedup",
+        "best_total_speedup",
+        "median_break_even_tasks",
+        "max_group_total_violation",
+        "max_start_gap",
+        "mean_surrogate_topk_recall",
+        "total_exact_refine_calls",
+        "median_probe_green_kernel_time_sec",
+        "median_active_weight_time_sec",
+        "median_candidate_score_time_sec",
+    ]
     incremental_columns = [
         "mode",
         "n_rows",
@@ -780,8 +874,10 @@ def write_report(
     group_adaptive_display = [{col: row.get(col, "") for col in group_adaptive_columns} for row in group_adaptive_rows]
     solver_display = [{col: row.get(col, "") for col in solver_columns} for row in solver_rows]
     certificate_display = [{col: row.get(col, "") for col in certificate_columns} for row in certificate_rows]
+    hybrid_refine_display = [{col: row.get(col, "") for col in hybrid_refine_columns} for row in hybrid_refine_rows]
     group_rows = [row for row in group_adaptive_rows if row.get("method") == "group_constrained"]
     group_feasible = sum(1 for row in group_rows if parse_bool(row.get("group_all_feasible")))
+    hybrid_inputs = ", ".join(str(path) for path in args.hybrid_refine_csv)
     lines = [
         "# Submission Main Table",
         "",
@@ -860,6 +956,12 @@ def write_report(
         if discovery_profile_rows
         else "_No discovery-profile rows found._",
         "",
+        "## Hybrid Discovery Acceleration",
+        "",
+        markdown_table(hybrid_refine_display, hybrid_refine_columns)
+        if hybrid_refine_display
+        else "_No hybrid surrogate/refine rows found._",
+        "",
         "## Incremental Green Update Aggregate",
         "",
         markdown_table(
@@ -894,6 +996,7 @@ def write_report(
         f"- edge reward multitask: `{args.edge_reward_csv}`",
         f"- solver validity: `{args.solver_csv}`",
         f"- discovery profile/cache: `{args.discovery_profile_csv}`",
+        f"- hybrid surrogate/refine: `{hybrid_inputs}`",
         f"- incremental Green update: `{args.incremental_green_csv}`",
         f"- incremental group semantic diff: `{args.incremental_semantic_summary}`",
         f"- graph abstraction figures: `{args.figure_summary}`",
@@ -917,6 +1020,13 @@ def main() -> None:
     parser.add_argument("--edge-reward-csv", type=Path, default=Path("experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv"))
     parser.add_argument("--solver-csv", type=Path, default=Path("experiments/output/solver_validity/solver_validity.csv"))
     parser.add_argument("--discovery-profile-csv", type=Path, default=Path("experiments/output/discovery_profile_cache/discovery_profile_cache.csv"))
+    parser.add_argument(
+        "--hybrid-refine-csv",
+        type=Path,
+        nargs="*",
+        default=[Path("experiments/output/hybrid_surrogate_refine/hybrid_surrogate_refine.csv")],
+        help="One or more hybrid surrogate/refine CSVs to aggregate into the discovery acceleration table.",
+    )
     parser.add_argument("--incremental-green-csv", type=Path, default=Path("experiments/output/incremental_green_update/incremental_green_update_aggregate.csv"))
     parser.add_argument("--incremental-semantic-summary", type=Path, default=Path("experiments/output/group_incremental_semantic_diff/summary.md"))
     parser.add_argument("--figure-summary", type=Path, default=Path("experiments/output/graph_abstraction_figures/summary.md"))
@@ -937,6 +1047,7 @@ def main() -> None:
     edge_reward_raw = read_csv_rows(args.edge_reward_csv)
     solver_rows_raw = read_csv_rows(args.solver_csv)
     discovery_profile_raw = read_csv_rows(args.discovery_profile_csv)
+    hybrid_refine_raw = read_csv_many(args.hybrid_refine_csv)
     incremental_green_rows = read_csv_rows(args.incremental_green_csv)
     theorem_bridge_raw = read_csv_rows(args.theorem_bridge_csv)
     weighted_rows = read_csv_rows(args.weighted_cert_csv)
@@ -951,6 +1062,7 @@ def main() -> None:
     failure_mode_rows = build_failure_mode_rows(main_rows, group_adaptive_rows, edge_reward_raw)
     solver_rows = build_solver_rows(solver_rows_raw)
     discovery_profile_rows = build_discovery_profile_rows(discovery_profile_raw)
+    hybrid_refine_rows = build_hybrid_refine_rows(hybrid_refine_raw)
     theorem_bridge_rows = build_theorem_bridge_rows(theorem_bridge_raw)
     certificate_rows = build_certificate_rows(adaptive_rows, weighted_rows, conditioned_rows)
 
@@ -964,6 +1076,7 @@ def main() -> None:
     write_csv_all_fields(args.out_dir / "failure_modes.csv", failure_mode_rows)
     write_csv_all_fields(args.out_dir / "solver_validity_aggregate.csv", solver_rows)
     write_csv_all_fields(args.out_dir / "discovery_profile_aggregate.csv", discovery_profile_rows)
+    write_csv_all_fields(args.out_dir / "discovery_acceleration_table.csv", hybrid_refine_rows)
     write_csv_all_fields(args.out_dir / "incremental_green_update_aggregate.csv", incremental_green_rows)
     write_csv_all_fields(args.out_dir / "theorem_experiment_bridge.csv", theorem_bridge_rows)
     write_csv_all_fields(args.out_dir / "certificate_appendix_summary.csv", certificate_rows)
@@ -979,6 +1092,7 @@ def main() -> None:
                 "failure_modes": failure_mode_rows,
                 "solver_validity_aggregate": solver_rows,
                 "discovery_profile_aggregate": discovery_profile_rows,
+                "discovery_acceleration_table": hybrid_refine_rows,
                 "incremental_green_update_aggregate": incremental_green_rows,
                 "theorem_experiment_bridge": theorem_bridge_rows,
                 "certificate_appendix_summary": certificate_rows,
@@ -1001,6 +1115,7 @@ def main() -> None:
         solver_rows,
         certificate_rows,
         discovery_profile_rows,
+        hybrid_refine_rows,
         incremental_green_rows,
         theorem_bridge_rows,
         args,

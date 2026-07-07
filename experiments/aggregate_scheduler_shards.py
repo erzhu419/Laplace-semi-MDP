@@ -71,9 +71,27 @@ SUITES = {
         "publish": "experiments/output/hybrid_surrogate_refine/hybrid_surrogate_refine.csv",
         "keys": ["map", "slip", "method", "top_k"],
     },
+    "hybrid_topk": {
+        "patterns": [
+            "hybrid_topk/hybrid_topk_ablation/hybrid_surrogate_refine.csv",
+            "hybrid_topk_shard_*/hybrid_topk_ablation/hybrid_surrogate_refine.csv",
+        ],
+        "out": "hybrid_topk_ablation/hybrid_surrogate_refine.csv",
+        "publish": "experiments/output/hybrid_topk_ablation/hybrid_surrogate_refine.csv",
+        "keys": ["map", "slip", "method", "top_k"],
+    },
 }
 
-DERIVED_INPUT_SUITES = {"large_scale", "random_maze", "option_frontier", "amortized", "edge_reward"}
+DERIVED_INPUT_SUITES = {
+    "large_scale",
+    "random_maze",
+    "option_frontier",
+    "amortized",
+    "edge_reward",
+    "hybrid_refine",
+    "hybrid_topk",
+}
+PUBLISH_DERIVED_INPUT_SUITES = {"large_scale", "random_maze", "option_frontier", "amortized", "edge_reward"}
 
 
 def read_csv_rows(path: Path) -> List[Dict[str, str]]:
@@ -116,7 +134,7 @@ def merge_suite(run_root: Path, out_root: Path, suite: str) -> tuple[Path, int, 
         json.dumps(rows, indent=2, default=json_default) + "\n",
         encoding="utf-8",
     )
-    if suite == "hybrid_refine":
+    if suite in {"hybrid_refine", "hybrid_topk"}:
         write_hybrid_refine_summary(out_path, rows)
     return out_path, len(rows), inputs
 
@@ -226,7 +244,7 @@ def maybe_publish(combined_paths: Mapping[str, Path], suites: Sequence[str]) -> 
             json.dumps(rows, indent=2, default=json_default) + "\n",
             encoding="utf-8",
         )
-        if suite == "hybrid_refine":
+        if suite in {"hybrid_refine", "hybrid_topk"}:
             write_hybrid_refine_summary(publish_path, rows)
         published[suite] = publish_path
     return published
@@ -263,6 +281,9 @@ def build_derived_tables(paths: Mapping[str, Path], out_root: Path) -> None:
             paths.get("amortized", Path("missing")).as_posix(),
             "--edge-reward-csv",
             paths.get("edge_reward", Path("missing")).as_posix(),
+            "--hybrid-refine-csv",
+            paths.get("hybrid_refine", Path("missing")).as_posix(),
+            paths.get("hybrid_topk", Path("missing")).as_posix(),
             "--out-dir",
             submission_out.as_posix(),
         ]
@@ -303,7 +324,7 @@ def main() -> None:
         build_derived_tables(combined_paths, out_root)
     if args.publish:
         published = maybe_publish(combined_paths, args.suites)
-        should_publish_derived = any(suite in published for suite in DERIVED_INPUT_SUITES)
+        should_publish_derived = any(suite in published for suite in PUBLISH_DERIVED_INPUT_SUITES)
         if not args.skip_derived and should_publish_derived:
             if "option_frontier" in published:
                 fair_paths = dict(published)
