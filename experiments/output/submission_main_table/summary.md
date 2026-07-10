@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-11T05:11:06
+Generated: 2026-07-11T05:32:09
 
 This report is the paper-facing aggregation layer. It keeps audit protocols separate, reports normalized gaps, and never treats the legacy Python VI denominator as the conservative runtime baseline when a matched strong planner measurement is available.
 
@@ -181,21 +181,26 @@ This diagnostic freezes one exact multi-probe candidate order, audits prefixes w
 | maze_13 | 0.05 | 13 | 24 | False |  |  | False | nan | 0 | 0 |
 | open_room_12 | 0.05 | 12 | 20 | True | 2 | 2 | True | 36 | 0 | 0 |
 
-### Learned Boundary Student Ablation
+### Learned Boundary Proposal Ablation
 
-The transition-graph GNN is an uncertified ablation, not a second proposed method. The bounded constraint-aware follow-up improves raw proposal quality but fails its routing gate: selective rows are invalid as safe pipelines when held-out failures remain undetected, while full audit is slower than the explicit backend.
+The transition-graph GNN is an uncertified ablation, not a second proposed method. Raw joint pass, the fixed candidate-family oracle, held-out routing misses, audit coverage, full-audit speed, and certification status are shown together to prevent proposal quality from being read as certified pipeline quality.
 
-| source | proposal | target_validation_failure_recall | n_rows | mean_boundary_jaccard | group_feasible_rate | student_joint_constraint_rate | teacher_joint_constraint_rate | accepted_group_feasible_rate | selective_accepted_joint_rate | median_selection_speedup | median_accepted_pipeline_speedup | max_normalized_start_gap | audit_rate | failure_recall | undetected_failures | certification_status | gate_status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| learned_student | gnn_seed_2 |  | 90 | 0.6508465608465608 | 0.7777777777777778 | 0.7555555555555555 | 0.7888888888888889 | 0.9444444444444444 |  | 769.8192740217598 | 0.4438337324121785 | 0.022249000484847407 |  |  |  | uncertified proposal | ablation |
-| explicit_baseline | baseline_nearest_start |  | 90 | 0.6788888888888889 | 0.6888888888888889 | 0.6888888888888889 | 0.7888888888888889 | 0.8333333333333334 |  | 877.8809547874098 | 0.4349989758681264 | 0.02224900781274634 |  |  |  | uncertified proposal | ablation |
-| explicit_baseline | baseline_topology |  | 90 | 0.5236507936507936 | 0.1111111111111111 | 0.1111111111111111 | 0.7888888888888889 | 0.7888888888888889 |  | 879.0496567025946 | 0.32348480523589856 | 0.02224900784850102 |  |  |  | uncertified proposal | ablation |
-| constraint_aware_student | constraint_aware_gnn |  | 90 | 0.5683421516754853 | 0.9222222222222223 | 0.9 | 0.7888888888888889 | 1.0 |  | 656.0300626356689 | 0.4281247548202982 | 0.022249000484847407 |  |  |  | uncertified proposal | raw pass; routing NO-GO |
-| empirical_selective_audit | student_score_margin | 0.9 | 90 |  |  |  |  |  | 0.8111111111111111 |  | 26.322966111717466 | 0.00941529346174613 | 0.36666666666666664 | 0.45454545454545453 | 12 | empirical routing; not a certificate | ablation |
-| empirical_selective_audit | student_score_margin | 1.0 | 90 |  |  |  |  |  | 0.8222222222222222 |  | 25.68897047136489 | 0.00941529346174613 | 0.4 | 0.5 | 11 | empirical routing; not a certificate | ablation |
-| constraint_aware_selective_audit | constraint_max_group_probability | 0.9 | 90 |  |  |  |  |  | 0.9111111111111111 |  | 23.22757290385195 | 0.009415296610909554 | 0.14444444444444443 | 0.3333333333333333 | 6 | empirical routing; not a certificate | NO-GO |
-| constraint_aware_selective_audit | constraint_max_group_probability | 1.0 | 90 |  |  |  |  |  | 0.9111111111111111 |  | 23.22757290385195 | 0.009415296610909554 | 0.14444444444444443 | 0.3333333333333333 | 6 | empirical routing; not a certificate | NO-GO |
-| constraint_aware_full_audit | full_production_audit |  | 90 |  |  |  |  |  | 0.9777777777777777 |  | 0.4281247548202982 | 0.009415296610909554 | 1.0 | 1.0 | 0 | full empirical audit | NO-GO: end-to-end speedup <= 1 |
+| source | proposal | n_rows | raw_joint_pass | candidate_oracle_joint_pass | adaptive_reference_joint_pass | mean_boundary_jaccard | group_feasible_rate | median_selection_speedup | audit_coverage | failure_recall | undetected_failures | full_audit_speedup | max_normalized_start_gap | certified | certification_status | gate_status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| learned_ablation | Boundary-only transition-graph GNN | 90 | 68/90 |  | 71/90 | 0.6508465608465608 | 0.7777777777777778 | 769.8192740217598 | 0.4 | 0.5 | 11/22 | 0.4438337324121785 | 0.022249000484847407 | no | uncertified proposal ablation | ablation |
+| fixed_baseline | Nearest-start fixed proposal | 90 | 62/90 |  | 71/90 | 0.6788888888888889 | 0.6888888888888889 | 877.8809547874098 |  |  |  | 0.4349989758681264 | 0.02224900781274634 | no | uncertified proposal ablation | ablation |
+| fixed_baseline | Topology fixed proposal | 90 | 10/90 |  | 71/90 | 0.5236507936507936 | 0.1111111111111111 | 879.0496567025946 |  |  |  | 0.32348480523589856 | 0.02224900784850102 | no | uncertified proposal ablation | ablation |
+| learned_ablation | Constraint-aware fixed-family reranker | 90 | 81/90 | 85/90 | 71/90 | 0.5683421516754853 | 0.9222222222222223 | 656.0300626356689 | 0.14444444444444443 | 0.3333333333333333 | 6/9 | 0.4281247548202982 | 0.022249000484847407 | no | raw proposal quality only; full audit required | NO-GO under predefined go/no-go protocol |
+| explicit_reference | Adaptive RD reference proposal | 90 | 71/90 |  | 71/90 |  | 0.7888888888888889 | 1 | certificate/audit dependent |  |  | 1 |  | conditional | reference constructor; explicit certificates and production audit govern acceptance | reference/fallback, not a joint-pass oracle |
+| oracle_envelope | Candidate-family oracle | 90 | 85/90 | 85/90 | 71/90 |  |  |  |  |  |  |  |  | not applicable | offline upper envelope; not deployable | diagnostic only |
+
+#### Paired Descriptive Comparison
+
+The constraint-aware fixed-family reranker and adaptive RD reference optimize different objectives and provide different guarantees. Their paired comparison is therefore descriptive. The bootstrap interval excludes zero, whereas the discrete exact McNemar test does not reject at the 5% level; neither result supports a learned-method superiority claim.
+
+| n_pairs | both_pass | reranker_only | reference_only | both_fail | paired_pass_rate_difference | paired_bootstrap_ci_low | paired_bootstrap_ci_high | exact_mcnemar_pvalue | comparison_status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 90 | 64 | 17 | 7 | 2 | 0.1111111111111111 | 0.011111111111111112 | 0.2111111111111111 | 0.06391465663909912 | descriptive_different_objectives_and_guarantees |
 
 ## Runtime By Boundary Selector
 
@@ -1154,12 +1159,14 @@ Edge-reward speedups in this legacy artifact use dense NumPy full-state VI. They
 - large-scale adaptive: `experiments/output/large_scale_compression_adaptive/large_scale_compression.csv`
 - one-shot operator suites: `experiments/output/one_shot_rd_operator/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_random/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_random_reference/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_xl_end_to_end/one_shot_rd_operator.csv`
 - frozen one-shot group-prefix audit: `experiments/output/one_shot_group_fd_frontier/one_shot_group_fd_frontier.csv`
-- learned boundary student: `experiments/output/boundary_heatmap_downstream_graphonly_test/summary.csv`
-- explicit boundary-student baselines: `experiments/output/boundary_heatmap_downstream_graphonly_baselines/summary.csv`
+- learned boundary proposal: `experiments/output/boundary_heatmap_downstream_graphonly_test/summary.csv`
+- explicit boundary-proposal baselines: `experiments/output/boundary_heatmap_downstream_graphonly_baselines/summary.csv`
 - empirical selective audit: `experiments/output/boundary_heatmap_selective_audit_graphonly/heldout_selective_audit.csv`
-- constraint-aware student: `experiments/output/boundary_constraint_student_test/summary.csv`
+- constraint-aware reranker audit: `experiments/output/boundary_constraint_student_test/summary.csv`
+- constraint-aware reranker gate summary: `experiments/output/boundary_constraint_student/summary.csv`
 - constraint-aware selective audit: `experiments/output/boundary_constraint_selective_audit/heldout_selective_audit.csv`
 - constraint-aware full audit: `experiments/output/boundary_constraint_selective_audit/heldout_full_audit.csv`
+- paired reranker/reference analysis: `experiments/output/boundary_constraint_pairing/paired_summary.csv`
 - strong full-state planners: `experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv`
 - core benchmark: `experiments/output/core_benchmark/core_benchmark.csv`
 - direct state-abstraction baselines: `experiments/output/abstraction_baseline_comparison/abstraction_baseline_aggregate.csv`

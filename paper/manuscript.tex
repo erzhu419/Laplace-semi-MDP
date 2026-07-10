@@ -370,9 +370,9 @@ truncation, while learned horizons are at most a batching/scheduling ablation.
 
 We next tested the stronger proposal of predicting the entire boundary in one
 learned forward pass. A native sparse GCN was distilled from frozen insertion
-heatmaps and adaptive group-constrained boundaries. Its 28 node features
+heatmaps and adaptive group-constrained reference boundaries. Its 28 node features
 contained only transition, reward, topology, coordinate, endpoint-distance,
-slip, and discount information. The final teacher protocol removed two
+slip, and discount information. The final offline-reference protocol removed two
 hash-selected random basis states because their dependence on the map name was
 not observable from the transition graph. The resulting suite contained 360
 contexts from corridors, open rooms, four rooms, DFS mazes, and braided mazes,
@@ -383,15 +383,15 @@ rather than the five-model ensemble. A per-graph validation benchmark selected
 CPU inference (0.00068 seconds for forward/collation versus 0.00184 seconds on
 CUDA), because this small model cannot amortize device transfer. On the 90
 scale holdouts, median selection latency was 0.00541 seconds, or
-$769.8\times$ faster than iterative teacher selection. Boundary
+$769.8\times$ faster than iterative adaptive RD reference selection. Boundary
 Jaccard was nevertheless 0.6508, compared with 0.6789 for selecting the nearest
 eligible state to the start. The GCN and nearest-start graphs were group
 feasible in 70/90 and 62/90 cases, respectively. After also requiring
 normalized start gap $\leq0.01$, they passed 68/90 and 62/90 cases, while the
-adaptive teacher passed 71/90. In a paired comparison, the GCN alone passed
+adaptive RD reference proposal passed 71/90. In a paired comparison, the GCN alone passed
 eight contexts and nearest-start alone passed two. Full group audit and
-fallback reduced the accepted GCN pipeline to $0.444\times$ the adaptive
-teacher pipeline. A score-margin threshold calibrated for 100\% validation
+fallback reduced the accepted GCN pipeline to $0.444\times$ the adaptive RD
+reference pipeline. A score-margin threshold calibrated for 100\% validation
 joint-failure recall audited 40.0\% of test contexts but caught only 50.0\% of
 test failures, leaving eleven failed graphs unaudited.
 
@@ -401,21 +401,35 @@ prefixes, and nearest-start, for 1,159 candidate graphs. A train-only multi-head
 risk model predicted the three group violations, normalized value gap, and
 joint failure with an asymmetric underestimation penalty. It reranked the fixed
 family without insertion, beam expansion, or Green recomputation. The strict
-test pass count improved from 68/90 to 81/90 (the candidate-union oracle was
-85/90), at 0.00635 seconds median selection time or $656.0\times$ versus the
-iterative teacher. This isolates the original count head as one source of
-error, but does not establish dominance over the nonoptimal adaptive teacher.
+test pass count improved from 68/90 to 81/90 (the candidate-family oracle was
+85/90), at 0.00635 seconds median selection time or $656.0\times$ versus
+iterative adaptive RD reference selection. The adaptive RD reference proposal
+is a constructor for its RD objective rather than an oracle for the downstream
+binary joint-pass metric. Moreover, the reranker selects among a broader fixed
+proposal family using directly supervised group-violation and value-gap labels.
+The 81/90 result therefore measures metric-specific raw proposal quality; it
+does not establish dominance over the explicit RD Boundary Green Operator or
+inherit its guarantees.
+
+On the same 90 contexts, both the reranker and adaptive RD reference passed 64,
+the reranker alone passed 17, the reference alone passed 7, and both failed 2.
+The paired pass-rate difference was 11.1 percentage points (paired bootstrap
+95\% interval, 1.1 to 21.1 points), while the exact conditional McNemar test
+gave $p=0.0639$. This comparison is descriptive because the two procedures
+optimize different objectives and provide different acceptance guarantees; in
+particular, the exact paired test does not reject equality at the 5\% level.
 
 The safety gate failed. A threshold with 100\% validation failure recall audited
 14.4\% of scale-test contexts but caught only 3 of 9 failures, leaving six
 unaudited. Its $23.23\times$ selective timing is therefore not a safe speedup.
 Full audit caught every failure but achieved only $0.428\times$ median
 pipeline speedup. Under the prespecified stopping rule, we did not launch a
-further topology-holdout expansion. The complete neural experiment is therefore
+further constraint-aware topology-holdout expansion. The complete neural
+experiment is therefore
 an uncertified ablation rather than a second proposed method. It shows that a
 learned forward pass can improve proposal quality, but neither imitation nor
-direct risk prediction transfers the teacher's group and value guarantees. The
-explicit Green operator remains our search-free proposal; the learned student
+direct risk prediction transfers the explicit path's group and value guarantees. The
+explicit Green operator remains our search-free proposal; the learned reranker
 does not replace its mathematical certificate or the production audit.
 
 The hard group audit is the main negative result. A frozen one-shot score did

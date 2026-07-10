@@ -187,6 +187,27 @@ by `15.6x`, but its normalized start gap is `1.59--2.41` and group feasibility
 is zero. Passenger/destination identity requires a compositional state
 representation; adding spatial landmarks alone is not presented as a repair.
 
+### Learned proposals did not replace explicit certification
+
+A transition-graph GNN and one bounded constraint-aware follow-up tested whether
+the boundary could be selected in a single learned forward pass. The
+constraint-aware fixed-family reranker raised strict scale-holdout raw joint
+passes from `68/90` to `81/90`, approaching the `85/90` candidate-family oracle,
+at `656x` selection speed relative to iterative adaptive RD reference selection.
+This is not an operator-dominance result: the adaptive RD reference proposal
+optimizes a different construction objective, while the reranker uses directly
+supervised downstream risk labels over a broader fixed family. Their paired
+outcomes were 64 both-pass, 17 reranker-only, 7 reference-only, and 2 both-fail;
+the exact McNemar test gave `p=0.0639`.
+
+The acceptance gate failed independently of that raw improvement. Validation
+routing missed 6 of 9 scale-holdout failures, and auditing every learned
+proposal reduced median pipeline speed to `0.428x` the adaptive RD reference.
+Under the predefined go/no-go protocol, the constraint-aware topology extension
+was not launched. The learned branch is therefore an uncertified ablation, not
+a replacement for the explicit RD Boundary Green Operator, its certificates,
+or the production audit.
+
 ## Discussion Draft
 
 The central contribution is a proof-backed graph abstraction objective for
@@ -226,6 +247,7 @@ the method from a black-box option discovery heuristic.
 | Compression is the main story, not universal single-task speed. | Submission table separates planning-only speedup, total speedup, break-even tasks, and multi-task amortization. | supported |
 | Fixed-`B` reward relabeling preserves multi-task compression. | Edge reward multitask table and theorem stack T10/T11. | supported |
 | The implementation can leave the custom grid class. | Five-seed ToyText, symbolic MiniGrid, and discretized PointMaze; Taxi-v4 reported as a structured variable-abstraction failure. | supported as portability, not broad generalization |
+| A learned proposal can replace the explicit operator and audit. | Raw reranking reaches `81/90`, but selective routing misses `6/9` failures and full audit is `0.428x`; paired comparison is descriptive. | not supported; ablation stopped |
 
 ## Writing Notes
 

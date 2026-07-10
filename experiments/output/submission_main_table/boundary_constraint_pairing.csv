@@ -1,0 +1,2 @@
+n_pairs,reranker_joint_passes,adaptive_reference_joint_passes,both_pass,reranker_only,reference_only,both_fail,discordant_pairs,paired_pass_rate_difference,paired_bootstrap_confidence,paired_bootstrap_ci_low,paired_bootstrap_ci_high,paired_bootstrap_resamples,paired_bootstrap_seed,exact_mcnemar_pvalue,comparison_status
+90,81,71,64,17,7,2,24,0.1111111111111111,0.95,0.011111111111111112,0.2111111111111111,100000,2027,0.06391465663909912,descriptive_different_objectives_and_guarantees

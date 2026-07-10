@@ -1044,97 +1044,207 @@ def build_boundary_student_rows(
     baseline_rows: Sequence[Mapping[str, str]],
     selective_rows: Sequence[Mapping[str, str]],
     constraint_rows: Sequence[Mapping[str, str]],
+    constraint_gate_rows: Sequence[Mapping[str, str]],
     constraint_selective_rows: Sequence[Mapping[str, str]],
     constraint_full_audit_rows: Sequence[Mapping[str, str]],
 ) -> List[Dict[str, object]]:
+    def count_string(row: Mapping[str, str], rate_key: str) -> str:
+        n_rows = int(finite_float(row.get("n_rows"), 0.0))
+        pass_rate = finite_float(row.get(rate_key))
+        if n_rows <= 0 or not math.isfinite(pass_rate):
+            return ""
+        return f"{round(pass_rate * n_rows)}/{n_rows}"
+
+    def strict_routing_row(
+        rows: Sequence[Mapping[str, str]],
+    ) -> Mapping[str, str]:
+        return next(
+            (
+                row
+                for row in rows
+                if math.isclose(
+                    finite_float(row.get("target_validation_failure_recall")),
+                    1.0,
+                )
+            ),
+            rows[-1] if rows else {},
+        )
+
     out: List[Dict[str, object]] = []
+    adaptive_reference_joint_pass = ""
+    if constraint_rows:
+        adaptive_reference_joint_pass = count_string(
+            constraint_rows[0], "teacher_joint_constraint_rate"
+        )
+    boundary_routing = strict_routing_row(selective_rows)
+    proposal_names = {
+        "gnn_seed_2": "Boundary-only transition-graph GNN",
+        "baseline_nearest_start": "Nearest-start fixed proposal",
+        "baseline_topology": "Topology fixed proposal",
+    }
     for source, rows in (
-        ("learned_student", proposal_rows),
-        ("explicit_baseline", baseline_rows),
-        ("constraint_aware_student", constraint_rows),
+        ("learned_ablation", proposal_rows),
+        ("fixed_baseline", baseline_rows),
     ):
         for row in rows:
+            is_boundary_gnn = source == "learned_ablation"
+            student_failures = int(
+                finite_float(boundary_routing.get("test_n_student_failures"), 0.0)
+            )
+            undetected = int(
+                finite_float(boundary_routing.get("test_undetected_failures"), 0.0)
+            )
             out.append(
                 {
                     "source": source,
-                    "proposal": row.get("student_method", ""),
+                    "proposal": proposal_names.get(
+                        row.get("student_method", ""), row.get("student_method", "")
+                    ),
                     "n_rows": row.get("n_rows", ""),
+                    "raw_joint_pass": count_string(
+                        row, "student_joint_constraint_rate"
+                    ),
+                    "candidate_oracle_joint_pass": "",
+                    "adaptive_reference_joint_pass": adaptive_reference_joint_pass,
                     "mean_boundary_jaccard": row.get("mean_boundary_jaccard", ""),
                     "group_feasible_rate": row.get("student_feasible_rate", ""),
-                    "student_joint_constraint_rate": row.get(
-                        "student_joint_constraint_rate", ""
+                    "median_selection_speedup": row.get(
+                        "median_selection_speedup_vs_teacher", ""
                     ),
-                    "teacher_joint_constraint_rate": row.get(
-                        "teacher_joint_constraint_rate", ""
+                    "audit_coverage": (
+                        boundary_routing.get("test_audit_rate", "")
+                        if is_boundary_gnn
+                        else ""
                     ),
-                    "accepted_group_feasible_rate": row.get(
-                        "accepted_feasible_rate", ""
+                    "failure_recall": (
+                        boundary_routing.get("test_failure_recall", "")
+                        if is_boundary_gnn
+                        else ""
                     ),
-                    "median_selection_speedup": row.get("median_selection_speedup_vs_teacher", ""),
-                    "median_accepted_pipeline_speedup": row.get(
+                    "undetected_failures": (
+                        f"{undetected}/{student_failures}"
+                        if is_boundary_gnn and student_failures > 0
+                        else ""
+                    ),
+                    "full_audit_speedup": row.get(
                         "median_accepted_speedup_vs_teacher_pipeline", ""
                     ),
                     "max_normalized_start_gap": row.get(
                         "max_student_normalized_start_gap", ""
                     ),
-                    "certification_status": "uncertified proposal",
-                    "gate_status": (
-                        "raw pass; routing NO-GO"
-                        if source == "constraint_aware_student"
-                        else "ablation"
-                    ),
+                    "certified": "no",
+                    "certification_status": "uncertified proposal ablation",
+                    "gate_status": "ablation",
                 }
             )
-    for source, rows in (
-        ("empirical_selective_audit", selective_rows),
-        ("constraint_aware_selective_audit", constraint_selective_rows),
-    ):
-        for row in rows:
-            undetected = finite_float(row.get("test_undetected_failures"), float("inf"))
-            out.append(
-                {
-                    "source": source,
-                    "proposal": row.get("metric", ""),
-                    "target_validation_failure_recall": row.get(
-                        "target_validation_failure_recall", ""
-                    ),
-                    "n_rows": row.get("test_n_rows", ""),
-                    "selective_accepted_joint_rate": row.get(
-                        "test_accepted_feasible_rate", ""
-                    ),
-                    "median_accepted_pipeline_speedup": row.get(
-                        "test_median_selective_speedup_vs_teacher", ""
-                    ),
-                    "max_normalized_start_gap": row.get(
-                        "test_max_accepted_normalized_start_gap", ""
-                    ),
-                    "audit_rate": row.get("test_audit_rate", ""),
-                    "failure_recall": row.get("test_failure_recall", ""),
-                    "undetected_failures": row.get("test_undetected_failures", ""),
-                    "certification_status": "empirical routing; not a certificate",
-                    "gate_status": (
-                        "NO-GO" if source == "constraint_aware_selective_audit" and undetected > 1 else "ablation"
-                    ),
-                }
-            )
-    for row in constraint_full_audit_rows:
+
+    constraint_row = constraint_rows[0] if constraint_rows else {}
+    gate_test_row = next(
+        (row for row in constraint_gate_rows if row.get("split") == "test"), {}
+    )
+    routing_row = strict_routing_row(constraint_selective_rows)
+    full_audit_row = (
+        constraint_full_audit_rows[0] if constraint_full_audit_rows else {}
+    )
+    n_rows = int(
+        finite_float(
+            gate_test_row.get("n_contexts", constraint_row.get("n_rows")), 0.0
+        )
+    )
+    reranker_passes = int(finite_float(gate_test_row.get("joint_pass_count"), 0.0))
+    oracle_passes = int(
+        finite_float(gate_test_row.get("oracle_union_pass_count"), 0.0)
+    )
+    reranker_failures = int(
+        finite_float(routing_row.get("test_n_student_failures"), 0.0)
+    )
+    undetected = int(
+        finite_float(routing_row.get("test_undetected_failures"), 0.0)
+    )
+    if constraint_row or gate_test_row:
         out.append(
             {
-                "source": "constraint_aware_full_audit",
-                "proposal": "full_production_audit",
-                "n_rows": row.get("n_rows", ""),
-                "selective_accepted_joint_rate": row.get("accepted_feasible_rate", ""),
-                "median_accepted_pipeline_speedup": row.get(
-                    "median_selective_speedup_vs_teacher", ""
+                "source": "learned_ablation",
+                "proposal": "Constraint-aware fixed-family reranker",
+                "n_rows": n_rows,
+                "raw_joint_pass": (
+                    f"{reranker_passes}/{n_rows}" if n_rows > 0 else ""
                 ),
-                "max_normalized_start_gap": row.get(
-                    "max_accepted_normalized_start_gap", ""
+                "candidate_oracle_joint_pass": (
+                    f"{oracle_passes}/{n_rows}" if n_rows > 0 else ""
                 ),
-                "audit_rate": row.get("audit_rate", ""),
-                "failure_recall": row.get("failure_recall", ""),
-                "undetected_failures": row.get("undetected_failures", ""),
-                "certification_status": "full empirical audit",
-                "gate_status": "NO-GO: end-to-end speedup <= 1",
+                "adaptive_reference_joint_pass": adaptive_reference_joint_pass,
+                "mean_boundary_jaccard": constraint_row.get(
+                    "mean_boundary_jaccard", ""
+                ),
+                "group_feasible_rate": constraint_row.get(
+                    "student_feasible_rate", ""
+                ),
+                "median_selection_speedup": constraint_row.get(
+                    "median_selection_speedup_vs_teacher", ""
+                ),
+                "audit_coverage": routing_row.get("test_audit_rate", ""),
+                "failure_recall": routing_row.get("test_failure_recall", ""),
+                "undetected_failures": (
+                    f"{undetected}/{reranker_failures}"
+                    if reranker_failures > 0
+                    else ""
+                ),
+                "full_audit_speedup": full_audit_row.get(
+                    "median_selective_speedup_vs_teacher",
+                    constraint_row.get(
+                        "median_accepted_speedup_vs_teacher_pipeline", ""
+                    ),
+                ),
+                "max_normalized_start_gap": constraint_row.get(
+                    "max_student_normalized_start_gap", ""
+                ),
+                "certified": "no",
+                "certification_status": (
+                    "raw proposal quality only; full audit required"
+                ),
+                "gate_status": "NO-GO under predefined go/no-go protocol",
+            }
+        )
+
+    if n_rows > 0 and adaptive_reference_joint_pass:
+        out.append(
+            {
+                "source": "explicit_reference",
+                "proposal": "Adaptive RD reference proposal",
+                "n_rows": n_rows,
+                "raw_joint_pass": adaptive_reference_joint_pass,
+                "candidate_oracle_joint_pass": "",
+                "adaptive_reference_joint_pass": adaptive_reference_joint_pass,
+                "group_feasible_rate": constraint_row.get(
+                    "teacher_feasible_rate", ""
+                ),
+                "median_selection_speedup": 1.0,
+                "audit_coverage": "certificate/audit dependent",
+                "failure_recall": "",
+                "undetected_failures": "",
+                "full_audit_speedup": 1.0,
+                "max_normalized_start_gap": "",
+                "certified": "conditional",
+                "certification_status": (
+                    "reference constructor; explicit certificates and production audit "
+                    "govern acceptance"
+                ),
+                "gate_status": "reference/fallback, not a joint-pass oracle",
+            }
+        )
+    if n_rows > 0 and oracle_passes > 0:
+        out.append(
+            {
+                "source": "oracle_envelope",
+                "proposal": "Candidate-family oracle",
+                "n_rows": n_rows,
+                "raw_joint_pass": f"{oracle_passes}/{n_rows}",
+                "candidate_oracle_joint_pass": f"{oracle_passes}/{n_rows}",
+                "adaptive_reference_joint_pass": adaptive_reference_joint_pass,
+                "certified": "not applicable",
+                "certification_status": "offline upper envelope; not deployable",
+                "gate_status": "diagnostic only",
             }
         )
     return out
@@ -1167,6 +1277,7 @@ def write_report(
     theorem_bridge_rows: Sequence[Mapping[str, object]],
     adaptive_topk_tables: Mapping[str, Sequence[Mapping[str, object]]],
     boundary_student_rows: Sequence[Mapping[str, object]],
+    boundary_pairing_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
 ) -> None:
     main_columns = [
@@ -1590,22 +1701,33 @@ def write_report(
     boundary_student_columns = [
         "source",
         "proposal",
-        "target_validation_failure_recall",
         "n_rows",
+        "raw_joint_pass",
+        "candidate_oracle_joint_pass",
+        "adaptive_reference_joint_pass",
         "mean_boundary_jaccard",
         "group_feasible_rate",
-        "student_joint_constraint_rate",
-        "teacher_joint_constraint_rate",
-        "accepted_group_feasible_rate",
-        "selective_accepted_joint_rate",
         "median_selection_speedup",
-        "median_accepted_pipeline_speedup",
-        "max_normalized_start_gap",
-        "audit_rate",
+        "audit_coverage",
         "failure_recall",
         "undetected_failures",
+        "full_audit_speedup",
+        "max_normalized_start_gap",
+        "certified",
         "certification_status",
         "gate_status",
+    ]
+    boundary_pairing_columns = [
+        "n_pairs",
+        "both_pass",
+        "reranker_only",
+        "reference_only",
+        "both_fail",
+        "paired_pass_rate_difference",
+        "paired_bootstrap_ci_low",
+        "paired_bootstrap_ci_high",
+        "exact_mcnemar_pvalue",
+        "comparison_status",
     ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
@@ -1705,9 +1827,9 @@ def write_report(
         if one_shot_group_prefix_rows
         else "_No frozen one-shot group-prefix rows found._",
         "",
-        "### Learned Boundary Student Ablation",
+        "### Learned Boundary Proposal Ablation",
         "",
-        "The transition-graph GNN is an uncertified ablation, not a second proposed method. The bounded constraint-aware follow-up improves raw proposal quality but fails its routing gate: selective rows are invalid as safe pipelines when held-out failures remain undetected, while full audit is slower than the explicit backend.",
+        "The transition-graph GNN is an uncertified ablation, not a second proposed method. Raw joint pass, the fixed candidate-family oracle, held-out routing misses, audit coverage, full-audit speed, and certification status are shown together to prevent proposal quality from being read as certified pipeline quality.",
         "",
         markdown_table(
             [{col: row.get(col, "") for col in boundary_student_columns} for row in boundary_student_rows],
@@ -1715,6 +1837,20 @@ def write_report(
         )
         if boundary_student_rows
         else "_No learned boundary-student rows found._",
+        "",
+        "#### Paired Descriptive Comparison",
+        "",
+        "The constraint-aware fixed-family reranker and adaptive RD reference optimize different objectives and provide different guarantees. Their paired comparison is therefore descriptive. The bootstrap interval excludes zero, whereas the discrete exact McNemar test does not reject at the 5% level; neither result supports a learned-method superiority claim.",
+        "",
+        markdown_table(
+            [
+                {col: row.get(col, "") for col in boundary_pairing_columns}
+                for row in boundary_pairing_rows
+            ],
+            boundary_pairing_columns,
+        )
+        if boundary_pairing_rows
+        else "_No paired reranker/reference analysis found._",
         "",
         "## Runtime By Boundary Selector",
         "",
@@ -1922,12 +2058,14 @@ def write_report(
         f"- large-scale adaptive: `{args.large_scale_csv}`",
         f"- one-shot operator suites: `{', '.join(str(path) for path in args.one_shot_csv)}`",
         f"- frozen one-shot group-prefix audit: `{args.one_shot_group_frontier_csv}`",
-        f"- learned boundary student: `{args.boundary_student_csv}`",
-        f"- explicit boundary-student baselines: `{args.boundary_student_baseline_csv}`",
+        f"- learned boundary proposal: `{args.boundary_student_csv}`",
+        f"- explicit boundary-proposal baselines: `{args.boundary_student_baseline_csv}`",
         f"- empirical selective audit: `{args.boundary_student_selective_csv}`",
-        f"- constraint-aware student: `{args.boundary_constraint_student_csv}`",
+        f"- constraint-aware reranker audit: `{args.boundary_constraint_student_csv}`",
+        f"- constraint-aware reranker gate summary: `{args.boundary_constraint_gate_summary_csv}`",
         f"- constraint-aware selective audit: `{args.boundary_constraint_selective_csv}`",
         f"- constraint-aware full audit: `{args.boundary_constraint_full_audit_csv}`",
+        f"- paired reranker/reference analysis: `{args.boundary_constraint_pairing_csv}`",
         f"- strong full-state planners: `{args.planner_baseline_csv}`",
         f"- core benchmark: `{args.core_csv}`",
         f"- direct state-abstraction baselines: `{args.abstraction_csv}`",
@@ -2007,6 +2145,11 @@ def main() -> None:
         default=Path("experiments/output/boundary_constraint_student_test/summary.csv"),
     )
     parser.add_argument(
+        "--boundary-constraint-gate-summary-csv",
+        type=Path,
+        default=Path("experiments/output/boundary_constraint_student/summary.csv"),
+    )
+    parser.add_argument(
         "--boundary-constraint-selective-csv",
         type=Path,
         default=Path(
@@ -2021,6 +2164,11 @@ def main() -> None:
             "experiments/output/boundary_constraint_selective_audit/"
             "heldout_full_audit.csv"
         ),
+    )
+    parser.add_argument(
+        "--boundary-constraint-pairing-csv",
+        type=Path,
+        default=Path("experiments/output/boundary_constraint_pairing/paired_summary.csv"),
     )
     parser.add_argument("--planner-baseline-csv", type=Path, default=Path("experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv"))
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
@@ -2075,9 +2223,15 @@ def main() -> None:
     boundary_student_baseline_raw = read_csv_rows(args.boundary_student_baseline_csv)
     boundary_student_selective_raw = read_csv_rows(args.boundary_student_selective_csv)
     boundary_constraint_student_raw = read_csv_rows(args.boundary_constraint_student_csv)
+    boundary_constraint_gate_raw = read_csv_rows(
+        args.boundary_constraint_gate_summary_csv
+    )
     boundary_constraint_selective_raw = read_csv_rows(args.boundary_constraint_selective_csv)
     boundary_constraint_full_audit_raw = read_csv_rows(
         args.boundary_constraint_full_audit_csv
+    )
+    boundary_constraint_pairing_raw = read_csv_rows(
+        args.boundary_constraint_pairing_csv
     )
     planner_raw = read_csv_rows(args.planner_baseline_csv)
     core_rows = read_csv_rows(args.core_csv)
@@ -2117,6 +2271,7 @@ def main() -> None:
         boundary_student_baseline_raw,
         boundary_student_selective_raw,
         boundary_constraint_student_raw,
+        boundary_constraint_gate_raw,
         boundary_constraint_selective_raw,
         boundary_constraint_full_audit_raw,
     )
@@ -2152,6 +2307,10 @@ def main() -> None:
     write_csv_all_fields(
         args.out_dir / "boundary_student_ablation.csv", boundary_student_rows
     )
+    write_csv_all_fields(
+        args.out_dir / "boundary_constraint_pairing.csv",
+        boundary_constraint_pairing_raw,
+    )
     write_csv_all_fields(args.out_dir / "runtime_by_boundary_selector.csv", selector_runtime_rows)
     write_csv_all_fields(args.out_dir / "strong_planner_audit.csv", planner_raw)
     write_csv_all_fields(args.out_dir / "compact_baseline_aggregate.csv", compact_rows)
@@ -2185,6 +2344,7 @@ def main() -> None:
                 "one_shot_operator_summary": one_shot_rows,
                 "one_shot_group_prefix_summary": one_shot_group_prefix_rows,
                 "boundary_student_ablation": boundary_student_rows,
+                "boundary_constraint_pairing": boundary_constraint_pairing_raw,
                 "runtime_by_boundary_selector": selector_runtime_rows,
                 "strong_planner_audit": planner_raw,
                 "compact_baseline_aggregate": compact_rows,
@@ -2240,6 +2400,7 @@ def main() -> None:
         theorem_bridge_rows,
         adaptive_topk_tables,
         boundary_student_rows,
+        boundary_constraint_pairing_raw,
         args,
     )
 

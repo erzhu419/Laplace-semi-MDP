@@ -112,13 +112,13 @@ cost. A YOLO-like extension should consequently predict the vertex heatmap
 itself (and optionally per-response horizons for batching), not merely replace
 adaptive stopping with a learned scalar.
 
-### Does a transition-graph student remove discovery?
+### Does a transition-graph learned proposal remove discovery?
 
 We tested that extension with a native sparse GCN trained against complete
 frozen insertion-score heatmaps and adaptive group-constrained boundaries. The
 initial DFS-maze pilot was degenerate: the ensemble and a nearest-start rule
-returned the same graph in all 180 contexts. A graph-only multifamily teacher
-then removed hidden hash-selected basis states and covered corridor, open room,
+returned the same graph in all 180 contexts. A graph-only multifamily reference
+suite then removed hidden hash-selected basis states and covered corridor, open room,
 four rooms, DFS maze, and braided maze at three slip levels.
 
 The learned selector was fast but did not replace certification. Validation
@@ -126,12 +126,12 @@ selected one of five independently trained GCNs. An automatic validation
 benchmark chose CPU inference over CUDA, and test latency was measured per
 graph including sparse collation and tensor construction. On 90
 strict scale-holdout contexts, median selection time was `0.00541 s`, or
-`769.8x` faster than iterative teacher selection. Boundary Jaccard was `0.6508`
+`769.8x` faster than iterative adaptive RD reference selection. Boundary Jaccard was `0.6508`
 for the GNN versus `0.6789` for nearest-start. Production group feasibility was
 `70/90` versus `62/90`; after also requiring normalized start gap at most
 `0.01`, the GNN passed `68/90`, nearest-start passed `62/90`, and the adaptive
-teacher passed `71/90`. Full group audit reduced the accepted GNN pipeline to
-`0.444x` of the adaptive teacher pipeline. A validation-calibrated selective
+RD reference proposal passed `71/90`. Full group audit reduced the accepted GNN pipeline to
+`0.444x` of the adaptive RD reference pipeline. A validation-calibrated selective
 audit still missed 11 of 22 held-out joint-constraint failures.
 
 Thus amortized heatmap prediction is retained as an uncertified ablation, not
@@ -143,13 +143,21 @@ is not a certificate of value or group feasibility. Detailed results are in
 One bounded constraint-aware follow-up reranked a fixed five-proposal family
 using predicted group violations, value gap, and joint failure. It improved the
 strict test joint pass count from `68/90` to `81/90` at `0.00635 s` median
-selection time (`656.0x` versus iterative selection). The candidate union could
+selection time (`656.0x` versus iterative selection). The candidate-family oracle could
 pass `85/90`, so the representation contains useful alternatives. However, a
 100%-recall validation threshold caught only 3 of 9 test failures and left 6
 unaudited. The apparently fast selective path (`23.23x`) is unsafe; full audit
 has zero misses but only `0.428x` speedup. This triggered the
-prespecified NO-GO rule, stopped further neural expansion, and strengthened the
+predefined go/no-go rule, stopped further constraint-aware neural expansion, and strengthened the
 role of the explicit operator as the certifiable search-free method.
+
+This is raw proposal selection, not a certified-method comparison. The adaptive
+RD reference proposal optimizes a different construction objective, whereas the
+fixed-family reranker uses downstream group-violation and value-gap labels. On
+the 90 paired contexts, both passed 64, only the reranker passed 17, only the
+reference passed 7, and both failed 2. The paired difference was 11.1 percentage
+points (bootstrap 95% interval 1.1 to 21.1 points), while exact McNemar
+`p=0.0639`. We report this descriptively and make no learned-superiority claim.
 
 ## Failure Boundary
 

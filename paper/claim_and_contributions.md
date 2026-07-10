@@ -28,7 +28,7 @@ The paper should not claim that the method is a universally faster option-discov
 - Single-task total wall time need not beat full VI when discovery/kernel upfront cost dominates.
 - Weighted spectral certificates are sufficient certificates, not the main runtime decision rule.
 - Incremental insertion scoring is currently a runtime ablation, not a central correctness theorem.
-- The transition-graph GNN student is an uncertified ablation, not the RD Boundary Green Operator or a certificate. A bounded constraint-aware reranker improves strict scale-holdout joint passes from 68/90 to 81/90, but validation-calibrated routing still misses 6/9 test failures; full audit is only 0.428x as fast as the adaptive teacher. It therefore fails the prespecified secondary-method gate and does not replace the production audit.
+- The transition-graph GNN and constraint-aware fixed-family reranker are uncertified ablations, not the RD Boundary Green Operator or a certificate. The reranker improves strict scale-holdout raw joint passes from 68/90 to 81/90 against a candidate-family oracle of 85/90, but validation-calibrated routing still misses 6/9 test failures and full audit is only 0.428x as fast as the adaptive RD reference pipeline. Its paired comparison with the 71/90 adaptive RD reference proposal is descriptive because the objectives and guarantees differ. It therefore fails the predefined secondary-method gate and does not replace the production audit.
 
 ## Reviewer-Facing Thesis
 

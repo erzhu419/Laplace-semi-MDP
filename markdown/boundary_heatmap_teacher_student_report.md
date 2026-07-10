@@ -1,13 +1,13 @@
-# Transition-Graph Boundary Student
+# Transition-Graph Boundary Proposal Ablation
 
 ## Question
 
 Can one graph-conditioned forward pass replace iterative boundary insertion?
-The adaptive group-constrained RD solver is used only as an offline teacher. At
-deployment, the student sees the finite transition graph, reward, start and
+The adaptive group-constrained RD solver supplies offline reference signals. At
+deployment, the learned proposal sees the finite transition graph, reward, start and
 goal indicators, slip, discount, and candidate mask. It emits a node heatmap
 and the number of nonmandatory vertices. It does not insert candidates,
-recompute Green kernels, expand a beam, or use teacher scores.
+recompute Green kernels, expand a beam, or use reference scores.
 
 The experiment is an ablation of the explicit one-shot Green operator, not a
 replacement for that operator in the main method.
@@ -24,7 +24,7 @@ inference (`0.00068 s` median forward/collation versus `0.00184 s` on CUDA)
 because the model is too small to amortize device transfer. Final latency is
 measured one graph at a time rather than reporting batched throughput.
 
-The final graph-only teacher suite contains 360 contexts:
+The final graph-only offline-reference suite contains 360 contexts:
 
 - families: corridor, open room, four rooms, DFS maze, and braided maze;
 - slips: 0, 0.05, and 0.1;
@@ -33,13 +33,13 @@ The final graph-only teacher suite contains 360 contexts:
 - no hashed random basis states (`fixed_random_count=0`).
 
 Removing the two hidden hash-selected basis states was necessary because a
-student that only observes the graph cannot reproduce labels that also depend
+learned proposal that only observes the graph cannot reproduce labels that also depend
 on `map_name`. It changed the exact adaptive boundary in 39/360 contexts, but
-did not change the qualitative student result.
+did not change the qualitative learned-proposal result.
 
-The adaptive teacher was group feasible in 327/360 contexts and 71/90 strict
-scale-holdout contexts. Infeasible teacher rows were retained for evaluation
-but excluded from student training.
+The adaptive RD reference proposal was group feasible in 327/360 contexts and 71/90 strict
+scale-holdout contexts. Infeasible reference rows were retained for evaluation
+but excluded from learned-model training.
 
 ## Results
 
@@ -49,7 +49,7 @@ On the initial 180-context DFS-maze dataset, the GNN and nearest-start rule
 returned exactly the same graph in 180/180 contexts. Both hit the frozen
 first-step top set in every context. The GNN therefore learned no additional
 structure on that dataset. Production auditing showed 52/60 feasible GNN
-graphs versus 58/60 feasible adaptive-teacher graphs. Adding fixed top-2 or
+graphs versus 58/60 feasible adaptive-reference graphs. Adding fixed top-2 or
 top-3 vertices was not monotone: it recovered feasibility in 9/60 contexts and
 lost feasibility in 14/60 contexts.
 
@@ -64,20 +64,20 @@ and 0.6789 for nearest-start. Test top-set hit rate was 0.5444 versus 0.5778.
 | --- | ---: | ---: | ---: | ---: | ---: |
 | transition-graph GNN | 0.6508 | 70/90 | 68/90 | 769.8x | 0.444x |
 | nearest-start | 0.6789 | 62/90 | 62/90 | 877.9x | 0.435x |
-| adaptive RD teacher | 1.0000 | 71/90 | 71/90 | 1.0x | 1.0x |
+| adaptive RD reference proposal | 1.0000 | 71/90 | 71/90 | 1.0x | 1.0x |
 
 Under the joint group-feasibility and normalized-value-gap constraint, both
 methods passed 60 contexts, the GNN alone passed eight, nearest-start alone
 passed two, and both failed 20. Thus the GNN has a six-context net advantage,
-but still fails 22/90 held-out contexts and trails the adaptive teacher by
+but still fails 22/90 held-out contexts and trails the adaptive RD reference by
 three passes. Maximum normalized start gap was 0.02225. Median GNN compression
 was 33.8x.
 
 Graph encoding plus one selected-model CPU forward pass took a median 0.00541
-seconds, which was 769.8x faster than iterative teacher selection. The full
+seconds, which was 769.8x faster than iterative adaptive RD reference selection. The full
 production group audit took a median 7.75 seconds. With audit and fallback
 charged, the accepted GNN pipeline was only 0.444x as fast as the adaptive
-teacher pipeline.
+RD reference pipeline.
 
 ### Uncertainty routing
 
@@ -110,8 +110,8 @@ only to calibrate audit routing; the 90-context scale test is untouched.
 | proposal | joint pass | median selection | selection speedup | full-audit speedup |
 | --- | ---: | ---: | ---: | ---: |
 | boundary-only GCN | 68/90 | 0.00541 s | 769.8x | 0.444x |
-| constraint-aware reranker | 81/90 | 0.00635 s | 656.0x | 0.428x |
-| candidate oracle union | 85/90 | n/a | n/a | n/a |
+| constraint-aware fixed-family reranker | 81/90 | 0.00635 s | 656.0x | 0.428x |
+| candidate-family oracle | 85/90 | n/a | n/a | n/a |
 
 The reranker clears the raw proposal gate of 70/90 and confirms that the count
 head, rather than the frozen graph representation alone, caused part of the
@@ -119,18 +119,41 @@ original error. It does not clear the safety gate. A threshold with 100%
 validation failure recall audited 14.4% of test contexts but caught only 3 of
 9 failures, leaving 6 unaudited. Its 23.23x selective timing is therefore
 unsafe. Auditing every graph catches all failures, but reduces median pipeline
-speedup to 0.428x. Per the preregistered rule, the neural branch is a NO-GO as a
-secondary method, and a further topology-holdout expansion was not launched.
-The adaptive teacher is not a global boundary oracle, so 81/90 versus its
-71/90 does not establish dominance or certification.
+speedup to 0.428x. Per the predefined go/no-go protocol, the neural branch is a
+NO-GO as a secondary method, and a further constraint-aware topology-holdout
+expansion was not launched.
 
-### Topology holdout
+The 81/90 count is raw proposal quality, not certified pipeline quality. The
+adaptive RD reference proposal optimizes an RD construction objective rather
+than the downstream binary joint-pass metric. The reranker is also not pure
+imitation: it selects among a broader fixed proposal family using directly
+supervised group-violation and value-gap labels. It can therefore improve this
+metric without dominating the explicit RD Boundary Green Operator or inheriting
+its certificates.
 
-A second split held out maze topology seeds while retaining deterministic-map
+The paired outcomes make that boundary explicit:
+
+| constraint-aware reranker | adaptive reference pass | adaptive reference fail |
+| --- | ---: | ---: |
+| pass | 64 | 17 |
+| fail | 7 | 2 |
+
+The paired pass-rate difference is 11.1 percentage points, with a paired
+bootstrap 95% interval of 1.1 to 21.1 points. The exact conditional McNemar
+test gives `p=0.0639`, so it does not reject equality at the 5% level. This
+comparison is descriptive because the methods optimize different objectives
+and provide different acceptance guarantees; neither statistic is used to
+claim learned-method superiority.
+
+### Earlier boundary-only topology diagnostic
+
+A boundary-only diagnostic, completed before the constraint-aware stopping
+decision, held out maze topology seeds while retaining deterministic-map
 scale holdouts. Its selected GNN top-1 model obtained test Jaccard 0.8318,
 exactly matching nearest-start; top-set hit was 0.7424 versus 0.7273. This is a
-minor ranking difference, not evidence that the learned student dominates the
-explicit rule.
+minor ranking difference, not evidence that the learned proposal dominates the
+explicit rule. No constraint-aware topology extension was launched after the
+go/no-go gate failed.
 
 ## Interpretation
 
@@ -164,6 +187,7 @@ remains the reference and fallback when hard group feasibility is required.
 - `experiments/boundary_constraint_student.py`: multi-head risk model, asymmetric loss, and deterministic reranking.
 - `experiments/run_boundary_constraint_candidates.py`: fixed cheap proposal family.
 - `experiments/run_constraint_aware_student.py`: train-only fitting and scale-holdout evaluation.
+- `experiments/analyze_boundary_constraint_pairing.py`: paired contingency, bootstrap interval, and exact McNemar analysis.
 - `experiments/output/boundary_heatmap_teacher_graphonly/`: compact graph-only teacher artifact.
 - `experiments/output/boundary_heatmap_gnn_graphonly/`: prediction and training summaries.
 - `experiments/output/boundary_heatmap_downstream_graphonly_test/`: strict scale-holdout audit.
@@ -171,6 +195,7 @@ remains the reference and fallback when hard group feasibility is required.
 - `experiments/output/boundary_heatmap_selective_audit_graphonly/`: selective-routing failure audit.
 - `experiments/output/boundary_constraint_student/`: selected downstream rows and raw proposal gate.
 - `experiments/output/boundary_constraint_selective_audit/`: independent calibration, full-audit timing, and final NO-GO record.
+- `experiments/output/boundary_constraint_pairing/`: paired descriptive comparison with the adaptive RD reference.
 
 The neural dependency is intentionally optional and pinned in
 `requirements-learning.txt`; the core operator and Lean artifact remain
