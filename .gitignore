@@ -11,3 +11,10 @@ proof/.lake/
 node_logs/
 experiments/output/node_large_runs/
 experiments/output/scheduler_large_runs/
+experiments/output/scheduler_p0_audits/
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/manuscript.pdf

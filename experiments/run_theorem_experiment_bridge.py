@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
+import statistics
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence
@@ -51,6 +53,31 @@ def metric_status(name: str, rows: Sequence[Mapping[str, str]]) -> str:
         graph_rows = [row for row in rows if str(row.get("method_spec", "")) != "full_vi"]
         max_gap = max((finite_float(row.get("start_gap"), 0.0) for row in graph_rows), default=0.0)
         return f"rows={len(rows)}, graph_rows={len(graph_rows)}, max_start_gap={max_gap:.4g}"
+    if name == "end_to_end":
+        converged = [row for row in rows if row.get("config_label") == "converged_k256_i256"]
+        certified = sum(
+            1
+            for row in converged
+            if str(row.get("certificate_holds", "")).lower() == "true"
+        )
+        normalized = sorted(
+            finite_float(row.get("normalized_primitive_to_solved_gap"))
+            for row in converged
+            if math.isfinite(finite_float(row.get("normalized_primitive_to_solved_gap")))
+        )
+        normalized_bounds = [
+            finite_float(row.get("normalized_certified_total_bound"))
+            for row in converged
+            if math.isfinite(finite_float(row.get("normalized_certified_total_bound")))
+        ]
+        median_gap = statistics.median(normalized) if normalized else float("nan")
+        p95_gap = normalized[int(0.95 * (len(normalized) - 1))] if normalized else float("nan")
+        max_bound = max(normalized_bounds, default=float("nan"))
+        return (
+            f"rows={len(rows)}, converged={len(converged)}, certified={certified}, "
+            f"median_norm_gap={median_gap:.4g}, p95_norm_gap={p95_gap:.4g}, "
+            f"max_norm_bound={max_bound:.4g}"
+        )
     if name == "operator_checks":
         stable = sum(1 for row in rows if str(row.get("margin_stability_correct", "")).lower() == "true")
         condition = sum(1 for row in rows if str(row.get("margin_stability_condition", "")).lower() == "true")
@@ -62,6 +89,15 @@ def metric_status(name: str, rows: Sequence[Mapping[str, str]]) -> str:
     if name == "random_maze":
         feasible = sum(1 for row in rows if str(row.get("group_all_feasible", "")).lower() == "true")
         return f"rows={len(rows)}, feasible={feasible}"
+    if name == "budget_recovery":
+        recovered = sum(1 for row in rows if str(row.get("recovered", "")).lower() == "true")
+        plateau = sum(1 for row in rows if row.get("failure_class") == "fixed_family_or_probe_plateau")
+        max_splits = max((finite_float(row.get("max_splits_tested"), 0.0) for row in rows), default=0.0)
+        max_boundary = max((finite_float(row.get("largest_n_boundary"), 0.0) for row in rows), default=0.0)
+        return (
+            f"contexts={len(rows)}, recovered={recovered}, fixed_family_plateau={plateau}, "
+            f"max_splits={max_splits:.0f}, max_boundary={max_boundary:.0f}"
+        )
     if name == "edge_reward_multitask":
         additive = [row for row in rows if str(row.get("variant")) == "fixed_B_edge_reward_kernel"]
         event = [row for row in rows if str(row.get("variant")) == "fixed_B_event_hit_kernel"]
@@ -70,9 +106,11 @@ def metric_status(name: str, rows: Sequence[Mapping[str, str]]) -> str:
         ]
         max_event_gap = max((finite_float(row.get("start_gap_max"), 0.0) for row in event), default=0.0)
         max_gc_gap = max((finite_float(row.get("start_gap_max"), 0.0) for row in goal_conditioned), default=0.0)
+        value_scale = 1.0 / (1.0 - 0.97)
         return (
-            f"rows={len(rows)}, additive={len(additive)}, event_gap={max_event_gap:.4g}, "
-            f"goal_conditioned_gap={max_gc_gap:.4g}"
+            f"rows={len(rows)}, additive={len(additive)}, "
+            f"event_norm_gap={max_event_gap / value_scale:.4g}, "
+            f"goal_conditioned_norm_gap={max_gc_gap / value_scale:.4g}"
         )
     if name == "adaptive_topk":
         matches = sum(1 for row in rows if str(row.get("feasible_match", "")).lower() == "true")
@@ -91,6 +129,7 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
     operator_rows = read_csv_rows(args.operator_checks_csv)
     incremental_rows = read_csv_rows(args.incremental_green_csv)
     random_rows = read_csv_rows(args.random_maze_csv)
+    budget_recovery_rows = read_csv_rows(args.budget_recovery_csv)
     edge_reward_rows = read_csv_rows(args.edge_reward_csv)
     adaptive_topk_rows = read_csv_rows(args.adaptive_topk_paired_csv)
     return [
@@ -165,6 +204,22 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
             "remaining_gap": "Tie value-gap reporting to residual diagnostics in each benchmark table.",
         },
         {
+            "paper_claim": "The primitive optimal-value gap decomposes into option restriction, boundary abstraction, kernel approximation, and planning residual terms.",
+            "math_object": "eps_option + eps_boundary + (eps_R + Vmax eps_Gamma + eps_plan)/(1-beta)",
+            "proof_symbols": "primitive_to_graph_end_to_end_gap_real; primitive_to_graph_end_to_end_sup_bound",
+            "proof_status": symbol_status(
+                args.proof_root,
+                [
+                    "primitive_to_graph_end_to_end_gap_real",
+                    "primitive_to_graph_end_to_end_sup_bound",
+                ],
+            ),
+            "experiment_artifact": args.end_to_end_csv,
+            "experiment_status": metric_status("end_to_end", read_csv_rows(args.end_to_end_csv)),
+            "manuscript_location": "Main preservation theorem and value-gap accounting",
+            "remaining_gap": "Keep the deliberately under-solved truncation/planning ablation separate from the converged certificate table.",
+        },
+        {
             "paper_claim": "Margin and top-set certificates separate stable operator decisions from ambiguous ties.",
             "math_object": "m>2 epsilon_adapt implies stable top choice",
             "proof_symbols": "margin_stability; interval_certified_top_choice; top_set_exact_fallback_global_optimal",
@@ -230,7 +285,7 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
             "experiment_artifact": args.edge_reward_csv,
             "experiment_status": metric_status("edge_reward_multitask", edge_reward_rows),
             "manuscript_location": "Multi-task compression and reward relabeling",
-            "remaining_gap": "Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted.",
+            "remaining_gap": "Label the legacy dense-VI denominator and report normalized option/boundary restriction gaps.",
         },
         {
             "paper_claim": "Goal-conditioned event options reduce terminal-goal restriction bias without adding the goal to B.",
@@ -247,17 +302,23 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
             "experiment_artifact": args.edge_reward_csv,
             "experiment_status": metric_status("edge_reward_multitask", edge_reward_rows),
             "manuscript_location": "Secondary terminal-goal extension",
-            "remaining_gap": "The gap is much smaller and the backend is shared/batched, but larger multitask runs must show amortized speedup beyond the current break-even table.",
+            "remaining_gap": "Treat this as a costed secondary repair; the current table does not show a median win over even the legacy denominator.",
         },
         {
             "paper_claim": "The extracted graph should generalize across maze instances, not only fixed toy layouts.",
             "math_object": "same objective on held-out DFS maze family",
             "proof_symbols": "not_a_theorem",
             "proof_status": "empirical_stress_test",
-            "experiment_artifact": args.random_maze_csv,
-            "experiment_status": metric_status("random_maze", random_rows),
+            "experiment_artifact": f"{args.random_maze_csv}; {args.budget_recovery_csv}",
+            "experiment_status": (
+                f"{metric_status('random_maze', random_rows)}; "
+                f"{metric_status('budget_recovery', budget_recovery_rows)}"
+            ),
             "manuscript_location": "Generalization/stress-test section",
-            "remaining_gap": "Scale to larger random maps on node001-node006 for final paper numbers.",
+            "remaining_gap": (
+                "State the sole max-splits-16 topology/value plateau as fixed option/probe-family bias, "
+                "not as an unresolved boundary-budget failure."
+            ),
         },
     ]
 
@@ -296,6 +357,11 @@ def main() -> None:
     parser.add_argument("--proof-root", type=Path, default=Path("proof"))
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
     parser.add_argument(
+        "--end-to-end-csv",
+        type=Path,
+        default=Path("experiments/output/end_to_end_gap_decomposition/end_to_end_gap_decomposition.csv"),
+    )
+    parser.add_argument(
         "--operator-checks-csv",
         type=Path,
         default=Path("experiments/output/rd_operator_theorem_checks_actual_small/summary.csv"),
@@ -319,6 +385,14 @@ def main() -> None:
         "--random-maze-csv",
         type=Path,
         default=Path("experiments/output/random_maze_generalization/random_maze_generalization.csv"),
+    )
+    parser.add_argument(
+        "--budget-recovery-csv",
+        type=Path,
+        default=Path(
+            "experiments/output/random_maze_budget_recovery/"
+            "random_maze_budget_recovery_summary.csv"
+        ),
     )
     parser.add_argument(
         "--edge-reward-csv",

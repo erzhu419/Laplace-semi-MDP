@@ -38,6 +38,9 @@ Install Python dependencies:
 python3 -m pip install -r requirements.txt
 ```
 
+For exact artifact versions, use `requirements-lock.txt`; optional external
+environment versions are pinned in `requirements-general-envs-lock.txt`.
+
 Optional general-environment adapters for MiniGrid and Gymnasium-Robotics:
 
 ```bash
@@ -62,21 +65,26 @@ Rebuild the core paper-facing experiments:
 bash scripts/reproduce_core.sh
 ```
 
+Regenerate the final constrained tables, theorem bridge, evidence figures, and
+LaTeX manuscript from tracked experiment artifacts:
+
+```bash
+bash scripts/reproduce_submission_artifact.sh
+```
+
 Run the finite-MDP general-environment smoke benchmark:
 
 ```bash
 python3 experiments/run_general_env_benchmark.py
 ```
 
-This benchmark currently covers Gymnasium ToyText (`Taxi-v3`,
+This benchmark currently covers Gymnasium ToyText (`Taxi-v4`,
 `FrozenLake8x8-v1`, `CliffWalking-v1`) plus a discretized sampled PointMaze,
-and compares primitive first-boundary options with boundary-targeted options.
-MiniGrid symbolic BFS specs such as `minigrid:MiniGrid-FourRooms-v0` are
-supported when the optional `minigrid` package is installed. PointMaze rows are
-claims about the discretized empirical MDP, not exact continuous-control
-theorems. Taxi rows are a structured failure/repair ablation: task-variable
-landmark boundaries plus targeted options reduce the gap, but do not make Taxi
-a main win.
+and symbolic MiniGrid FourRooms, DoorKey, and MultiRoom tasks. It compares
+primitive first-boundary options with boundary-targeted options over five seeds.
+PointMaze rows are claims about the discretized empirical MDP, not exact
+continuous-control theorems. Taxi is a structured negative case: the spatial
+boundary graph compresses task variables that must remain explicit.
 
 By default, experiment scripts cap BLAS/OpenMP to one CPU thread so local WSL
 runs do not monopolize all cores. These experiments are NumPy/OpenBLAS linear
@@ -141,15 +149,35 @@ The underlying node runner is `scripts/run_node_large_paper.sh`; it runs
 random-maze robustness, large-scale compression, multi-task amortization, thread
 scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
 
+Reviewer-P0 audits use a separate wrapper so the main scheduler configuration
+does not need to be edited. It submits strong full-state planners, direct state
+abstraction/Schur baselines, complete-universe tiny oracles, multi-seed external
+environments, the four-term value-gap decomposition, and failed-maze budget
+recovery as fine-grained CPU shards:
+
+```bash
+python3 scripts/submit_p0_audits_scheduler.py \
+  --run-id reviewer_p0_<date> --suites all --dispatch
+
+python3 experiments/aggregate_p0_audit_shards.py \
+  --run-root experiments/output/scheduler_p0_audits/reviewer_p0_<date>
+```
+
+The P0 submitter creates one immutable, node-specific source snapshot before
+dispatch. Each shard writes `_SUCCESS.json` only after a zero-exit run, and the
+aggregator refuses incomplete or mixed-fingerprint runs. This prevents stale
+launch-stage caches or nominal scheduler `done` states from entering paper tables.
+
 ## Current Artifact Status
 
 - Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.
 - Adaptive feasible top-k diagnostics now support using it as the main discovery backend: paired adaptive/fixed top-4 rows match feasibility on the current suite (`36/36`), certified feasible rate stays at `0.7222`, median selection time drops from about `47.18s` to `23.58s`, and the Lean proof layer states the feasible-envelope/work-bound guarantee plus the score-optimality caveat.
 - The XL scheduler run `paper_xl_20260706_0659` has been published into the tracked paper-facing outputs: large-scale compression 135 rows, random maze 360 rows, option frontier 648 rows, amortized multitask 192 rows, and fixed-`B` edge reward 384 rows.
-- The generic finite-MDP adapter now runs non-handwritten-grid smoke tests on Gymnasium ToyText and discretized PointMaze. The tracked table has 112 rows in `experiments/output/general_env_benchmark/`; it is evidence for portability of the finite-MDP interface, not a replacement for the main grid compression claims. On Taxi, boundary-targeted options and task-variable landmark states reduce the start gap from about `37.04` to `10.73`, but require `84` boundary states and `84` targeted options.
-- The large-scale adaptive table currently shows planning-only speedups up to roughly `1e5x` on long corridors and single-task total speedups up to roughly `10.5x`. The submission table reports both planning-only and total-time accounting.
+- The generic finite-MDP adapter now has 315 raw rows and 56 aggregate rows across seven external environments and five seeds. FrozenLake is a positive portability case; MiniGrid and PointMaze expose option-family bias; Taxi-v4 is a high-compression, high-gap, group-infeasible negative case.
+- The matched strong-planner audit contains 405 paired timing rows. Sparse-vectorized VI is fastest in all 27 map/slip cases. The RD selector's median graph-planning speedup is about `29.6x`, but its median single-task total speedup is only `0.00116x`; the paper therefore claims planning/representation compression, not a single-task wall-time win.
 - The compact benchmark compares full VI, exact RD graph variants, group-constrained RD, eigenoptions, betweenness bottlenecks, random landmarks, and coverage landmarks under the same map/slip suite.
 - Solver-validity diagnostics compare operator-only and exact-refined beam search against small exhaustive oracles.
+- The complete-universe oracle suite covers 315 contexts: exact-refine beam widths 4 and 8 match the exhaustive boundary and feasibility decision in every context; operator beam 8 matches feasibility in every context and the exact boundary in about `84.8%`.
 - The larger group-constrained adaptive table evaluates `open_room_12`, `four_rooms_11`, and `maze_13` at slip `0` and `0.05`; group-constrained boundaries are feasible on the current suite, while endpoint-only boundaries are not.
 - Discovery profiling is now separated from planning: `experiments/output/discovery_profile_cache/summary.md` decomposes probe construction, Green kernels, vectorized frozen scoring, full candidate recompute, and cache-hit reuse.
 - Incremental Green diagnostics now check parent-to-child boundary insertion, and `group_constrained_incremental` wires the score-level update into beam selection as an ablation. The semantic diff identified the open-room issue as edge-uniform versus occupancy-weighted accounting; the insertion backend now honors and caches the production active-edge weights and is feasible on the larger group suite.
@@ -162,7 +190,10 @@ scaling, and a node summary under `experiments/output/scheduler_large_runs/`.
   option/boundary restriction gap. The goal-conditioned event-option extension
   keeps `B` fixed and reduces terminal-goal gaps using one shared policy and
   one batched event solve per queried goal, while reporting the extra
-  goal-interface cost and break-even task count separately.
+  goal-interface cost and break-even task count separately. The historical
+  `108.4x` best amortized number uses the legacy dense NumPy VI denominator;
+  normalized gaps and the denominator label are included so it is not confused
+  with the matched sparse-VI audit.
 - Paper-facing scaffolding now lives under `paper/`, including the main claim, method/results narrative scaffold, related-work matrix, theorem stack, experiment matrix, and figure plan.
 - `experiments/run_random_maze_generalization.py`, `experiments/run_fair_budget_frontier.py`, `experiments/plot_graph_abstraction_figures.py`, and `experiments/run_theorem_experiment_bridge.py` add random-topology stress tests, shared budget-frontier aggregation, interpretability figures, and theorem/proof/experiment alignment.
 

@@ -1,0 +1,8 @@
+map,slip,budget_frac,recovered,recovery_method,minimal_max_splits,minimal_n_boundary,added_vertices_over_failed,max_splits_tested,largest_n_boundary,violation_reduction,best_total_violation,failure_class
+random_maze_15_seed0,0.05,0.25,True,actual_refine,5,4,1,5,4,0.0,0.0,budget_recovered
+random_maze_15_seed0,0.1,0.25,True,actual_refine,5,4,1,5,4,0.0,0.0,budget_recovered
+random_maze_15_seed4,0.05,0.25,True,actual_refine,5,4,2,5,4,0.0,0.0,budget_recovered
+random_maze_15_seed4,0.1,0.25,False,,,,,16,17,2.885656158468919e-10,38.863153095861364,fixed_family_or_probe_plateau
+random_maze_15_seed8,0.05,0.25,True,actual_refine,5,4,1,5,4,0.0,0.0,budget_recovered
+random_maze_19_seed3,0.05,0.25,True,actual_refine,5,4,1,5,4,0.0,0.0,budget_recovered
+random_maze_19_seed3,0.1,0.25,True,actual_refine,5,4,1,5,4,0.0,0.0,budget_recovered

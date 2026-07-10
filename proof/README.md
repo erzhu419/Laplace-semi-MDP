@@ -31,6 +31,10 @@ What is formalized now:
   `phi(h) = -log_2(1 - h + eps)`;
 - discounted Bellman residual to value-gap bound in scaled rational form,
   matching `||V - Vhat||_∞ <= ||T V - That V||_∞ / (1 - gamma)`;
+- a real-valued primitive-to-graph end-to-end certificate that keeps option
+  restriction, boundary/interface abstraction, graph-kernel approximation, and
+  planning residual as four explicit additive terms, with uniform finite-state
+  hypotheses yielding the paper's sup-norm form;
 - group-constraint feasibility from zero group violations;
 - finite-option graph-SMDP Bellman sup-norm contraction and non-expansion,
   including stability of repeated Bellman iterates;

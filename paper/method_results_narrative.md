@@ -174,23 +174,18 @@ same table.
 To check that the implementation is not only a hand-written `GridWorld`
 artifact, we add a generic finite-MDP adapter that accepts explicit transition
 kernels, rewards, start distributions, terminal states, and optional coordinates.
-The first smoke suite runs Gymnasium ToyText tasks (`Taxi-v3`,
-`FrozenLake8x8-v1`, `CliffWalking-v1`) and a discretized sampled PointMaze. This
-is not yet a new main benchmark; it is an interface-portability and
-failure-mode test. FrozenLake, CliffWalking, and PointMaze keep the navigation
-structure close to the boundary-graph assumption, while Taxi exposes a useful
-negative case: a purely spatial boundary graph can compress away
-passenger/destination variables that are essential to Bellman value.
+The five-seed suite runs Gymnasium ToyText, symbolic MiniGrid, and a discretized
+sampled PointMaze. It is an interface-portability and failure-mode test rather
+than a deep-RL benchmark. FrozenLake is favorable: a feasible primitive-option
+RD graph has median normalized start gap `0.0666` at `4.57x` compression.
+PointMaze reaches `0.322` at `2.52x`. MiniGrid boundary-targeted options can fit
+the start support while retaining global normalized gaps of `0.817--0.932`, so
+zero start gap is not reported as global value preservation.
 
-The Taxi repair ablation confirms the diagnosis. Adding boundary-targeted
-options reduces the start gap relative to primitive repeated-action options,
-and retaining all task-variable modes at Taxi's landmark cells reduces the
-start gap further, from about `37.04` to `10.73`. This repair is not free: the
-boundary grows to `84` states and the option interface grows to `84` targeted
-options. The paper should present this as a claim-boundary result. The method
-can diagnose which variables must remain explicit, but compositional
-task-variable abstraction is a separate extension rather than something that a
-purely spatial boundary selector should be expected to solve automatically.
+Taxi-v4 confirms the factored-variable diagnosis. The spatial graph compresses
+by `15.6x`, but its normalized start gap is `1.59--2.41` and group feasibility
+is zero. Passenger/destination identity requires a compositional state
+representation; adding spatial landmarks alone is not presented as a repair.
 
 ## Discussion Draft
 
@@ -230,7 +225,7 @@ the method from a black-box option discovery heuristic.
 | The RD Boundary Green Operator is the reference mathematical object. | Lean finite-difference, Green legality, Neumann tail, Bellman contraction, and value-gap theorems. | supported |
 | Compression is the main story, not universal single-task speed. | Submission table separates planning-only speedup, total speedup, break-even tasks, and multi-task amortization. | supported |
 | Fixed-`B` reward relabeling preserves multi-task compression. | Edge reward multitask table and theorem stack T10/T11. | supported |
-| The implementation can leave the custom grid class. | General finite-MDP smoke: Gymnasium ToyText plus discretized PointMaze; Taxi reported as structured variable-abstraction failure/repair. | initial smoke |
+| The implementation can leave the custom grid class. | Five-seed ToyText, symbolic MiniGrid, and discretized PointMaze; Taxi-v4 reported as a structured variable-abstraction failure. | supported as portability, not broad generalization |
 
 ## Writing Notes
 

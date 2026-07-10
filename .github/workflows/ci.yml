@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  python-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+      - name: Install locked core dependencies
+        run: python -m pip install -r requirements-lock.txt
+      - name: Compile Python entry points
+        run: python -m compileall -q experiments scripts
+      - name: Planner and abstraction smoke tests
+        run: |
+          python experiments/run_planner_baseline_comparison.py \
+            --map-specs corridor:8 --slips 0.05 \
+            --methods sparse_vectorized_vi gauss_seidel_vi prioritized_sweeping \
+            --warmups 0 --repeats 1 --no-resume --out-dir /tmp/planner-smoke
+          python experiments/run_abstraction_baseline_comparison.py \
+            --map-specs corridor:8 --slips 0.05 \
+            --budget-fracs 0.25 --repeats 1 --no-resume \
+            --out-dir /tmp/abstraction-smoke
+      - name: Certificate and oracle smoke tests
+        run: |
+          python experiments/run_end_to_end_gap_decomposition.py \
+            --map-specs corridor:8 --slips 0.05 --methods endpoints \
+            --truncation-steps 8 --planning-iterations 4 --no-resume \
+            --out-dir /tmp/end-to-end-smoke
+          python experiments/run_solver_validity.py \
+            --map-specs open_room:5 --slips 0.05 --budget-fracs 0.25 \
+            --oracle-pool-mode all --max-oracle-candidates 12 \
+            --solvers actual_refine --beam-widths 1 \
+            --out-dir /tmp/solver-smoke
+          python experiments/run_random_maze_budget_recovery.py \
+            --contexts 5:0:0.0:2 --methods actual_refine \
+            --max-splits-values 1 2 --beam-width 1 --beam-expand 2 \
+            --shard-unit job --shard-index 0 --num-shards 2 \
+            --continue-on-error --out-dir /tmp/recovery-smoke
+      - name: General finite-MDP adapter smoke test
+        run: |
+          python experiments/run_general_env_benchmark.py \
+            --env-specs toytext:FrozenLake8x8-v1 --seeds 0 \
+            --methods endpoints green_group_rd --option-modes boundary_targeted \
+            --target-counts 8 --no-resume --out-dir /tmp/general-env-smoke
+      - name: Paper aggregation smoke test
+        run: |
+          python experiments/run_submission_main_table.py \
+            --out-dir /tmp/submission-main-table
+          python experiments/plot_p0_submission_figures.py \
+            --out-dir /tmp/submission-figures

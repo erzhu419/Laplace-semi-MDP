@@ -9,6 +9,8 @@ import thread_limits  # noqa: F401
 import networkx as nx
 import numpy as np
 from scipy.linalg import eigh
+from scipy import sparse
+from scipy.sparse import linalg as sparse_linalg
 
 from bellman_kron import (
     BellmanKronReduction,
@@ -645,6 +647,149 @@ def green_occupancy_boundary(
     return sorted(boundary)
 
 
+def _generic_saliency_groups(mdp: FiniteMDP, value: np.ndarray) -> Dict[str, np.ndarray]:
+    graph = transition_graph(mdp)
+    if mdp.n_states > 512:
+        centrality = nx.betweenness_centrality(
+            graph,
+            k=min(64, mdp.n_states),
+            normalized=True,
+            seed=0,
+        )
+    else:
+        centrality = nx.betweenness_centrality(graph, normalized=True)
+    topology = _normalize(
+        np.array([float(centrality.get(state, 0.0)) for state in range(mdp.n_states)], dtype=float)
+    )
+    return {
+        "topology": topology,
+        "value": value_gradient_saliency(mdp, value),
+        "stochastic": transition_entropy_saliency(mdp),
+    }
+
+
+def _truncated_boundary_hidden_occupancy(
+    mdp: FiniteMDP,
+    boundary: Sequence[int],
+    gamma: float,
+    max_steps: int,
+    tail_tol: float,
+    source_boundary: Sequence[int] | None = None,
+) -> np.ndarray:
+    boundary_set = set(int(state) for state in boundary)
+    interior = np.asarray([state for state in range(mdp.n_states) if state not in boundary_set], dtype=int)
+    occupancy = np.zeros(mdp.n_states, dtype=float)
+    if not len(interior):
+        return occupancy
+    sources = sorted(
+        state
+        for state in (source_boundary if source_boundary is not None else boundary_set)
+        if int(state) in boundary_set
+    )
+    B = np.asarray([int(state) for state in sources], dtype=int)
+    boundary_weight = np.full(len(B), 1.0 / max(1, len(B)), dtype=float)
+    hidden = np.zeros(len(interior), dtype=float)
+    for action in range(mdp.n_actions):
+        transition = sparse.csr_matrix(mdp.P[action])
+        frontier = np.asarray(boundary_weight @ transition[B][:, interior]).reshape(-1)
+        discount = gamma
+        P_II = transition[interior][:, interior]
+        for _step in range(max(1, int(max_steps))):
+            hidden += discount * frontier / max(1, mdp.n_actions)
+            if float(np.sum(np.abs(frontier))) <= tail_tol:
+                break
+            frontier = np.asarray(frontier @ P_II).reshape(-1)
+            discount *= gamma
+    occupancy[interior] = hidden
+    return occupancy
+
+
+def green_group_rd_boundary(
+    mdp: FiniteMDP,
+    target_count: int,
+    gamma: float,
+    value: np.ndarray,
+    budget_frac: float = 0.25,
+    truncation_steps: int = 128,
+    tail_tol: float = 1e-9,
+) -> Tuple[List[int], Dict[str, object]]:
+    """Generic frozen Green-score/group-feasibility selector.
+
+    This is the finite-MDP portability counterpart of the grid-specific group
+    RD backend.  It uses a truncated discounted first-hit occupancy operator and
+    keeps topology, value-gradient, and transition-entropy risks separate.
+    Candidate selection is the frozen first-order Green score, so the result is
+    labeled a surrogate rather than an exact adaptive optimum.
+    """
+
+    boundary = set(endpoint_boundary(mdp))
+    frozen_sources = sorted(boundary)
+    target_count = max(len(boundary), min(int(target_count), mdp.n_states))
+    groups = _generic_saliency_groups(mdp, value)
+
+    def risks(current: Sequence[int]) -> Tuple[Dict[str, float], np.ndarray]:
+        hidden = _truncated_boundary_hidden_occupancy(
+            mdp,
+            current,
+            gamma=gamma,
+            max_steps=truncation_steps,
+            tail_tol=tail_tol,
+            source_boundary=frozen_sources,
+        )
+        return {
+            name: float(np.dot(hidden, saliency))
+            for name, saliency in groups.items()
+        }, hidden
+
+    initial_risks, _initial_hidden = risks(sorted(boundary))
+    budgets = {name: float(budget_frac) * risk for name, risk in initial_risks.items()}
+    trace: List[Dict[str, object]] = []
+    final_risks = dict(initial_risks)
+    while len(boundary) < target_count:
+        final_risks, hidden = risks(sorted(boundary))
+        violations = {
+            name: max(0.0, final_risks[name] - budgets[name])
+            for name in groups
+        }
+        if all(value <= 1e-12 for value in violations.values()):
+            break
+        score = np.zeros(mdp.n_states, dtype=float)
+        for name, saliency in groups.items():
+            scale = violations[name] / max(1e-12, initial_risks[name]) if initial_risks[name] > 0.0 else 0.0
+            score += scale * hidden * saliency
+        if boundary:
+            score[np.asarray(sorted(boundary), dtype=int)] = -np.inf
+        selected = int(np.argmax(score))
+        if not np.isfinite(score[selected]) or score[selected] <= 1e-15:
+            break
+        boundary.add(selected)
+        trace.append(
+            {
+                "step": len(trace),
+                "selected_state": selected,
+                "score": float(score[selected]),
+                "risks_before": final_risks,
+                "violations_before": violations,
+            }
+        )
+    final_risks, _hidden = risks(sorted(boundary))
+    final_violations = {
+        name: max(0.0, final_risks[name] - budgets[name])
+        for name in groups
+    }
+    return sorted(boundary), {
+        "initial_group_risks": initial_risks,
+        "group_budgets": budgets,
+        "final_group_risks": final_risks,
+        "final_group_violations": final_violations,
+        "group_total_violation": float(sum(final_violations.values())),
+        "group_all_feasible": bool(all(value <= 1e-12 for value in final_violations.values())),
+        "trace": trace,
+        "truncation_steps": int(truncation_steps),
+        "tail_tol": float(tail_tol),
+    }
+
+
 def full_value_iteration(
     mdp: FiniteMDP,
     gamma: float,
@@ -653,9 +798,16 @@ def full_value_iteration(
 ) -> Tuple[np.ndarray, int]:
     V = np.zeros(mdp.n_states, dtype=float)
     terminals = mdp.terminal_set()
+    sparse_transitions = tuple(sparse.csr_matrix(mdp.P[action]) for action in range(mdp.n_actions))
     for iteration in range(1, max_iterations + 1):
         old = V.copy()
-        q = mdp.R + gamma * np.einsum("asn,n->as", mdp.P, old)
+        q = np.stack(
+            [
+                mdp.R[action] + gamma * sparse_transitions[action].dot(old)
+                for action in range(mdp.n_actions)
+            ],
+            axis=0,
+        )
         V = np.max(q, axis=0)
         if terminals:
             V[list(terminals)] = 0.0
@@ -689,7 +841,7 @@ def build_smdp_reductions(mdp: FiniteMDP, boundary: Sequence[int], gamma: float)
     reductions: Dict[str, BellmanKronReduction] = {}
     for action, name in enumerate(mdp.action_names):
         P_action, R_action = mdp.transition_matrix_for_action(action)
-        reductions[name] = bellman_kron_reduce(P_action, R_action, boundary, gamma)
+        reductions[name] = _discounted_sparse_kron_reduce(P_action, R_action, boundary, gamma)
     return reductions
 
 
@@ -701,8 +853,55 @@ def build_targeted_smdp_reductions(
     reductions: Dict[str, BellmanKronReduction] = {}
     for target in sorted(set(int(state) for state in boundary)):
         P_policy, R_policy = shortest_path_target_policy_kernel(mdp, target)
-        reductions[f"to_{target}"] = bellman_kron_reduce(P_policy, R_policy, boundary, gamma)
+        reductions[f"to_{target}"] = _discounted_sparse_kron_reduce(P_policy, R_policy, boundary, gamma)
     return reductions
+
+
+def _discounted_sparse_kron_reduce(
+    P: np.ndarray,
+    reward: np.ndarray,
+    boundary: Sequence[int],
+    gamma: float,
+) -> BellmanKronReduction:
+    """Exact discounted Schur reduction using sparse interior solves.
+
+    The undiscounted hit-probability diagnostics are omitted because a constant
+    primitive action can have closed classes that never hit ``B``.  Planning
+    uses only the exact discounted reward and continuation kernels.
+    """
+
+    n_states = int(P.shape[0])
+    B = np.asarray(sorted(set(int(state) for state in boundary)), dtype=int)
+    boundary_set = set(B.tolist())
+    I = np.asarray([state for state in range(n_states) if state not in boundary_set], dtype=int)
+    transition = sparse.csr_matrix(P)
+    P_BB = transition[B][:, B].toarray()
+    reward_B = np.asarray(reward, dtype=float)[B]
+    if not len(I):
+        gamma_terminal = gamma * P_BB
+        reduced_reward = reward_B.copy()
+    else:
+        P_BI = transition[B][:, I]
+        P_IB = transition[I][:, B]
+        P_II = transition[I][:, I]
+        system = sparse.eye(len(I), format="csc") - gamma * P_II.tocsc()
+        factor = sparse_linalg.splu(system)
+        solved_exit = factor.solve(P_IB.toarray())
+        solved_reward = factor.solve(np.asarray(reward, dtype=float)[I])
+        gamma_terminal = gamma * P_BB + (gamma**2) * (P_BI @ solved_exit)
+        reduced_reward = reward_B + gamma * (P_BI @ solved_reward)
+    hit_probability = np.full_like(gamma_terminal, np.nan)
+    expected_tau = np.full_like(gamma_terminal, np.nan)
+    return BellmanKronReduction(
+        boundary=B,
+        interior=I,
+        gamma=gamma,
+        gamma_terminal=np.asarray(gamma_terminal, dtype=float),
+        reward=np.asarray(reduced_reward, dtype=float),
+        laplacian=np.eye(len(B)) - np.asarray(gamma_terminal, dtype=float),
+        hit_probability=hit_probability,
+        expected_tau=expected_tau,
+    )
 
 
 def shortest_path_target_policy_kernel(mdp: FiniteMDP, target: int) -> Tuple[np.ndarray, np.ndarray]:
@@ -765,11 +964,16 @@ def lifted_graph_value(
     B = np.array(boundary, dtype=int)
     q_by_action = []
     for action in range(mdp.n_actions):
-        P = mdp.P[action]
-        P_II = P[np.ix_(interior, interior)]
-        P_IB = P[np.ix_(interior, B)]
-        rhs = mdp.R[action, interior] + gamma * P_IB @ boundary_value
-        q_by_action.append(_solve_or_pinv(np.eye(len(interior)) - gamma * P_II, rhs))
+        P = sparse.csr_matrix(mdp.P[action])
+        P_II = P[interior][:, interior]
+        P_IB = P[interior][:, B]
+        rhs = mdp.R[action, interior] + gamma * P_IB.dot(boundary_value)
+        q_by_action.append(
+            sparse_linalg.spsolve(
+                sparse.eye(len(interior), format="csc") - gamma * P_II.tocsc(),
+                rhs,
+            )
+        )
     out[interior] = np.max(np.stack(q_by_action, axis=0), axis=0)
     return out
 
@@ -805,6 +1009,13 @@ def evaluate_boundary_graph(
     lifted = lifted_graph_value(mdp, boundary, V_boundary, gamma=gamma)
     start_dist = mdp.start_distribution_or_uniform()
     value_error = np.abs(full_value - lifted)
+    value_scale = max(
+        1.0,
+        abs(float(start_dist @ full_value)),
+        float(np.percentile(np.abs(full_value), 95)) if len(full_value) else 1.0,
+    )
+    start_gap = float(abs(start_dist @ (full_value - lifted)))
+    max_gap = float(np.max(value_error))
     return {
         "n_states": mdp.n_states,
         "n_actions": mdp.n_actions,
@@ -814,9 +1025,12 @@ def evaluate_boundary_graph(
         "smdp_iterations": int(smdp_iterations),
         "start_value_full": float(start_dist @ full_value),
         "start_value_graph": float(start_dist @ lifted),
-        "start_value_gap": float(abs(start_dist @ (full_value - lifted))),
+        "value_scale": value_scale,
+        "start_value_gap": start_gap,
+        "normalized_start_value_gap": start_gap / value_scale,
         "value_gap_mean": float(start_dist @ value_error),
-        "value_gap_max": float(np.max(value_error)),
+        "value_gap_max": max_gap,
+        "normalized_value_gap_max": max_gap / value_scale,
         "kernel_nnz": int(sum(np.count_nonzero(red.gamma_terminal) for red in reductions.values())),
         "n_options": len(reductions),
         "option_mode": option_mode,

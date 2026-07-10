@@ -1068,6 +1068,75 @@ theorem primitive_to_reward_kernel_gap_decomposition
     _ = |vStar - vRestricted| + |vRestricted - vExact| + |vExact - vApprox| := by
           ring
 
+/--
+End-to-end primitive-to-graph certificate used by the main paper claim.
+
+The four terms are kept separate on purpose:
+* `epsilonOption` is option-family restriction bias;
+* `epsilonBoundary` is boundary/interface abstraction bias;
+* `epsilonR + Vmax * epsilonGamma` is the learned/exact graph-kernel residual;
+* `epsilonPlanning` is the final graph-SMDP solve residual.
+
+The last two terms are converted to value gaps by the same contraction modulus
+`beta`.  This theorem does not assume that boundary discovery is globally
+optimal; it certifies the graph returned by any discovery backend once the four
+budgets are available.
+-/
+theorem primitive_to_graph_end_to_end_gap_real
+    {beta epsilonOption epsilonBoundary epsilonR Vmax epsilonGamma epsilonPlanning : ℝ}
+    {vStar vOption vBoundary vKernel vSolved : ℝ}
+    (hbeta : beta < 1)
+    (hOption : |vStar - vOption| ≤ epsilonOption)
+    (hBoundary : |vOption - vBoundary| ≤ epsilonBoundary)
+    (hKernel :
+      (1 - beta) * |vBoundary - vKernel| ≤ epsilonR + Vmax * epsilonGamma)
+    (hPlanning : (1 - beta) * |vKernel - vSolved| ≤ epsilonPlanning) :
+    |vStar - vSolved| ≤
+      epsilonOption + epsilonBoundary +
+        (epsilonR + Vmax * epsilonGamma) / (1 - beta) +
+        epsilonPlanning / (1 - beta) := by
+  have hKernelGap :
+      |vBoundary - vKernel| ≤
+        (epsilonR + Vmax * epsilonGamma) / (1 - beta) :=
+    residual_to_value_gap_real_div hbeta hKernel
+  have hPlanningGap :
+      |vKernel - vSolved| ≤ epsilonPlanning / (1 - beta) :=
+    residual_to_value_gap_real_div hbeta hPlanning
+  let a : ℝ := vStar - vOption
+  let b : ℝ := vOption - vBoundary
+  let c : ℝ := vBoundary - vKernel
+  let d : ℝ := vKernel - vSolved
+  have hDecomp : vStar - vSolved = a + b + c + d := by
+    dsimp [a, b, c, d]
+    ring
+  have hab : |a + b| ≤ |a| + |b| := abs_add_le a b
+  have habc : |a + b + c| ≤ |a + b| + |c| := abs_add_le (a + b) c
+  have habcd : |a + b + c + d| ≤ |a + b + c| + |d| :=
+    abs_add_le (a + b + c) d
+  rw [hDecomp]
+  dsimp [a, b, c, d] at hab habc habcd ⊢
+  linarith
+
+/-- Uniform pointwise form of the end-to-end certificate, equivalent to the
+paper's finite-state sup-norm statement when the four hypotheses are uniform. -/
+theorem primitive_to_graph_end_to_end_sup_bound
+    {S : Type}
+    {beta epsilonOption epsilonBoundary epsilonR Vmax epsilonGamma epsilonPlanning : ℝ}
+    (vStar vOption vBoundary vKernel vSolved : S -> ℝ)
+    (hbeta : beta < 1)
+    (hOption : ∀ s, |vStar s - vOption s| ≤ epsilonOption)
+    (hBoundary : ∀ s, |vOption s - vBoundary s| ≤ epsilonBoundary)
+    (hKernel : ∀ s,
+      (1 - beta) * |vBoundary s - vKernel s| ≤ epsilonR + Vmax * epsilonGamma)
+    (hPlanning : ∀ s, (1 - beta) * |vKernel s - vSolved s| ≤ epsilonPlanning) :
+    ∀ s, |vStar s - vSolved s| ≤
+      epsilonOption + epsilonBoundary +
+        (epsilonR + Vmax * epsilonGamma) / (1 - beta) +
+        epsilonPlanning / (1 - beta) := by
+  intro s
+  exact primitive_to_graph_end_to_end_gap_real hbeta
+    (hOption s) (hBoundary s) (hKernel s) (hPlanning s)
+
 /-!
 ## Terminal goal-event kernel bounds
 

@@ -851,6 +851,13 @@ def run_map_method(
                         "smdp_edge_backup_count": np.nan,
                     }
                 )
+    value_scale = 1.0 / max(1e-12, 1.0 - args.gamma)
+    for row in rows_out:
+        row["value_scale"] = value_scale
+        row["gap_normalization"] = "discounted_unit_reward_bound"
+        for field in ("start_gap_mean", "start_gap_max", "boundary_gap_max"):
+            value = float(row.get(field, np.nan))
+            row[f"normalized_{field}"] = value / value_scale if math.isfinite(value) else np.nan
     return rows_out
 
 

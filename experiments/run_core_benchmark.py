@@ -195,6 +195,13 @@ def full_vi_row(
 ) -> Dict[str, object]:
     transition_nnz = transition_nnz_proxy(grid, slip)
     full_time = float(full_result["time_sec"])
+    start_state = grid.symbol_states("S")[0]
+    full_value = np.asarray(full_result["V"], dtype=float)
+    value_scale = max(
+        1.0,
+        abs(float(full_value[start_state])),
+        float(np.percentile(np.abs(full_value), 95)) if len(full_value) else 1.0,
+    )
     return {
         "map_family": family,
         "map_size": size,
@@ -224,7 +231,11 @@ def full_vi_row(
         "total_time_speedup_vs_full_vi": 1.0,
         "backup_compression_ratio": 1.0,
         "start_gap": 0.0,
+        "start_value_full": float(full_value[start_state]),
+        "value_scale": value_scale,
+        "normalized_start_gap": 0.0,
         "value_gap_max": 0.0,
+        "normalized_value_gap_max": 0.0,
         "occupancy_struct_hidden_distinct": 0.0,
         "struct_hidden_distinct_cvar95": 0.0,
         "success_rate": 1.0,
@@ -400,7 +411,11 @@ def build_graph_row(
             float(smdp_result["edge_backup_count"]),
         ),
         "start_gap": start_gap,
+        "start_value_full": float(v_full[start_state]),
+        "value_scale": value_scale_task,
+        "normalized_start_gap": start_gap / value_scale_task,
         "value_gap_max": value_gap_max,
+        "normalized_value_gap_max": value_gap_max / value_scale_task,
         "occupancy_struct_hidden_distinct": float(occupancy_struct_hidden_distinct),
         "occupancy_model_residual": float(occupancy_model_residual),
         "struct_hidden_distinct_cvar95": tail_cvar(valid_struct_distinct),

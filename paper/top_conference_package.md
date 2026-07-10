@@ -63,4 +63,17 @@ Artifact: `experiments/run_theorem_experiment_bridge.py`.
 
 ## Current Verdict
 
-The project now has the shape of a paper contribution. Large-scale node runs, adaptive top-k diagnostics, proof bridges, and fixed-`B` reward relabeling are in place; the remaining risk is manuscript discipline. The method story is defensible if we keep the theorem claims frozen/local, present adaptive top-k as feasible discovery rather than RD-optimal split selection, label incremental selection as an optimization/ablation, and show amortized compression wins without hiding upfront cost.
+The project now has a complete submission draft, direct state-abstraction and
+strong planning baselines, complete-universe solver oracles, a five-seed
+external-environment audit, an end-to-end error decomposition, and paper-facing
+figures. The evidence supports an abstraction/compression paper, but not a
+universal runtime or control-performance claim. Sparse-vectorized VI wins every
+matched single-task timing case once discovery is charged; external environments
+also expose substantial option-family bias. The defensible contribution is the
+auditable rate/distortion graph representation, its formal certificates, and
+the explicit decomposition of where compression fails.
+
+Remaining submission work is editorial rather than another horizontal method
+extension: move the draft into the target conference template, select the main
+versus appendix tables, preserve the legacy-denominator labels, and obtain one
+final reviewer-style attack on the exact pushed artifact.

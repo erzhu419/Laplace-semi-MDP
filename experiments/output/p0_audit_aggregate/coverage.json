@@ -1,0 +1,127 @@
+{
+  "rows": {
+    "planner": 405,
+    "abstraction": 1560,
+    "solver_oracle": 2520,
+    "general_env": 315,
+    "end_to_end": 162,
+    "budget_recovery": 38,
+    "random_maze_existing": 360,
+    "general_env_taxi": 45,
+    "solver_oracle_four_rooms": 72,
+    "planner_paired": 405,
+    "budget_recovery_actual": 7,
+    "budget_recovery_actual_extended": 3,
+    "end_to_end_converged": 81
+  },
+  "shards": [
+    {
+      "suite": "planner",
+      "expected_shards": 108,
+      "discovered_dirs": 108,
+      "successful_shards": 108,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "e48c3cde9db84c1e5581dcd9ccb5c43355ab8d91fdd9876bc80e9885c660065a"
+    },
+    {
+      "suite": "abstraction",
+      "expected_shards": 72,
+      "discovered_dirs": 72,
+      "successful_shards": 72,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "e48c3cde9db84c1e5581dcd9ccb5c43355ab8d91fdd9876bc80e9885c660065a"
+    },
+    {
+      "suite": "solver_oracle",
+      "expected_shards": 108,
+      "discovered_dirs": 108,
+      "successful_shards": 108,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "e48c3cde9db84c1e5581dcd9ccb5c43355ab8d91fdd9876bc80e9885c660065a"
+    },
+    {
+      "suite": "general_env",
+      "expected_shards": 35,
+      "discovered_dirs": 35,
+      "successful_shards": 35,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "e48c3cde9db84c1e5581dcd9ccb5c43355ab8d91fdd9876bc80e9885c660065a"
+    },
+    {
+      "suite": "end_to_end",
+      "expected_shards": 36,
+      "discovered_dirs": 36,
+      "successful_shards": 36,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "e48c3cde9db84c1e5581dcd9ccb5c43355ab8d91fdd9876bc80e9885c660065a"
+    },
+    {
+      "suite": "budget_recovery",
+      "expected_shards": 7,
+      "discovered_dirs": 7,
+      "successful_shards": 7,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "e48c3cde9db84c1e5581dcd9ccb5c43355ab8d91fdd9876bc80e9885c660065a"
+    },
+    {
+      "suite": "general_env_taxi",
+      "expected_shards": 5,
+      "discovered_dirs": 5,
+      "successful_shards": 5,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "e48c3cde9db84c1e5581dcd9ccb5c43355ab8d91fdd9876bc80e9885c660065a"
+    },
+    {
+      "suite": "solver_oracle_four_rooms",
+      "expected_shards": 9,
+      "discovered_dirs": 9,
+      "successful_shards": 9,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "e48c3cde9db84c1e5581dcd9ccb5c43355ab8d91fdd9876bc80e9885c660065a"
+    },
+    {
+      "suite": "planner_paired",
+      "expected_shards": 135,
+      "discovered_dirs": 135,
+      "successful_shards": 135,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "96e5605b9decb15785911339a7b19022d2fac3c2448065c4805ee563ec51e37c"
+    },
+    {
+      "suite": "budget_recovery_actual",
+      "expected_shards": 7,
+      "discovered_dirs": 7,
+      "successful_shards": 7,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "08da5d44d72304df0b8e50595c83686a6e126dddf5d224a6795a83c1f1d6b1c1"
+    },
+    {
+      "suite": "budget_recovery_actual_extended",
+      "expected_shards": 3,
+      "discovered_dirs": 3,
+      "successful_shards": 3,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "f20f4cd32b8f0469a5fe09b1d7313dbc821c292c18e38fda4cec40507345b388"
+    },
+    {
+      "suite": "end_to_end_converged",
+      "expected_shards": 36,
+      "discovered_dirs": 36,
+      "successful_shards": 36,
+      "missing_shards": 0,
+      "malformed_markers": 0,
+      "source_fingerprints": "7af24d59cdae4ffa07ad49099c14c9b321d6659022028061f165f56b42c36e49"
+    }
+  ]
+}

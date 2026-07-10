@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
 
 from bellman_kron import GridWorld, endpoint_boundary_states
-from compression_experiment_utils import parse_map_specs
+from compression_experiment_utils import parse_map_specs, scaled_rows
 from run_first_boundary_targeted import markdown_table
 from run_graph_baseline_comparison import LEARNED_RECIPES
 from run_option_algorithm_comparison import json_default, write_csv_all_fields
@@ -31,6 +31,12 @@ def finite_float(value: object, default: float = float("nan")) -> float:
     except (TypeError, ValueError):
         return default
     return out if math.isfinite(out) else default
+
+
+def truthy(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
 
 
 def objective_tuple(eval_result: Mapping[str, object], n_boundary: int) -> Tuple[float, float, int, float]:
@@ -85,10 +91,18 @@ def choose_oracle_pool(
         score_mode=args.score_mode,
         rate_tie_break=args.rate_tie_break,
     )
-    if scored:
+    all_candidates = sorted(set(int(state) for state in basis) - set(int(state) for state in start_boundary))
+    if args.oracle_pool_mode == "all":
+        if len(all_candidates) > args.max_oracle_candidates:
+            raise ValueError(
+                f"Complete oracle universe has {len(all_candidates)} candidates, exceeding "
+                f"--max-oracle-candidates={args.max_oracle_candidates}."
+            )
+        pool = all_candidates
+    elif scored:
         pool = [int(row["candidate_state"]) for row in scored[: args.max_oracle_candidates]]
     else:
-        pool = sorted(set(basis) - set(start_boundary))[: args.max_oracle_candidates]
+        pool = all_candidates[: args.max_oracle_candidates]
     return pool, scored
 
 
@@ -174,6 +188,8 @@ def exhaustive_oracle(
             obj = objective_tuple(eval_result, len(boundary))
             row = {
                 "map": map_label,
+                "slip": args.slip,
+                "budget_frac": args.budget_frac,
                 "subset_size": size,
                 "candidate_subset": list(subset),
                 "n_boundary": len(boundary),
@@ -463,12 +479,19 @@ def run_map(
                     "map_family": family,
                     "map_size": size,
                     "map": map_label,
+                    "slip": args.slip,
+                    "budget_frac": args.budget_frac,
                     "solver": solver,
                     "n_states": grid.n_states,
                     "n_basis": len(basis),
                     "n_start_boundary": len(start_boundary),
                     "n_oracle_pool": len(oracle_pool),
+                    "oracle_pool_mode": args.oracle_pool_mode,
                     "oracle_pool_truncated": len(set(basis) - set(start_boundary)) > len(oracle_pool),
+                    "oracle_complete_candidate_universe": (
+                        args.oracle_pool_mode == "all"
+                        and len(set(basis) - set(start_boundary)) == len(oracle_pool)
+                    ),
                     "max_extra_splits": args.max_extra_splits,
                     "oracle_evaluated_subsets": len(oracle_rows),
                     "oracle_time_sec": oracle_time,
@@ -543,11 +566,14 @@ def write_report(
     ]
     columns = [
         "map",
+        "slip",
+        "budget_frac",
         "solver",
         "beam_width",
         "n_states",
         "n_basis",
         "n_oracle_pool",
+        "oracle_complete_candidate_universe",
         "oracle_evaluated_subsets",
         "same_boundary_as_oracle",
         "extra_jaccard_with_oracle",
@@ -564,23 +590,25 @@ def write_report(
         "oracle_time_sec",
         "chosen_stop_reason",
     ]
-    exact_matches = sum(1 for row in rows if bool(row["same_boundary_as_oracle"]))
+    exact_matches = sum(1 for row in rows if truthy(row["same_boundary_as_oracle"]))
     zero_gap = sum(1 for row in rows if abs(float(row["total_violation_gap"])) <= 1e-9)
     feasible_matches = sum(
         1
         for row in rows
-        if bool(row["oracle_all_feasible"]) == bool(row["chosen_all_feasible"])
+        if truthy(row["oracle_all_feasible"]) == truthy(row["chosen_all_feasible"])
     )
     lines = [
         "# Solver Validity",
         "",
         f"Generated: {datetime.now().isoformat(timespec='seconds')}",
         f"map_specs = {list(args.map_specs)}",
+        f"random_maze_sizes = {list(args.random_maze_sizes)}, random_maze_seeds = {list(args.random_maze_seeds)}",
+        f"slips = {list(args.slips)}, budget_fracs = {list(args.budget_fracs)}",
         f"solvers = {list(args.solvers)}",
         f"beam_widths = {list(args.beam_widths)}, beam_expand = {args.beam_expand}",
-        f"max_extra_splits = {args.max_extra_splits}, max_oracle_candidates = {args.max_oracle_candidates}",
+        f"max_extra_splits = {args.max_extra_splits}, max_oracle_candidates = {args.max_oracle_candidates}, oracle_pool_mode = {args.oracle_pool_mode}",
         "",
-        "For small candidate universes this exhaustively enumerates every subset up to the split budget, then compares operator-only and exact-refined beam group-constrained RD against that oracle. "
+        "In complete-universe mode this exhaustively enumerates every candidate subset up to the split budget; proposal-topk mode is labeled as a truncated diagnostic. The table then compares operator-only and exact-refined beam group-constrained RD against that oracle. "
         "The exact-refined solver uses the frozen operator only to propose a small expansion set, then ranks those expansions by actual group RD evaluation.",
         "",
         f"- exact boundary matches: `{exact_matches}/{len(rows)}`",
@@ -618,12 +646,12 @@ def solver_aggregate_rows(rows: Sequence[Mapping[str, object]]) -> List[Dict[str
     aggregate: List[Dict[str, object]] = []
     for (solver, beam_width), group in sorted(groups.items()):
         n = len(group)
-        boundary_matches = sum(1 for row in group if bool(row["same_boundary_as_oracle"]))
+        boundary_matches = sum(1 for row in group if truthy(row["same_boundary_as_oracle"]))
         zero_gap = sum(1 for row in group if abs(float(row["total_violation_gap"])) <= 1e-9)
         feasible_matches = sum(
             1
             for row in group
-            if bool(row["oracle_all_feasible"]) == bool(row["chosen_all_feasible"])
+            if truthy(row["oracle_all_feasible"]) == truthy(row["chosen_all_feasible"])
         )
         aggregate.append(
             {
@@ -643,7 +671,9 @@ def solver_aggregate_rows(rows: Sequence[Mapping[str, object]]) -> List[Dict[str
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Exhaustive-oracle and beam-width validity check for group RD.")
-    parser.add_argument("--map-specs", nargs="+", default=["open_room:7", "four_rooms:9", "maze:9"])
+    parser.add_argument("--map-specs", nargs="+", default=["open_room:5", "four_rooms:7", "maze:7"])
+    parser.add_argument("--random-maze-sizes", nargs="+", type=int, default=[])
+    parser.add_argument("--random-maze-seeds", nargs="+", type=int, default=list(range(8)))
     parser.add_argument("--recipe", default="learned_rd_surrogate_joint_occ2_audit2")
     parser.add_argument(
         "--lens-groups",
@@ -662,11 +692,13 @@ def main() -> None:
     )
     parser.add_argument("--fixed-random-count", type=int, default=2)
     parser.add_argument("--budget-frac", type=float, default=0.25)
+    parser.add_argument("--budget-fracs", nargs="+", type=float, default=None)
     parser.add_argument("--group-risk-kind", choices=["mean", "cvar", "max"], default="cvar")
     parser.add_argument("--score-mode", choices=["reduction", "reduction_per_rate", "lexicographic"], default="reduction")
     parser.add_argument("--rate-tie-break", type=float, default=1e-4)
     parser.add_argument("--probe-top-fraction", type=float, default=0.35)
     parser.add_argument("--slip", type=float, default=0.05)
+    parser.add_argument("--slips", nargs="+", type=float, default=None)
     parser.add_argument("--gamma", type=float, default=0.97)
     parser.add_argument("--lambda-struct", type=float, default=8.0)
     parser.add_argument("--cvar-alpha", type=float, default=0.8)
@@ -675,24 +707,69 @@ def main() -> None:
         choices=["occupancy", "uniform", "occupancy_or_uniform"],
         default="occupancy_or_uniform",
     )
-    parser.add_argument("--max-extra-splits", type=int, default=3)
-    parser.add_argument("--max-oracle-candidates", type=int, default=8)
+    parser.add_argument("--max-extra-splits", type=int, default=2)
+    parser.add_argument("--max-oracle-candidates", type=int, default=12)
+    parser.add_argument("--oracle-pool-mode", choices=["all", "proposal_topk"], default="all")
     parser.add_argument("--solvers", nargs="+", choices=["operator", "actual_refine"], default=["operator", "actual_refine"])
     parser.add_argument("--beam-widths", type=int, nargs="+", default=[1, 2, 4, 8])
     parser.add_argument("--beam-expand", type=int, default=6)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--continue-on-error", action="store_true")
     parser.add_argument("--out-dir", type=Path, default=Path("experiments/output/solver_validity"))
     args = parser.parse_args()
+    args.slips = list(args.slips if args.slips is not None else [args.slip])
+    args.budget_fracs = list(args.budget_fracs if args.budget_fracs is not None else [args.budget_frac])
+    if args.num_shards < 1 or not 0 <= args.shard_index < args.num_shards:
+        raise ValueError("Require 0 <= shard-index < num-shards and num-shards >= 1.")
 
     summary_rows: List[Dict[str, object]] = []
     oracle_rows: List[Dict[str, object]] = []
-    for family, size, map_label, map_rows in parse_map_specs(args.map_specs):
-        map_summary, map_oracle = run_map(family, size, map_label, map_rows, args)
-        summary_rows.extend(map_summary)
-        oracle_rows.extend(map_oracle)
+    errors: List[Dict[str, object]] = []
+    contexts = list(parse_map_specs(args.map_specs))
+    contexts.extend(
+        (
+            "random_maze",
+            size,
+            f"random_maze_{size}_seed{seed}",
+            scaled_rows("maze", size, seed=seed),
+        )
+        for size in args.random_maze_sizes
+        for seed in args.random_maze_seeds
+    )
+    jobs = [
+        (family, size, map_label, map_rows, slip, budget_frac)
+        for family, size, map_label, map_rows in contexts
+        for slip in args.slips
+        for budget_frac in args.budget_fracs
+    ]
+    for job_index, (family, size, map_label, map_rows, slip, budget_frac) in enumerate(jobs):
+        if job_index % args.num_shards != args.shard_index:
+            continue
+        args.slip = float(slip)
+        args.budget_frac = float(budget_frac)
+        try:
+            map_summary, map_oracle = run_map(family, size, map_label, map_rows, args)
+            summary_rows.extend(map_summary)
+            oracle_rows.extend(map_oracle)
+        except Exception as exc:
+            if not args.continue_on_error:
+                raise
+            errors.append(
+                {
+                    "map_family": family,
+                    "map_size": size,
+                    "map": map_label,
+                    "slip": slip,
+                    "budget_frac": budget_frac,
+                    "error": repr(exc),
+                }
+            )
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_csv_all_fields(args.out_dir / "solver_validity.csv", summary_rows)
     write_csv_all_fields(args.out_dir / "oracle_subsets.csv", oracle_rows)
+    write_csv_all_fields(args.out_dir / "solver_errors.csv", errors)
     (args.out_dir / "solver_validity.json").write_text(
         json.dumps(summary_rows, indent=2, default=json_default) + "\n",
         encoding="utf-8",

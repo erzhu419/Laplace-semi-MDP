@@ -282,3 +282,35 @@ Experiment hooks:
 
 - `experiments/run_edge_reward_kernel_multitask.py`
 - `experiments/output/edge_reward_kernel_multitask/summary.md`
+
+## T12: Primitive-To-Graph End-To-End Gap
+
+Claim: graph-SMDP contraction alone does not imply preservation of the original
+primitive optimum. For the chain
+
+```text
+V* -> V^{O} -> V^{B,O} -> Vhat^{B,O} -> Vsolve^{B,O},
+```
+
+the final gap is bounded by
+
+```text
+option restriction bias
++ boundary/interface abstraction bias
++ (reward-kernel residual + Vmax * continuation-kernel residual) / (1 - beta)
++ planning residual / (1 - beta).
+```
+
+This certificate applies to the returned graph, regardless of whether boundary
+discovery is globally optimal. It therefore separates reduction validity from
+option-family sufficiency and from solver optimality.
+
+Lean hooks:
+
+- `proof/RDOperatorReal.lean`: `primitive_to_graph_end_to_end_gap_real`
+- `proof/RDOperatorReal.lean`: `primitive_to_graph_end_to_end_sup_bound`
+
+Experiment hooks:
+
+- `experiments/run_core_benchmark.py`
+- `experiments/run_end_to_end_gap_decomposition.py`

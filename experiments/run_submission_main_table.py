@@ -10,6 +10,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 
+import numpy as np
+
 from run_first_boundary_targeted import markdown_table
 from run_option_algorithm_comparison import json_default
 
@@ -86,11 +88,61 @@ def rate(values: Iterable[bool | None]) -> float:
     return sum(1 for value in vals if value) / len(vals) if vals else float("nan")
 
 
+def bootstrap_median_interval(
+    values: Iterable[float],
+    seed: int,
+    n_bootstrap: int = 5000,
+) -> Tuple[float, float, float]:
+    array = np.asarray([value for value in values if math.isfinite(value)], dtype=float)
+    if array.size == 0:
+        return float("nan"), float("nan"), float("nan")
+    point = float(np.median(array))
+    if array.size == 1 or n_bootstrap <= 0:
+        return point, point, point
+    rng = np.random.default_rng(seed)
+    samples = rng.choice(array, size=(n_bootstrap, array.size), replace=True)
+    low, high = np.quantile(np.median(samples, axis=1), [0.025, 0.975])
+    return point, float(low), float(high)
+
+
 def break_even_tasks(upfront_cost: float, full_time: float, graph_solve_time: float) -> int | str:
     saving_per_task = full_time - graph_solve_time
     if not math.isfinite(upfront_cost) or not math.isfinite(saving_per_task) or saving_per_task <= 0.0:
         return ""
     return int(math.ceil(max(0.0, upfront_cost) / max(1e-12, saving_per_task)))
+
+
+def normalized_case_key(map_name: object, slip: object) -> Tuple[str, str]:
+    parsed_slip = finite_float(slip)
+    slip_key = f"{parsed_slip:.12g}" if math.isfinite(parsed_slip) else str(slip)
+    return str(map_name), slip_key
+
+
+def safe_ratio(numerator: float, denominator: float) -> float:
+    if not math.isfinite(numerator) or not math.isfinite(denominator) or denominator <= 0.0:
+        return float("nan")
+    return numerator / denominator
+
+
+def normalized_gap(
+    row: Mapping[str, object],
+    gap_field: str,
+    gamma: float,
+) -> Tuple[float, str]:
+    explicit = finite_float(row.get(f"normalized_{gap_field}"))
+    if math.isfinite(explicit):
+        return explicit, "reported_value_scale"
+    gap = finite_float(row.get(gap_field))
+    if not math.isfinite(gap):
+        return float("nan"), "unavailable"
+    scale = finite_float(row.get("value_scale"))
+    if math.isfinite(scale) and scale > 0.0:
+        return gap / scale, "reported_value_scale"
+    start_value = finite_float(row.get("start_value_full"))
+    if math.isfinite(start_value):
+        return gap / max(1.0, abs(start_value)), "full_start_value"
+    discounted_reward_bound = 1.0 / max(1e-12, 1.0 - gamma)
+    return gap / discounted_reward_bound, "discounted_unit_reward_bound"
 
 
 def group_rows(rows: Sequence[Mapping[str, object]], keys: Sequence[str]) -> Dict[Tuple[str, ...], List[Mapping[str, object]]]:
@@ -137,8 +189,15 @@ def certification_lookup(
 def build_main_runtime_rows(
     large_rows: Sequence[Mapping[str, str]],
     cert_rows: Sequence[Mapping[str, str]],
+    planner_rows: Sequence[Mapping[str, str]],
+    gamma: float,
 ) -> List[Dict[str, object]]:
     cert_by_key = choose_certification_rows(cert_rows)
+    planner_by_case = {
+        normalized_case_key(row.get("map", ""), row.get("slip", "")): row
+        for row in planner_rows
+        if row.get("map")
+    }
     out: List[Dict[str, object]] = []
     for row in large_rows:
         if row.get("error"):
@@ -160,6 +219,14 @@ def build_main_runtime_rows(
         )
         total_with_fallback = upfront + smdp + fallback_proxy
         total_with_tie_certificate = upfront + smdp + tie_proxy
+        planner = planner_by_case.get(normalized_case_key(row.get("map", ""), row.get("slip", "")))
+        strong_time = finite_float(planner.get("strongest_time_median_sec")) if planner else float("nan")
+        strong_q1 = finite_float(planner.get("strongest_time_q1_sec")) if planner else float("nan")
+        strong_q3 = finite_float(planner.get("strongest_time_q3_sec")) if planner else float("nan")
+        strong_ci_low = finite_float(planner.get("strongest_time_bootstrap_ci_low_sec")) if planner else float("nan")
+        strong_ci_high = finite_float(planner.get("strongest_time_bootstrap_ci_high_sec")) if planner else float("nan")
+        normalized_start, start_normalization = normalized_gap(row, "start_gap", gamma)
+        normalized_max, max_normalization = normalized_gap(row, "value_gap_max", gamma)
         out.append(
             {
                 "map": row.get("map", ""),
@@ -173,6 +240,13 @@ def build_main_runtime_rows(
                 "first_hit_used_steps_max": row.get("first_hit_used_steps_max", ""),
                 "tail_bound_max": finite_float(row.get("first_hit_tail_bound_max")),
                 "full_vi_time_sec": full_time,
+                "legacy_full_vi_time_sec": full_time,
+                "strong_full_planner_method": planner.get("strongest_method", "") if planner else "",
+                "strong_full_planner_time_q1_sec": strong_q1,
+                "strong_full_planner_time_median_sec": strong_time,
+                "strong_full_planner_time_q3_sec": strong_q3,
+                "strong_full_planner_time_bootstrap_ci_low_sec": strong_ci_low,
+                "strong_full_planner_time_bootstrap_ci_high_sec": strong_ci_high,
                 "upfront_time_sec": upfront,
                 "smdp_solve_time_sec": smdp,
                 "total_time_unique_top_fallback_sec": total_with_fallback,
@@ -180,11 +254,25 @@ def build_main_runtime_rows(
                 "planning_speedup": finite_float(row.get("planning_time_speedup_vs_full_vi")),
                 "total_speedup_unique_top_fallback": full_time / max(1e-12, total_with_fallback),
                 "total_speedup_tie_aware": full_time / max(1e-12, total_with_tie_certificate),
+                "planning_speedup_vs_strong_planner": safe_ratio(strong_time, smdp),
+                "total_speedup_unique_vs_strong_planner": safe_ratio(strong_time, total_with_fallback),
+                "total_speedup_tie_vs_strong_planner": safe_ratio(strong_time, total_with_tie_certificate),
                 "unique_top_break_even_tasks": break_even_tasks(upfront + fallback_proxy, full_time, smdp),
                 "amortization_break_even_tasks": break_even_tasks(upfront + tie_proxy, full_time, smdp),
+                "strong_planner_unique_break_even_tasks": break_even_tasks(
+                    upfront + fallback_proxy, strong_time, smdp
+                ),
+                "strong_planner_tie_break_even_tasks": break_even_tasks(upfront + tie_proxy, strong_time, smdp),
                 "backup_compression_ratio": finite_float(row.get("backup_compression_ratio")),
                 "start_gap": finite_float(row.get("start_gap")),
                 "value_gap_max": finite_float(row.get("value_gap_max")),
+                "normalized_start_gap": normalized_start,
+                "normalized_value_gap_max": normalized_max,
+                "gap_normalization": (
+                    start_normalization
+                    if start_normalization == max_normalization
+                    else f"start:{start_normalization};max:{max_normalization}"
+                ),
                 "tie_mode": cert.get("tie_mode", "") if cert else "",
                 "epsilon_optimal_certified": cert.get("epsilon_optimal_certified", "") if cert else "",
                 "epsilon_optimality_gap_bound": cert.get("epsilon_optimality_gap_bound", "") if cert else "",
@@ -228,9 +316,127 @@ def build_compact_baseline_rows(core_rows: Sequence[Mapping[str, str]]) -> List[
     return out
 
 
+def build_selector_runtime_rows(rows: Sequence[Mapping[str, object]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for (selector,), group in sorted(group_rows(rows, ["boundary_selector"]).items()):
+        strong_rows = [
+            row
+            for row in group
+            if math.isfinite(finite_float(row.get("strong_full_planner_time_median_sec")))
+        ]
+        selector_seed = 7919 + sum((index + 1) * ord(char) for index, char in enumerate(selector))
+        planning_median, planning_ci_low, planning_ci_high = bootstrap_median_interval(
+            [finite_float(row.get("planning_speedup_vs_strong_planner")) for row in strong_rows],
+            selector_seed,
+        )
+        total_median, total_ci_low, total_ci_high = bootstrap_median_interval(
+            [finite_float(row.get("total_speedup_tie_vs_strong_planner")) for row in strong_rows],
+            selector_seed + 1,
+        )
+        out.append(
+            {
+                "boundary_selector": selector,
+                "n_rows": len(group),
+                "n_strong_planner_rows": len(strong_rows),
+                "median_state_compression": median(
+                    finite_float(row.get("state_compression_ratio")) for row in group
+                ),
+                "median_normalized_start_gap": median(
+                    finite_float(row.get("normalized_start_gap")) for row in group
+                ),
+                "max_normalized_start_gap": max(
+                    (
+                        value
+                        for row in group
+                        if math.isfinite(value := finite_float(row.get("normalized_start_gap")))
+                    ),
+                    default=float("nan"),
+                ),
+                "legacy_median_total_speedup": median(
+                    finite_float(row.get("total_speedup_tie_aware")) for row in group
+                ),
+                "strong_planner_median_planning_speedup": planning_median,
+                "strong_planner_planning_speedup_ci95_low": planning_ci_low,
+                "strong_planner_planning_speedup_ci95_high": planning_ci_high,
+                "strong_planner_median_total_speedup": total_median,
+                "strong_planner_total_speedup_ci95_low": total_ci_low,
+                "strong_planner_total_speedup_ci95_high": total_ci_high,
+                "strong_planner_best_total_speedup": max(
+                    (finite_float(row.get("total_speedup_tie_vs_strong_planner")) for row in strong_rows),
+                    default=float("nan"),
+                ),
+            }
+        )
+    return out
+
+
+def build_abstraction_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for row in rows:
+        if row.get("error"):
+            continue
+        out.append(
+            {
+                "map": row.get("map", ""),
+                "slip": row.get("slip", ""),
+                "method": row.get("method", ""),
+                "method_group": row.get("method_group", ""),
+                "target_count": row.get("target_count", ""),
+                "n_states": row.get("n_states", ""),
+                "n_abstract_states": row.get("n_abstract_states", ""),
+                "state_compression_ratio": finite_float(row.get("state_compression_ratio")),
+                "normalized_start_gap": finite_float(row.get("normalized_start_gap")),
+                "normalized_policy_start_gap": finite_float(row.get("normalized_policy_start_gap")),
+                "homogeneity_error": finite_float(row.get("homogeneity_error")),
+                "time_q1_sec": finite_float(row.get("time_q1_sec")),
+                "time_median_sec": finite_float(row.get("time_median_sec")),
+                "time_q3_sec": finite_float(row.get("time_q3_sec")),
+                "total_speedup_median": finite_float(row.get("total_speedup_median")),
+                "representation_scope": row.get("representation_scope", ""),
+            }
+        )
+    return out
+
+
+def build_constrained_rows(
+    rows: Sequence[Mapping[str, str]],
+    value_epsilon: float,
+    audit_epsilon: float,
+) -> List[Dict[str, object]]:
+    def threshold_match(value: object, target: float) -> bool:
+        parsed = finite_float(value)
+        if math.isinf(target):
+            return math.isinf(parsed)
+        return math.isfinite(parsed) and abs(parsed - target) <= 1e-12
+
+    return [
+        dict(row)
+        for row in rows
+        if threshold_match(row.get("value_epsilon"), value_epsilon)
+        and threshold_match(row.get("audit_epsilon"), audit_epsilon)
+    ]
+
+
+def build_general_env_aggregate_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    return [dict(row) for row in rows if row.get("method")]
+
+
+def build_budget_recovery_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    return [dict(row) for row in rows if row.get("map")]
+
+
+def build_end_to_end_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    return [dict(row) for row in rows if row.get("map") and not row.get("error")]
+
+
 def build_solver_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
-    for (solver, beam_width), group in sorted(group_rows(rows, ["solver", "beam_width"]).items()):
+    for (solver, beam_width, pool_mode, complete), group in sorted(
+        group_rows(
+            rows,
+            ["solver", "beam_width", "oracle_pool_mode", "oracle_complete_candidate_universe"],
+        ).items()
+    ):
         boundary_matches = [parse_bool(row.get("same_boundary_as_oracle")) for row in group]
         feasible_matches = [
             (parse_bool(row.get("oracle_all_feasible")) == parse_bool(row.get("chosen_all_feasible")))
@@ -242,6 +448,8 @@ def build_solver_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, objec
             {
                 "solver": solver,
                 "beam_width": beam_width,
+                "oracle_pool_mode": pool_mode,
+                "oracle_complete_candidate_universe": complete,
                 "n_rows": len(group),
                 "boundary_match_rate": rate(boundary_matches),
                 "zero_total_violation_gap_rate": rate(
@@ -513,13 +721,16 @@ def build_fair_frontier_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str
     for row in rows:
         out.append(
             {
+                "comparison_protocol": row.get("comparison_protocol", ""),
                 "method_group": row.get("method_group", ""),
                 "n_rows": row.get("n_rows", ""),
                 "pareto_rows": row.get("pareto_rows", ""),
                 "median_rate_budget_boundary_frac": finite_float(row.get("median_rate_budget_boundary_frac")),
                 "median_state_compression_ratio": finite_float(row.get("median_state_compression_ratio")),
                 "median_start_gap": finite_float(row.get("median_start_gap")),
+                "median_normalized_start_gap": finite_float(row.get("median_normalized_start_gap")),
                 "median_hidden_audit": finite_float(row.get("median_hidden_audit")),
+                "median_normalized_hidden_audit": finite_float(row.get("median_normalized_hidden_audit")),
                 "mean_group_feasible_rate": finite_float(row.get("mean_group_feasible_rate")),
                 "median_total_speedup": finite_float(row.get("median_total_speedup")),
                 "median_success_rate": finite_float(row.get("median_success_rate")),
@@ -556,12 +767,17 @@ def build_amortized_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, ob
     return out
 
 
-def build_edge_reward_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+def build_edge_reward_rows(
+    rows: Sequence[Mapping[str, str]],
+    gamma: float,
+) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
     for (variant, task_count), group in sorted(group_rows(rows, ["variant", "task_count"]).items()):
         if not variant or variant == "error":
             continue
         ok = [row for row in group if not row.get("error")]
+        normalized_start = [normalized_gap(row, "start_gap_max", gamma)[0] for row in ok]
+        normalized_boundary = [normalized_gap(row, "boundary_gap_max", gamma)[0] for row in ok]
         out.append(
             {
                 "source": "edge_reward_kernel_multitask",
@@ -580,8 +796,20 @@ def build_edge_reward_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, 
                 ),
                 "median_break_even_tasks": median(finite_float(row.get("break_even_num_tasks")) for row in ok),
                 "max_start_gap": max((finite_float(row.get("start_gap_max"), 0.0) for row in ok), default=float("nan")),
+                "max_normalized_start_gap": max(
+                    (value for value in normalized_start if math.isfinite(value)),
+                    default=float("nan"),
+                ),
+                "max_normalized_boundary_gap": max(
+                    (value for value in normalized_boundary if math.isfinite(value)),
+                    default=float("nan"),
+                ),
+                "median_state_compression": median(
+                    finite_float(row.get("state_compression_ratio")) for row in ok
+                ),
                 "median_goal_interface": median(finite_float(row.get("goal_option_interface_size")) for row in ok),
                 "median_goal_policies": median(finite_float(row.get("n_goal_policies")) for row in ok),
+                "runtime_denominator": "legacy_dense_numpy_full_vi",
             }
         )
     return out
@@ -590,14 +818,16 @@ def build_edge_reward_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, 
 def build_multitask_rows(
     amortized_rows: Sequence[Mapping[str, str]],
     edge_reward_rows: Sequence[Mapping[str, str]],
+    gamma: float,
 ) -> List[Dict[str, object]]:
-    return build_amortized_rows(amortized_rows) + build_edge_reward_rows(edge_reward_rows)
+    return build_amortized_rows(amortized_rows) + build_edge_reward_rows(edge_reward_rows, gamma)
 
 
 def build_failure_mode_rows(
     main_rows: Sequence[Mapping[str, object]],
     group_adaptive_rows: Sequence[Mapping[str, object]],
     edge_reward_rows: Sequence[Mapping[str, str]],
+    gamma: float,
 ) -> List[Dict[str, object]]:
     rows: List[Dict[str, object]] = []
     open_rows = [
@@ -655,8 +885,24 @@ def build_failure_mode_rows(
                     (finite_float(row.get("start_gap_max"), 0.0) for row in event_rows),
                     default=float("nan"),
                 ),
+                "event_kernel_max_normalized_gap": max(
+                    (
+                        value
+                        for row in event_rows
+                        if math.isfinite(value := normalized_gap(row, "start_gap_max", gamma)[0])
+                    ),
+                    default=float("nan"),
+                ),
                 "goal_conditioned_max_gap": max(
                     (finite_float(row.get("start_gap_max"), 0.0) for row in gc_rows),
+                    default=float("nan"),
+                ),
+                "goal_conditioned_max_normalized_gap": max(
+                    (
+                        value
+                        for row in gc_rows
+                        if math.isfinite(value := normalized_gap(row, "start_gap_max", gamma)[0])
+                    ),
                     default=float("nan"),
                 ),
                 "goal_conditioned_median_break_even": median(
@@ -689,11 +935,18 @@ def build_theorem_bridge_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[st
 def write_report(
     out_path: Path,
     main_rows: Sequence[Mapping[str, object]],
+    selector_runtime_rows: Sequence[Mapping[str, object]],
+    planner_rows: Sequence[Mapping[str, object]],
     compact_rows: Sequence[Mapping[str, object]],
+    abstraction_rows: Sequence[Mapping[str, object]],
+    end_to_end_rows: Sequence[Mapping[str, object]],
     group_adaptive_rows: Sequence[Mapping[str, object]],
     random_maze_rows: Sequence[Mapping[str, object]],
     general_env_rows: Sequence[Mapping[str, object]],
+    general_env_aggregate_rows: Sequence[Mapping[str, object]],
     fair_frontier_rows: Sequence[Mapping[str, object]],
+    constrained_rows: Sequence[Mapping[str, object]],
+    budget_recovery_rows: Sequence[Mapping[str, object]],
     multitask_rows: Sequence[Mapping[str, object]],
     failure_mode_rows: Sequence[Mapping[str, object]],
     solver_rows: Sequence[Mapping[str, object]],
@@ -715,17 +968,26 @@ def write_report(
         "state_compression_ratio",
         "first_hit_used_steps_max",
         "tail_bound_max",
-        "full_vi_time_sec",
+        "legacy_full_vi_time_sec",
+        "strong_full_planner_method",
+        "strong_full_planner_time_median_sec",
+        "strong_full_planner_time_bootstrap_ci_low_sec",
+        "strong_full_planner_time_bootstrap_ci_high_sec",
         "upfront_time_sec",
         "smdp_solve_time_sec",
         "total_time_unique_top_fallback_sec",
         "total_time_with_tie_certificate_sec",
         "planning_speedup",
+        "planning_speedup_vs_strong_planner",
         "total_speedup_unique_top_fallback",
         "total_speedup_tie_aware",
+        "total_speedup_tie_vs_strong_planner",
         "unique_top_break_even_tasks",
         "amortization_break_even_tasks",
+        "strong_planner_tie_break_even_tasks",
         "start_gap",
+        "normalized_start_gap",
+        "gap_normalization",
         "tie_mode",
         "epsilon_optimal_certified",
         "tie_set_certified",
@@ -735,6 +997,34 @@ def write_report(
         "fallback_used",
         "ambiguous_set_size",
         "tie_aware_final_certified",
+    ]
+    selector_runtime_columns = [
+        "boundary_selector",
+        "n_rows",
+        "n_strong_planner_rows",
+        "median_state_compression",
+        "median_normalized_start_gap",
+        "max_normalized_start_gap",
+        "legacy_median_total_speedup",
+        "strong_planner_median_planning_speedup",
+        "strong_planner_planning_speedup_ci95_low",
+        "strong_planner_planning_speedup_ci95_high",
+        "strong_planner_median_total_speedup",
+        "strong_planner_total_speedup_ci95_low",
+        "strong_planner_total_speedup_ci95_high",
+        "strong_planner_best_total_speedup",
+    ]
+    planner_columns = [
+        "map",
+        "slip",
+        "strongest_method",
+        "strongest_time_q1_sec",
+        "strongest_time_median_sec",
+        "strongest_time_q3_sec",
+        "strongest_time_bootstrap_ci_low_sec",
+        "strongest_time_bootstrap_ci_high_sec",
+        "strongest_backup_median",
+        "max_value_error",
     ]
     compact_columns = [
         "method_spec",
@@ -746,6 +1036,38 @@ def write_report(
         "mean_success_rate",
         "max_hidden_audit_distinct",
         "group_feasible_rate",
+    ]
+    abstraction_columns = [
+        "map",
+        "slip",
+        "method",
+        "target_count",
+        "n_abstract_states",
+        "state_compression_ratio",
+        "normalized_start_gap",
+        "normalized_policy_start_gap",
+        "homogeneity_error",
+        "time_median_sec",
+        "total_speedup_median",
+        "representation_scope",
+    ]
+    end_to_end_columns = [
+        "map",
+        "slip",
+        "config_label",
+        "method_spec",
+        "n_boundary",
+        "option_restriction_bias",
+        "boundary_abstraction_bias",
+        "kernel_actual_gap",
+        "kernel_gap_bound",
+        "planning_actual_gap",
+        "planning_gap_bound",
+        "primitive_to_solved_gap",
+        "certified_total_bound",
+        "certificate_holds",
+        "normalized_primitive_to_solved_gap",
+        "normalized_certified_total_bound",
     ]
     group_adaptive_columns = [
         "map",
@@ -798,17 +1120,68 @@ def write_report(
         "best_value_gap_max",
         "interpretation",
     ]
+    general_env_aggregate_columns = [
+        "env",
+        "source",
+        "method",
+        "option_mode",
+        "target_count",
+        "n_seeds",
+        "median_n_boundary",
+        "median_state_compression_ratio",
+        "median_normalized_start_gap",
+        "max_normalized_start_gap",
+        "median_normalized_value_gap_max",
+        "group_feasible_rate",
+        "median_construction_time_sec",
+        "median_smdp_eval_time_sec",
+    ]
     fair_frontier_columns = [
+        "comparison_protocol",
         "method_group",
         "n_rows",
         "pareto_rows",
         "median_rate_budget_boundary_frac",
         "median_state_compression_ratio",
         "median_start_gap",
+        "median_normalized_start_gap",
         "median_hidden_audit",
+        "median_normalized_hidden_audit",
         "mean_group_feasible_rate",
         "median_total_speedup",
         "median_success_rate",
+    ]
+    constrained_columns = [
+        "comparison_protocol",
+        "method_group",
+        "value_epsilon",
+        "audit_epsilon",
+        "n_cases_available",
+        "n_cases_feasible",
+        "constraint_coverage_rate",
+        "paired_case_count",
+        "median_rate_budget_boundary_frac",
+        "median_state_compression_ratio",
+        "state_compression_ci95_low",
+        "state_compression_ci95_high",
+        "median_total_speedup",
+        "total_speedup_ci95_low",
+        "total_speedup_ci95_high",
+    ]
+    budget_recovery_columns = [
+        "map",
+        "slip",
+        "budget_frac",
+        "recovered",
+        "recovery_method",
+        "minimal_max_splits",
+        "minimal_n_boundary",
+        "added_vertices_over_failed",
+        "max_splits_tested",
+        "largest_n_boundary",
+        "violation_reduction",
+        "best_total_violation",
+        "failure_class",
     ]
     multitask_columns = [
         "source",
@@ -820,9 +1193,12 @@ def write_report(
         "median_planning_only_speedup",
         "median_break_even_tasks",
         "max_start_gap",
+        "max_normalized_start_gap",
+        "max_normalized_boundary_gap",
         "median_state_compression",
         "median_goal_interface",
         "median_goal_policies",
+        "runtime_denominator",
     ]
     failure_columns = [
         "failure_mode",
@@ -836,13 +1212,17 @@ def write_report(
         "tie_set_certified_rate",
         "max_tie_aware_total_speedup",
         "event_kernel_max_gap",
+        "event_kernel_max_normalized_gap",
         "goal_conditioned_max_gap",
+        "goal_conditioned_max_normalized_gap",
         "goal_conditioned_median_break_even",
         "goal_conditioned_best_speedup",
     ]
     solver_columns = [
         "solver",
         "beam_width",
+        "oracle_pool_mode",
+        "oracle_complete_candidate_universe",
         "n_rows",
         "boundary_match_rate",
         "zero_total_violation_gap_rate",
@@ -968,6 +1348,15 @@ def write_report(
     ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
+    best_total_strong = max(
+        (finite_float(row.get("total_speedup_tie_vs_strong_planner")) for row in main_rows),
+        default=float("nan"),
+    )
+    strong_runtime_coverage = sum(
+        1
+        for row in main_rows
+        if math.isfinite(finite_float(row.get("strong_full_planner_time_median_sec")))
+    )
     best_multitask = max((finite_float(row.get("best_amortized_speedup")) for row in multitask_rows), default=float("nan"))
     best_edge_reward = max(
         (
@@ -978,7 +1367,22 @@ def write_report(
         ),
         default=float("nan"),
     )
-    worst_gap = max((finite_float(row.get("start_gap")) for row in main_rows), default=float("nan"))
+    worst_gap = max(
+        (
+            value
+            for row in main_rows
+            if math.isfinite(value := finite_float(row.get("start_gap")))
+        ),
+        default=float("nan"),
+    )
+    worst_normalized_gap = max(
+        (
+            value
+            for row in main_rows
+            if math.isfinite(value := finite_float(row.get("normalized_start_gap")))
+        ),
+        default=float("nan"),
+    )
     final_certs = next(
         (row for row in certificate_rows if row.get("certificate") == "adaptive_frontier_tail_plus_top_set_fallback"),
         {},
@@ -1002,13 +1406,15 @@ def write_report(
         "",
         f"Generated: {datetime.now().isoformat(timespec='seconds')}",
         "",
-        "This report is the paper-facing aggregation layer. It does not rerun heavy experiments; it reads the current public CSV artifacts and aligns the main runtime result, compact baselines, exhaustive-oracle solver validity, and certificate appendices.",
+        "This report is the paper-facing aggregation layer. It keeps audit protocols separate, reports normalized gaps, and never treats the legacy Python VI denominator as the conservative runtime baseline when a matched strong planner measurement is available.",
         "",
-        f"- best certified adaptive total speedup with unique-top fallback: `{best_total_unique:.4g}x`",
-        f"- best certified adaptive total speedup with tie-aware certificate: `{best_total_tie:.4g}x`",
-        f"- best multi-task amortized speedup in the current table: `{best_multitask:.4g}x`",
-        f"- best fixed-B edge reward relabeling speedup: `{best_edge_reward:.4g}x`",
-        f"- worst certified adaptive start-value gap in that table: `{worst_gap:.4g}`",
+        f"- best total speedup against the legacy Python VI implementation, unique-top fallback: `{best_total_unique:.4g}x`",
+        f"- best total speedup against the legacy Python VI implementation, tie-aware certificate: `{best_total_tie:.4g}x`",
+        f"- best tie-aware total speedup against the matched strongest full-state planner: `{best_total_strong:.4g}x`",
+        f"- matched strong-planner coverage: `{strong_runtime_coverage}/{len(main_rows)}` runtime rows",
+        f"- best multi-task amortized speedup in the current table: `{best_multitask:.4g}x` (legacy dense NumPy VI denominator)",
+        f"- best fixed-B edge reward relabeling speedup: `{best_edge_reward:.4g}x` (not a matched sparse-VI claim)",
+        f"- worst start-value gap in that table: `{worst_gap:.4g}`; normalized: `{worst_normalized_gap:.4g}`",
         f"- adaptive final certified decisions under unique-top fallback: `{final_certs.get('final_certified', '')}/{final_certs.get('rows', '')}`",
         f"- adaptive final certified decisions under tie-aware reporting: `{final_certs.get('tie_aware_final_certified', '')}/{final_certs.get('rows', '')}`",
         f"- larger group-constrained adaptive feasible rows: `{group_feasible}/{len(group_rows)}`",
@@ -1019,9 +1425,43 @@ def write_report(
         "",
         markdown_table(main_display, main_columns) if main_display else "_No main runtime rows found._",
         "",
+        "## Runtime By Boundary Selector",
+        "",
+        "This aggregation prevents the fastest endpoint or topology selector from being reported as a typical RD-selector gain.",
+        "",
+        markdown_table(selector_runtime_rows, selector_runtime_columns)
+        if selector_runtime_rows
+        else "_No selector-level runtime rows found._",
+        "",
+        "## Strong Full-State Planner Audit",
+        "",
+        markdown_table(planner_rows, planner_columns) if planner_rows else "_Strong-planner measurements pending._",
+        "",
         "## Compact Baseline Aggregate",
         "",
         markdown_table(compact_display, compact_columns) if compact_display else "_No compact benchmark rows found._",
+        "",
+        "## Direct State-Abstraction And Schur Baselines",
+        "",
+        "Exact/epsilon homogeneous aggregation preserves a primitive-action abstract MDP; Q*-aggregation and policy-Kron are explicitly labeled oracles because they consume full optimal information.",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in abstraction_columns} for row in abstraction_rows],
+            abstraction_columns,
+        )
+        if abstraction_rows
+        else "_Direct abstraction baseline measurements pending._",
+        "",
+        "## Primitive-To-Graph Gap Decomposition",
+        "",
+        "This table separates option-family restriction from boundary commitment, kernel approximation, and incomplete graph planning. The certified bound is expected to be conservative; the actual component gaps are retained to expose looseness.",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in end_to_end_columns} for row in end_to_end_rows],
+            end_to_end_columns,
+        )
+        if end_to_end_rows
+        else "_End-to-end decomposition measurements pending._",
         "",
         "## Larger Group-Constrained Adaptive",
         "",
@@ -1036,6 +1476,15 @@ def write_report(
         if random_maze_rows
         else "_No random-maze rows found._",
         "",
+        "## Random-Maze Boundary-Budget Recovery",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in budget_recovery_columns} for row in budget_recovery_rows],
+            budget_recovery_columns,
+        )
+        if budget_recovery_rows
+        else "_Boundary-budget recovery measurements pending._",
+        "",
         "## General Finite-MDP Portability Smoke",
         "",
         "These rows are adapter/claim-boundary evidence, not a replacement for the main grid compression table. PointMaze is a discretized empirical MDP; Taxi highlights structured state variables that purely spatial boundary selection does not preserve.",
@@ -1047,6 +1496,17 @@ def write_report(
         if general_env_rows
         else "_No general-environment rows found._",
         "",
+        "## External Environment Multi-Seed Aggregate",
+        "",
+        "A low group-risk violation is not treated as a value guarantee: held-out normalized value gaps are reported next to group feasibility.",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in general_env_aggregate_columns} for row in general_env_aggregate_rows],
+            general_env_aggregate_columns,
+        )
+        if general_env_aggregate_rows
+        else "_Multi-seed external-environment aggregate pending._",
+        "",
         "## Fair Budget Frontier",
         "",
         markdown_table(
@@ -1056,7 +1516,20 @@ def write_report(
         if fair_frontier_rows
         else "_No fair-budget frontier rows found._",
         "",
+        "## Epsilon-Constrained Frontier",
+        "",
+        f"Canonical slice: normalized value gap <= `{args.constrained_value_epsilon}` and normalized audit <= `{args.constrained_audit_epsilon}`. Coverage is reported before compression or speedup.",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in constrained_columns} for row in constrained_rows],
+            constrained_columns,
+        )
+        if constrained_rows
+        else "_No methods satisfy or report the canonical constrained slice._",
+        "",
         "## Multi-Task And Edge Reward Compression",
+        "",
+        "Edge-reward speedups in this legacy artifact use dense NumPy full-state VI. They support amortization and representation compression, but are not reported as wins over the matched sparse-vectorized planner. Gaps use the discounted unit-reward bound when the original shard did not record a task-specific value scale.",
         "",
         markdown_table(
             [{col: row.get(col, "") for col in multitask_columns} for row in multitask_rows],
@@ -1156,12 +1629,18 @@ def write_report(
         "## Source Artifacts",
         "",
         f"- large-scale adaptive: `{args.large_scale_csv}`",
+        f"- strong full-state planners: `{args.planner_baseline_csv}`",
         f"- core benchmark: `{args.core_csv}`",
+        f"- direct state-abstraction baselines: `{args.abstraction_csv}`",
+        f"- primitive-to-graph gap decomposition: `{args.end_to_end_csv}`",
         f"- adaptive certification: `{args.adaptive_cert_csv}`",
         f"- larger group-constrained adaptive: `{args.group_adaptive_csv}`",
         f"- random maze generalization: `{args.random_maze_csv}`",
+        f"- random-maze boundary-budget recovery: `{args.budget_recovery_csv}`",
         f"- general finite-MDP smoke: `{args.general_env_csv}`",
+        f"- general finite-MDP multi-seed aggregate: `{args.general_env_aggregate_csv}`",
         f"- fair budget frontier: `{args.fair_frontier_csv}`",
+        f"- epsilon-constrained frontier: `{args.constrained_frontier_csv}`",
         f"- amortized multitask: `{args.amortized_csv}`",
         f"- edge reward multitask: `{args.edge_reward_csv}`",
         f"- solver validity: `{args.solver_csv}`",
@@ -1182,12 +1661,26 @@ def write_report(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build the paper-facing main table from existing experiment artifacts.")
     parser.add_argument("--large-scale-csv", type=Path, default=Path("experiments/output/large_scale_compression_adaptive/large_scale_compression.csv"))
+    parser.add_argument("--planner-baseline-csv", type=Path, default=Path("experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv"))
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
+    parser.add_argument("--abstraction-csv", type=Path, default=Path("experiments/output/abstraction_baseline_comparison/abstraction_baseline_aggregate.csv"))
+    parser.add_argument("--end-to-end-csv", type=Path, default=Path("experiments/output/end_to_end_gap_decomposition/end_to_end_gap_decomposition.csv"))
     parser.add_argument("--adaptive-cert-csv", type=Path, default=Path("experiments/output/adaptive_green_certification/certification_summary.csv"))
     parser.add_argument("--group-adaptive-csv", type=Path, default=Path("experiments/output/group_constrained_adaptive_large/group_constrained_adaptive_large.csv"))
     parser.add_argument("--random-maze-csv", type=Path, default=Path("experiments/output/random_maze_generalization/random_maze_generalization.csv"))
+    parser.add_argument("--budget-recovery-csv", type=Path, default=Path("experiments/output/random_maze_budget_recovery/random_maze_budget_recovery_summary.csv"))
     parser.add_argument("--general-env-csv", type=Path, default=Path("experiments/output/general_env_benchmark/general_env_benchmark.csv"))
+    parser.add_argument("--general-env-aggregate-csv", type=Path, default=Path("experiments/output/general_env_benchmark/general_env_aggregate.csv"))
     parser.add_argument("--fair-frontier-csv", type=Path, default=Path("experiments/output/fair_budget_frontier/fair_budget_frontier_summary.csv"))
+    parser.add_argument("--constrained-frontier-csv", type=Path, default=Path("experiments/output/fair_budget_frontier/epsilon_constrained_frontier.csv"))
+    parser.add_argument("--constrained-value-epsilon", type=float, default=1e-2)
+    parser.add_argument("--constrained-audit-epsilon", type=float, default=1e-3)
+    parser.add_argument(
+        "--gamma",
+        type=float,
+        default=0.97,
+        help="Discount used only for the conservative unit-reward normalization fallback.",
+    )
     parser.add_argument("--amortized-csv", type=Path, default=Path("experiments/output/amortized_multitask/amortized_multitask.csv"))
     parser.add_argument("--edge-reward-csv", type=Path, default=Path("experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv"))
     parser.add_argument("--solver-csv", type=Path, default=Path("experiments/output/solver_validity/solver_validity.csv"))
@@ -1215,12 +1708,18 @@ def main() -> None:
     args = parser.parse_args()
 
     large_rows = read_csv_rows(args.large_scale_csv)
+    planner_raw = read_csv_rows(args.planner_baseline_csv)
     core_rows = read_csv_rows(args.core_csv)
+    abstraction_raw = read_csv_rows(args.abstraction_csv)
+    end_to_end_raw = read_csv_rows(args.end_to_end_csv)
     adaptive_rows = read_csv_rows(args.adaptive_cert_csv)
     group_adaptive_raw = read_csv_rows(args.group_adaptive_csv)
     random_maze_raw = read_csv_rows(args.random_maze_csv)
+    budget_recovery_raw = read_csv_rows(args.budget_recovery_csv)
     general_env_raw = read_csv_rows(args.general_env_csv)
+    general_env_aggregate_raw = read_csv_rows(args.general_env_aggregate_csv)
     fair_frontier_raw = read_csv_rows(args.fair_frontier_csv)
+    constrained_frontier_raw = read_csv_rows(args.constrained_frontier_csv)
     amortized_raw = read_csv_rows(args.amortized_csv)
     edge_reward_raw = read_csv_rows(args.edge_reward_csv)
     solver_rows_raw = read_csv_rows(args.solver_csv)
@@ -1239,14 +1738,24 @@ def main() -> None:
         "failure_mode_summary": read_csv_rows(args.adaptive_topk_diagnostics_dir / "failure_mode_summary.csv"),
     }
 
-    main_rows = build_main_runtime_rows(large_rows, adaptive_rows)
+    main_rows = build_main_runtime_rows(large_rows, adaptive_rows, planner_raw, args.gamma)
+    selector_runtime_rows = build_selector_runtime_rows(main_rows)
     compact_rows = build_compact_baseline_rows(core_rows)
+    abstraction_rows = build_abstraction_rows(abstraction_raw)
+    end_to_end_rows = build_end_to_end_rows(end_to_end_raw)
     group_adaptive_rows = build_group_adaptive_rows(group_adaptive_raw)
     random_maze_rows = build_random_maze_rows(random_maze_raw)
+    budget_recovery_rows = build_budget_recovery_rows(budget_recovery_raw)
     general_env_rows = build_general_env_rows(general_env_raw)
+    general_env_aggregate_rows = build_general_env_aggregate_rows(general_env_aggregate_raw)
     fair_frontier_rows = build_fair_frontier_rows(fair_frontier_raw)
-    multitask_rows = build_multitask_rows(amortized_raw, edge_reward_raw)
-    failure_mode_rows = build_failure_mode_rows(main_rows, group_adaptive_rows, edge_reward_raw)
+    constrained_rows = build_constrained_rows(
+        constrained_frontier_raw,
+        value_epsilon=args.constrained_value_epsilon,
+        audit_epsilon=args.constrained_audit_epsilon,
+    )
+    multitask_rows = build_multitask_rows(amortized_raw, edge_reward_raw, args.gamma)
+    failure_mode_rows = build_failure_mode_rows(main_rows, group_adaptive_rows, edge_reward_raw, args.gamma)
     solver_rows = build_solver_rows(solver_rows_raw)
     discovery_profile_rows = build_discovery_profile_rows(discovery_profile_raw)
     hybrid_refine_rows = build_hybrid_refine_rows(hybrid_refine_raw)
@@ -1255,11 +1764,18 @@ def main() -> None:
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_csv_all_fields(args.out_dir / "submission_runtime_table.csv", main_rows)
+    write_csv_all_fields(args.out_dir / "runtime_by_boundary_selector.csv", selector_runtime_rows)
+    write_csv_all_fields(args.out_dir / "strong_planner_audit.csv", planner_raw)
     write_csv_all_fields(args.out_dir / "compact_baseline_aggregate.csv", compact_rows)
+    write_csv_all_fields(args.out_dir / "direct_abstraction_baselines.csv", abstraction_rows)
+    write_csv_all_fields(args.out_dir / "end_to_end_gap_decomposition.csv", end_to_end_rows)
     write_csv_all_fields(args.out_dir / "group_constrained_adaptive_table.csv", group_adaptive_rows)
     write_csv_all_fields(args.out_dir / "random_maze_generalization_aggregate.csv", random_maze_rows)
+    write_csv_all_fields(args.out_dir / "random_maze_budget_recovery.csv", budget_recovery_rows)
     write_csv_all_fields(args.out_dir / "general_env_portability_smoke.csv", general_env_rows)
+    write_csv_all_fields(args.out_dir / "general_env_multiseed_aggregate.csv", general_env_aggregate_rows)
     write_csv_all_fields(args.out_dir / "fair_budget_frontier_aggregate.csv", fair_frontier_rows)
+    write_csv_all_fields(args.out_dir / "epsilon_constrained_frontier.csv", constrained_rows)
     write_csv_all_fields(args.out_dir / "multitask_edge_reward_aggregate.csv", multitask_rows)
     write_csv_all_fields(args.out_dir / "failure_modes.csv", failure_mode_rows)
     write_csv_all_fields(args.out_dir / "solver_validity_aggregate.csv", solver_rows)
@@ -1278,11 +1794,18 @@ def main() -> None:
         json.dumps(
             {
                 "runtime_table": main_rows,
+                "runtime_by_boundary_selector": selector_runtime_rows,
+                "strong_planner_audit": planner_raw,
                 "compact_baseline_aggregate": compact_rows,
+                "direct_abstraction_baselines": abstraction_rows,
+                "end_to_end_gap_decomposition": end_to_end_rows,
                 "group_constrained_adaptive_table": group_adaptive_rows,
                 "random_maze_generalization_aggregate": random_maze_rows,
+                "random_maze_budget_recovery": budget_recovery_rows,
                 "general_env_portability_smoke": general_env_rows,
+                "general_env_multiseed_aggregate": general_env_aggregate_rows,
                 "fair_budget_frontier_aggregate": fair_frontier_rows,
+                "epsilon_constrained_frontier": constrained_rows,
                 "multitask_edge_reward_aggregate": multitask_rows,
                 "failure_modes": failure_mode_rows,
                 "solver_validity_aggregate": solver_rows,
@@ -1302,11 +1825,18 @@ def main() -> None:
     write_report(
         args.out_dir / "summary.md",
         main_rows,
+        selector_runtime_rows,
+        planner_raw,
         compact_rows,
+        abstraction_rows,
+        end_to_end_rows,
         group_adaptive_rows,
         random_maze_rows,
         general_env_rows,
+        general_env_aggregate_rows,
         fair_frontier_rows,
+        constrained_rows,
+        budget_recovery_rows,
         multitask_rows,
         failure_mode_rows,
         solver_rows,

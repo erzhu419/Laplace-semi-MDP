@@ -50,6 +50,16 @@
     "remaining_gap": "Tie value-gap reporting to residual diagnostics in each benchmark table."
   },
   {
+    "paper_claim": "The primitive optimal-value gap decomposes into option restriction, boundary abstraction, kernel approximation, and planning residual terms.",
+    "math_object": "eps_option + eps_boundary + (eps_R + Vmax eps_Gamma + eps_plan)/(1-beta)",
+    "proof_symbols": "primitive_to_graph_end_to_end_gap_real; primitive_to_graph_end_to_end_sup_bound",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/end_to_end_gap_decomposition/end_to_end_gap_decomposition.csv",
+    "experiment_status": "rows=162, converged=81, certified=81, median_norm_gap=2.19e-12, p95_norm_gap=0.009713, max_norm_bound=0.04208",
+    "manuscript_location": "Main preservation theorem and value-gap accounting",
+    "remaining_gap": "Keep the deliberately under-solved truncation/planning ablation separate from the converged certificate table."
+  },
+  {
     "paper_claim": "Margin and top-set certificates separate stable operator decisions from ambiguous ties.",
     "math_object": "m>2 epsilon_adapt implies stable top choice",
     "proof_symbols": "margin_stability; interval_certified_top_choice; top_set_exact_fallback_global_optimal",
@@ -95,9 +105,9 @@
     "proof_symbols": "reward_kernel_error_le_l1; reward_kernel_value_gap_real; primitive_to_reward_kernel_gap_decomposition",
     "proof_status": "proved_symbol_present",
     "experiment_artifact": "experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv",
-    "experiment_status": "rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.5018",
+    "experiment_status": "rows=384, additive=192, event_norm_gap=0.906, goal_conditioned_norm_gap=0.01505",
     "manuscript_location": "Multi-task compression and reward relabeling",
-    "remaining_gap": "Present terminal-goal event gaps as option/boundary restriction bias unless goal-conditioned options are counted."
+    "remaining_gap": "Label the legacy dense-VI denominator and report normalized option/boundary restriction gaps."
   },
   {
     "paper_claim": "Goal-conditioned event options reduce terminal-goal restriction bias without adding the goal to B.",
@@ -105,18 +115,18 @@
     "proof_symbols": "goal_event_kernel_value_gap_real; goal_event_option_bias_value_gap_real; goal_event_total_value_gap_real",
     "proof_status": "proved_symbol_present",
     "experiment_artifact": "experiments/output/edge_reward_kernel_multitask/edge_reward_kernel_multitask.csv",
-    "experiment_status": "rows=384, additive=192, event_gap=30.2, goal_conditioned_gap=0.5018",
+    "experiment_status": "rows=384, additive=192, event_norm_gap=0.906, goal_conditioned_norm_gap=0.01505",
     "manuscript_location": "Secondary terminal-goal extension",
-    "remaining_gap": "The gap is much smaller and the backend is shared/batched, but larger multitask runs must show amortized speedup beyond the current break-even table."
+    "remaining_gap": "Treat this as a costed secondary repair; the current table does not show a median win over even the legacy denominator."
   },
   {
     "paper_claim": "The extracted graph should generalize across maze instances, not only fixed toy layouts.",
     "math_object": "same objective on held-out DFS maze family",
     "proof_symbols": "not_a_theorem",
     "proof_status": "empirical_stress_test",
-    "experiment_artifact": "experiments/output/random_maze_generalization/random_maze_generalization.csv",
-    "experiment_status": "rows=360, feasible=173",
+    "experiment_artifact": "experiments/output/random_maze_generalization/random_maze_generalization.csv; experiments/output/random_maze_budget_recovery/random_maze_budget_recovery_summary.csv",
+    "experiment_status": "rows=360, feasible=173; contexts=7, recovered=6, fixed_family_plateau=1, max_splits=16, max_boundary=17",
     "manuscript_location": "Generalization/stress-test section",
-    "remaining_gap": "Scale to larger random maps on node001-node006 for final paper numbers."
+    "remaining_gap": "State the sole max-splits-16 topology/value plateau as fixed option/probe-family bias, not as an unresolved boundary-budget failure."
   }
 ]

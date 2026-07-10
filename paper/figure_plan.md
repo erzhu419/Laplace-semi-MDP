@@ -27,6 +27,17 @@ Existing reward-propagation figures:
 experiments/output/reward_propagation_tradeoff_plots/
 ```
 
+P0 submission evidence panel:
+
+```text
+experiments/output/p0_submission_figures/p0_evidence_panel.pdf
+experiments/output/p0_submission_figures/p0_evidence_panel.png
+```
+
+This panel now covers the canonical constrained frontier, matched strong-planner
+accounting, converged end-to-end decomposition, and five-seed external finite-MDP
+stress tests. The manuscript embeds it together with the boundary overlay panel.
+
 Adaptive top-k diagnostic artifacts:
 
 ```text

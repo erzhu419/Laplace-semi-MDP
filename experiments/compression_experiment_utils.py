@@ -501,6 +501,11 @@ def build_compressed_model_measured(
     nonterminal[boundary_to_pos[goal_state]] = False
     start_gap = float(abs(V_smdp[boundary_to_pos[start_state]] - V_full[start_state]))
     value_gap_max = float(np.max(np.abs(V_smdp[nonterminal] - boundary_full[nonterminal]))) if np.any(nonterminal) else 0.0
+    value_scale = max(
+        1.0,
+        abs(float(V_full[start_state])),
+        float(np.percentile(np.abs(V_full), 95)) if len(V_full) else 1.0,
+    )
     valid_struct_distinct = [
         float(row["struct_hidden_distinct"])
         for row in edge_rows
@@ -531,7 +536,11 @@ def build_compressed_model_measured(
         "transition_nnz_proxy": transition_nnz_proxy(grid, slip),
         "kernel_nnz": kernel_nnz(reductions, valid_actions),
         "start_gap": start_gap,
+        "start_value_full": float(V_full[start_state]),
+        "value_scale": value_scale,
+        "normalized_start_gap": start_gap / value_scale,
         "value_gap_max": value_gap_max,
+        "normalized_value_gap_max": value_gap_max / value_scale,
         "occupancy_struct_hidden_distinct": float(occupancy_struct_hidden_distinct),
         "occupancy_model_residual": float(occupancy_model_residual),
         "struct_hidden_distinct_cvar95": tail_cvar(valid_struct_distinct),
