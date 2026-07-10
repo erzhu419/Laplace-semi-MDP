@@ -17,4 +17,6 @@ paper/*.bbl
 paper/*.blg
 paper/*.log
 paper/*.out
+paper/*.fdb_latexmk
+paper/*.fls
 paper/manuscript.pdf

@@ -14,6 +14,19 @@
 
 ## Generated Figure Artifacts
 
+Operator pipeline figure:
+
+```text
+experiments/output/operator_pipeline_figure/operator_pipeline.pdf
+experiments/output/operator_pipeline_figure/operator_pipeline.svg
+experiments/output/operator_pipeline_figure/operator_pipeline.png
+```
+
+This schematic makes the method boundary explicit: one frozen Green transform,
+one threshold pass, one final kernel build, and audit-triggered adaptive
+fallback. It labels the response heatmap as schematic and does not depict
+threshold selection as globally RD optimal.
+
 The current plot script writes:
 
 ```text

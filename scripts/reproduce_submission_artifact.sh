@@ -8,6 +8,8 @@ python3 experiments/run_fair_budget_frontier.py
 python3 experiments/run_theorem_experiment_bridge.py
 python3 experiments/run_submission_main_table.py
 python3 experiments/plot_p0_submission_figures.py
+python3 experiments/plot_operator_pipeline_figure.py
+python3 scripts/check_paper_consistency.py
 
 if command -v pdflatex >/dev/null 2>&1 && command -v bibtex >/dev/null 2>&1; then
   (

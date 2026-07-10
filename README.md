@@ -27,6 +27,7 @@ It aligns the large-scale certified adaptive result, compact baselines, exhausti
 - `experiments/finite_mdp_adapter.py`: generic finite known-model MDP interface for non-grid smoke tests.
 - `proof/`: Lean 4 proof layer for the frozen RD operator, Green/Neumann certificates, Bellman contraction/value-gap statements, top-set fallback, and bits-curvature bounds.
 - `paper/`: paper-facing claim, terminology, related-work, theorem, experiment, figure, and reviewer-risk planning docs.
+- `scripts/check_paper_consistency.py`: citation, figure, cross-reference, title, and registered numeric-claim gate for the manuscript.
 - `markdown/`: working research notes and GPT critique/advice logs.
 - `reference/`: ignored local papers and cloned repositories.
 
@@ -70,6 +71,13 @@ LaTeX manuscript from tracked experiment artifacts:
 
 ```bash
 bash scripts/reproduce_submission_artifact.sh
+```
+
+Run only the paper consistency gate, which verifies citation keys, figure
+paths, LaTeX labels, the `CITATION.cff` title, and registered numeric claims:
+
+```bash
+python3 scripts/check_paper_consistency.py
 ```
 
 Run the finite-MDP general-environment smoke benchmark:

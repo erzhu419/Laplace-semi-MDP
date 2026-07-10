@@ -69,3 +69,6 @@ jobs:
             --out-dir /tmp/submission-main-table
           python experiments/plot_p0_submission_figures.py \
             --out-dir /tmp/submission-figures
+          python experiments/plot_operator_pipeline_figure.py \
+            --out-dir /tmp/operator-pipeline-figure
+          python scripts/check_paper_consistency.py

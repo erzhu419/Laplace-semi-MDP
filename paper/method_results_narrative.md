@@ -96,6 +96,28 @@ defines the envelope.
 
 ## Results Draft
 
+### The explicit one-shot operator replaced boundary search, not final kernel construction
+
+The central implementation result must be separated from the earlier iterative
+RD selector. With threshold `0.15`, the explicit operator performs one frozen
+sparse response calculation, one multichannel local-maximum pass, and no
+candidate insertion or beam expansion. On 12 classic map--slip cases, selection
+was `40.1x` faster than iterative surrogate search and `157x` faster than exact
+RD search; after one final kernel build and graph solve, the paired speedups were
+`7.77x` and `22.9x`. A 20-context held-out random-maze comparison retained
+median boundary Jaccard `0.920` and achieved `369.5x` extraction and `12.94x`
+complete graph-pipeline speedup over iterative surrogate search.
+
+On 27 XL cases, the same operating point produced median `192x` state
+compression and maximum normalized boundary-value gap `0.00910`. Extraction was
+`947x` faster and the complete graph pipeline `15.1x` faster than separately
+generated iterative RD rows paired by map and slip. These ratios diagnose the
+algorithmic cost of search. Against matched sparse full-state VI, total
+single-task speedup was only `0.00386x` because the final edge-kernel build, not
+the one-shot transform, dominated. The paper therefore claims that the operator
+removes combinatorial boundary discovery, not that the current full pipeline is
+universally faster than one primitive solve.
+
 ### Boundary graphs preserved planning behavior while compressing the state space
 
 The large-scale compression experiments compared full-state value iteration with
@@ -241,6 +263,8 @@ the method from a black-box option discovery heuristic.
 
 | Claim | Evidence | Status |
 |---|---|---|
+| The explicit one-shot operator replaces combinatorial boundary search. | Classic extraction `40.1x`/`157x` vs surrogate/exact search; held-out random extraction `369.5x`; zero insertion and beam evaluations. | supported for boundary discovery |
+| The complete one-shot pipeline beats matched sparse VI on one task. | XL median total speedup is `0.00386x`; final-kernel construction dominates. | not supported; explicit negative result |
 | Adaptive feasible top-k can be the main discovery backend. | Paired diagnostics: feasible match `36/36`, certified feasible rate `0.7222`, median selection time `23.58 s` vs fixed top-4 `47.18 s`. | supported |
 | Adaptive feasible top-k is not an RD-optimal split oracle. | Lean `AdaptiveTopK.lean` includes interval-dominance theorem and feasible-only counterexample. | supported as boundary |
 | The RD Boundary Green Operator is the reference mathematical object. | Lean finite-difference, Green legality, Neumann tail, Bellman contraction, and value-gap theorems. | supported |

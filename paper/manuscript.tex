@@ -35,12 +35,16 @@ topological, value, and stochastic distortion budgets separate when the
 one-shot graph fails an audit. Lean 4 proofs cover the frozen score identity, Green-kernel
 legality and truncation bounds, graph-SMDP contraction, score certificates, and
 an end-to-end decomposition from primitive optimal value to approximate graph
-planning. Experiments on finite known-model navigation tasks evaluate
-compression, constrained value distortion, strong full-state planning
-baselines, option and state-abstraction baselines, multi-task reward relabeling,
-and explicit failure modes. The resulting claim is deliberately bounded: the
-method provides an auditable graph abstraction for finite known-model SMDPs,
-not a universal replacement for state abstraction or deep option learning.
+planning. On 12 classic map--slip cases, one-shot selection was a median
+$40.1\times$ and $157\times$ faster than iterative surrogate and exact RD
+search; after one final kernel build, the corresponding pipeline speedups were
+$7.77\times$ and $22.9\times$. On 27 larger cases, it retained median
+$192\times$ state compression with maximum normalized boundary-value gap
+$0.00910$, but its total pipeline was only $0.00386\times$ as fast as matched
+sparse value iteration because exact edge-kernel construction dominated. The
+resulting claim is deliberately bounded: the method provides an auditable graph
+abstraction for finite known-model SMDPs, not universal single-task acceleration
+or a replacement for state abstraction and deep option learning.
 \end{abstract}
 
 \section{Introduction}
@@ -90,6 +94,27 @@ boundary restriction, kernel approximation, and planning residual; and (v) a
 benchmark that compares option discovery, direct state abstraction, Schur/Kron
 oracles, and strong full-state planners under matched constraints.
 
+Figure~\ref{fig:pipeline} summarizes the claim boundary. The one-shot operator
+replaces candidate search with one frozen message-passing transform, but the
+returned graph is accepted only after explicit value and group audits. Failure
+routes to adaptive group-constrained refinement rather than being hidden inside
+the operator claim.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{../experiments/output/operator_pipeline_figure/operator_pipeline.pdf}
+\caption{The explicit no-recompute pipeline. A mandatory boundary and fixed
+endpoint policies define one truncated first-hit Green response bank. Sparse
+Laplacian, control, topology, stochastic, and exposure channels are normalized
+and thresholded once to select additional vertices; no candidate is inserted
+and rescored. Final first-boundary kernels are constructed once for the selected
+graph. A passing graph is used for graph-SMDP planning, whereas a failed value or
+group audit invokes adaptive group-constrained refinement. Green-tail and
+selection-stability certificates bound approximation error; they do not make
+the thresholded vertex set a global RD optimum.}
+\label{fig:pipeline}
+\end{figure}
+
 \section{Related Work}
 \paragraph{Temporal abstraction and option discovery.}
 The options framework establishes that policies with initiation and termination
@@ -100,12 +125,25 @@ state-space geometry\citep{machado2017laplacian}. We use options as edge models,
 but optimize which states remain graph vertices rather than treating option
 discovery itself as the final objective.
 
+\paragraph{Spectral graph operators.}
+Localized spectral filters and graph convolutional networks turn Laplacian
+polynomials or normalized adjacency operators into reusable message-passing
+layers\citep{defferrard2016chebnet,kipf2017gcn}. This analogy motivates our
+search-free implementation, but not its objective: a graph filter propagates an
+observed signal, whereas the RD Boundary Green Operator scores whether an MDP
+state must remain explicit using option-conditioned first-hit exposure, control
+curvature, and rate cost. The random-walk Laplacian channels in the one-shot
+transform are therefore computational components, not a claim that an ordinary
+spectral cut preserves Bellman behavior.
+
 \paragraph{State abstraction and model reduction.}
 MDP homomorphisms, SMDP homomorphisms, and approximate abstractions formalize
 when state distinctions can be removed\citep{ravindran2003smdp,li2006abstraction}.
 Bisimulation metrics quantify behavioral similarity and connect model error to
 value error\citep{ferns2011bisimulation}. Our experiments include homogeneous
 partition refinement and reward-aware oracle aggregation as direct baselines.
+State--option abstractions can also preserve near-optimal behavior under explicit
+compatibility conditions\citep{abel2020valuepreserving}.
 The proposed representation differs structurally: interior states are not
 merged into one Markov state, but eliminated into option-labeled first-boundary
 edges while a sparse interface remains explicit.
@@ -117,6 +155,26 @@ reward-bearing option analogue. Rate-distortion approaches motivate trading
 model complexity against task loss\citep{arumugam2021rate,abel2019compression}.
 We combine these views by using first-hit Green kernels to define where an
 SMDP region should be split.
+
+\paragraph{Learned planning graphs.}
+Replay-buffer search, goal-conditioned planning, and latent-landmark world
+models construct sparse graphs for long-horizon control
+\citep{eysenbach2019sorb,nasiriany2019goalconditioned,zhang2021worldgraph}.
+Their nodes and edges are generally learned from observations, reachability, or
+goal-conditioned values. We instead begin with a finite transition model and
+ask which interface states can be eliminated while retaining an auditable
+first-boundary SMDP. The external-environment experiments test interface
+portability, not parity with these deep representation-learning systems.
+
+\paragraph{Successor representations and diagnostic residuals.}
+Successor representations and successor features separate predictive dynamics
+from reward weights, enabling transfer across reward functions under fixed
+dynamics\citep{dayan1993successor,barreto2017successor}. Our fixed-boundary edge
+occupancy kernel uses the same linear reward-relabeling principle, but is option
+conditioned and stops at the next boundary. Conversely, a small Bellman error
+need not imply a small value error\citep{fujimoto2022bellman}. This is why we
+report normalized value gaps and a contraction-based residual-to-value bound
+instead of treating a scalar residual as sufficient preservation evidence.
 
 \section{Problem Formulation}
 Let $M=(\mathcal{S},\mathcal{A},P,r,\gamma)$ be a finite discounted MDP with
@@ -310,6 +368,18 @@ single-task result, but not a claim of systems-level runtime superiority.
 Legacy Python VI timing is retained only for historical reproduction; claims
 use the fastest numerically valid matched full-state planner.
 
+Unless a sensitivity row states otherwise, the one-shot operator uses
+$\gamma=0.97$, the mandatory task endpoints as two probe anchors, the union of
+turn and articulation candidates, a one-hop exclusion around mandatory states,
+a 256-step Green prefix with frontier tolerance $10^{-6}$, and per-graph
+95th-percentile channel normalization. A candidate must be a local maximum in
+at least two channels and must include topology or stochastic support. We retain
+at most 18 candidates. The central threshold $\tau=0.15$ is the middle operating
+point of the classic $\{0.10,0.15,0.20\}$ sensitivity sweep and is reused
+unchanged on held-out random mazes and the XL suite. The production final-edge
+builder uses certified adaptive first-hit truncation; the fixed 256-step prefix
+is the frozen one-shot scoring transform.
+
 \section{Results}
 \subsection{Does the explicit one-shot operator replace search?}
 The earlier RD Green surrogate row used iterative candidate insertion and
@@ -357,6 +427,28 @@ whereas the explicit operator itself took 0.0797 seconds. Thus the original
 operator idea works as a replacement for combinatorial boundary search, but it
 does not by itself remove exact edge-kernel construction cost.
 
+\begin{table}[H]
+\centering
+\caption{One-shot operator evidence at the fixed $\tau=0.15$ operating point.
+``Extract/iter.'' compares boundary selection with paired iterative surrogate
+search; ``graph/iter.'' also charges one final kernel build and graph solve.
+``total/sparse'' compares that complete graph pipeline with sparse full-state
+VI, so values below one expose the remaining single-task cost. The XL iterative
+ratios pair separately generated rows by map and slip and are algorithmic-cost
+diagnostics rather than repeated systems measurements.}
+\label{tab:one-shot}
+\footnotesize
+\begin{tabular}{lrrrrrr}
+\toprule
+Suite & Cases & State comp. & Max norm. gap & Extract/iter. & Graph/iter. & Total/sparse\\
+\midrule
+Classic maps & 12 & 21.0 & 0.00963 & 40.1 & 7.77 & 0.0171\\
+Held-out random & 20 & 4.85 & $1.20\!\times\!10^{-7}$ & 369.5 & 12.94 & 0.00573\\
+XL maps & 27 & 192.0 & 0.00910 & 947.1 & 15.13 & 0.00386\\
+\bottomrule
+\end{tabular}
+\end{table}
+
 A trainable-horizon pilot used 105 training, 15 calibration, and 60 larger or
 held-out graph--slip contexts. A ridge proposal with split-conformal upper
 correction passed the certificate on its first attempt in 56/60 cases and after
@@ -368,69 +460,24 @@ predictable, but learning a scalar horizon is not the useful single-graph
 acceleration: the production implementation retains certified adaptive
 truncation, while learned horizons are at most a batching/scheduling ablation.
 
-We next tested the stronger proposal of predicting the entire boundary in one
-learned forward pass. A native sparse GCN was distilled from frozen insertion
-heatmaps and adaptive group-constrained reference boundaries. Its 28 node features
-contained only transition, reward, topology, coordinate, endpoint-distance,
-slip, and discount information. The final offline-reference protocol removed two
-hash-selected random basis states because their dependence on the map name was
-not observable from the transition graph. The resulting suite contained 360
-contexts from corridors, open rooms, four rooms, DFS mazes, and braided mazes,
-with 180/90/90 train/validation/strict-scale-holdout rows.
+\paragraph{Learned proposal ablations.}
+We also tested whether graph-conditioned learning could replace the explicit
+operator and its audit (Appendix~\ref{app:learned}). A boundary-only GCN passed
+the strict held-out joint constraint in 68/90 contexts, compared with 62/90 for
+nearest-start and 71/90 for the adaptive RD reference proposal. One predefined
+constraint-aware follow-up reranked a frozen five-proposal family and increased
+raw passes to 81/90, near the family oracle of 85/90, at $656\times$ selection
+speed. This is metric-specific post-selection rather than operator dominance:
+the reranker uses downstream risk labels and optimizes a different objective.
 
-Five models were trained independently on CUDA, and validation selected one GCN
-rather than the five-model ensemble. A per-graph validation benchmark selected
-CPU inference (0.00068 seconds for forward/collation versus 0.00184 seconds on
-CUDA), because this small model cannot amortize device transfer. On the 90
-scale holdouts, median selection latency was 0.00541 seconds, or
-$769.8\times$ faster than iterative adaptive RD reference selection. Boundary
-Jaccard was nevertheless 0.6508, compared with 0.6789 for selecting the nearest
-eligible state to the start. The GCN and nearest-start graphs were group
-feasible in 70/90 and 62/90 cases, respectively. After also requiring
-normalized start gap $\leq0.01$, they passed 68/90 and 62/90 cases, while the
-adaptive RD reference proposal passed 71/90. In a paired comparison, the GCN alone passed
-eight contexts and nearest-start alone passed two. Full group audit and
-fallback reduced the accepted GCN pipeline to $0.444\times$ the adaptive RD
-reference pipeline. A score-margin threshold calibrated for 100\% validation
-joint-failure recall audited 40.0\% of test contexts but caught only 50.0\% of
-test failures, leaving eleven failed graphs unaudited.
-
-We then ran one prespecified constraint-aware follow-up. The frozen GCN emitted
-a deduplicated family containing its learned count, fixed top-1/top-2/top-3
-prefixes, and nearest-start, for 1,159 candidate graphs. A train-only multi-head
-risk model predicted the three group violations, normalized value gap, and
-joint failure with an asymmetric underestimation penalty. It reranked the fixed
-family without insertion, beam expansion, or Green recomputation. The strict
-test pass count improved from 68/90 to 81/90 (the candidate-family oracle was
-85/90), at 0.00635 seconds median selection time or $656.0\times$ versus
-iterative adaptive RD reference selection. The adaptive RD reference proposal
-is a constructor for its RD objective rather than an oracle for the downstream
-binary joint-pass metric. Moreover, the reranker selects among a broader fixed
-proposal family using directly supervised group-violation and value-gap labels.
-The 81/90 result therefore measures metric-specific raw proposal quality; it
-does not establish dominance over the explicit RD Boundary Green Operator or
-inherit its guarantees.
-
-On the same 90 contexts, both the reranker and adaptive RD reference passed 64,
-the reranker alone passed 17, the reference alone passed 7, and both failed 2.
-The paired pass-rate difference was 11.1 percentage points (paired bootstrap
-95\% interval, 1.1 to 21.1 points), while the exact conditional McNemar test
-gave $p=0.0639$. This comparison is descriptive because the two procedures
-optimize different objectives and provide different acceptance guarantees; in
-particular, the exact paired test does not reject equality at the 5\% level.
-
-The safety gate failed. A threshold with 100\% validation failure recall audited
-14.4\% of scale-test contexts but caught only 3 of 9 failures, leaving six
-unaudited. Its $23.23\times$ selective timing is therefore not a safe speedup.
-Full audit caught every failure but achieved only $0.428\times$ median
-pipeline speedup. Under the prespecified stopping rule, we did not launch a
-further constraint-aware topology-holdout expansion. The complete neural
-experiment is therefore
-an uncertified ablation rather than a second proposed method. It shows that a
-learned forward pass can improve proposal quality, but neither imitation nor
-direct risk prediction transfers the explicit path's group and value guarantees. The
-explicit Green operator remains our search-free proposal; the learned reranker
-does not replace its mathematical certificate or the production audit.
+The safety gate rejected the learned path. Validation-calibrated routing found
+only 3 of 9 scale-holdout failures, leaving six unaudited; full audit removed
+those misses but reduced median pipeline speed to $0.428\times$ the adaptive RD
+reference. The paired outcomes were 64 both-pass, 17 reranker-only, 7
+reference-only, and 2 both-fail (exact McNemar $p=0.0639$). We report this
+comparison descriptively, stopped the constraint-aware topology extension under
+the predefined go/no-go protocol, and retain learning only as an uncertified
+ablation.
 
 The hard group audit is the main negative result. A frozen one-shot score did
 not satisfy all topology/value/stochastic groups on the three-map diagnostic,
@@ -628,8 +675,10 @@ interior regions become option edges; group constraints and certified adaptive
 approximations expose where that compression fails. The resulting theory and
 experiments support a bounded contribution: finite known-model planning can be
 compressed onto a sparse boundary graph while separately accounting for option
-restriction, abstraction, kernel, and planning errors. Extending this operator
-to sample-based or factored settings remains outside the present claim.
+restriction, abstraction, kernel, and planning errors. The one-shot transform
+removes combinatorial boundary search, but exact final-edge construction remains
+the single-task bottleneck. Extending this operator to sample-based or factored
+settings remains outside the present claim.
 
 \section*{Reproducibility Statement}
 Code, locked dependencies, experiment entry points, scheduler shard manifests,
@@ -637,6 +686,89 @@ tracked CSV artifacts, and Lean sources are provided in the accompanying
 repository. Heavy raw scheduler directories are excluded from version control;
 their aggregated paper-facing tables are tracked. Every main theorem is mapped
 to a Lean symbol and an experiment artifact in the theorem-to-experiment bridge.
+The repository also checks citation keys, figure paths, labels, and central
+numeric claims against tracked CSV artifacts before regenerating the manuscript.
+
+\appendix
+
+\section{One-Shot Operator Configuration}
+\label{app:configuration}
+Table~\ref{tab:one-shot-config} records the fixed operating point used for the
+main one-shot rows. The distinction between the scoring prefix and final edge
+model is intentional: the former is a single frozen transform, while the latter
+uses the certified adaptive first-hit implementation after the boundary has
+already been selected.
+
+\begin{table}[H]
+\centering
+\caption{Paper-facing one-shot configuration. Channel values are clipped after
+division by their positive-state 95th percentile within each graph.}
+\label{tab:one-shot-config}
+\footnotesize
+\begin{tabular}{ll}
+\toprule
+Component & Configuration\\
+\midrule
+Mandatory boundary / anchors & task start and terminal endpoints\\
+Candidate universe & turn or articulation states; one-hop endpoint exclusion\\
+Response prefix & $K=256$, frontier tolerance $10^{-6}$, $\gamma=0.97$\\
+Channels & exposure, Green curvature, control curvature, topology, entropy curvature\\
+Selection & local maxima; support $q\geq2$; topology or stochastic gate\\
+Operating point & $\tau=0.15$; at most 18 inserted vertices\\
+Sensitivity & $\tau\in\{0.10,0.15,0.20\}$; random-maze stress at $0.75$\\
+Final edge model & one certified adaptive first-hit kernel build\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Learned Boundary-Proposal Ablations}
+\label{app:learned}
+The learned branch was a bounded falsification test of the stronger ``look once
+and emit the graph'' hypothesis, not a second proposed method. The graph-only
+reference suite contained 360 corridor, open-room, four-room, DFS-maze, and
+braided-maze contexts at three slip levels, split into 180 training, 90
+validation, and 90 strict scale-holdout contexts. A native sparse GCN
+\citep{kipf2017gcn} used 28 observable transition, reward, topology, coordinate,
+endpoint-distance, slip, and discount features. Five seeds were trained on
+CUDA; validation selected one model and CPU inference because per-graph device
+transfer outweighed GPU execution.
+
+The single permitted follow-up froze five cheap proposal types: learned count,
+top-1, top-2, top-3, and nearest-start. A train-only risk model predicted the
+three group violations, normalized value gap, and joint failure, then reranked
+the deduplicated family without candidate insertion, beam expansion, or Green
+recomputation. The official validation split calibrated routing only; the scale
+test was not used for model or epoch selection.
+
+\begin{table}[H]
+\centering
+\caption{Learned proposal quality and acceptance cost on 90 strict scale
+holdouts. ``Misses'' counts failed graphs that validation-calibrated routing did
+not audit. Raw pass and candidate-oracle quality are not certificates.}
+\label{tab:learned-ablation}
+\footnotesize
+\begin{tabular}{lrrrrrrl}
+\toprule
+Proposal & Raw pass & Oracle & Select speed & Audit cov. & Misses & Full audit & Certified\\
+\midrule
+Boundary-only GCN & 68/90 & -- & 769.8 & 40.0\% & 11/22 & 0.444 & no\\
+Nearest-start & 62/90 & -- & 877.9 & -- & -- & 0.435 & no\\
+Constraint-aware reranker & 81/90 & 85/90 & 656.0 & 14.4\% & 6/9 & 0.428 & no\\
+Adaptive RD reference & 71/90 & -- & 1.0 & audit/cert. & -- & 1.0 & conditional\\
+Candidate-family oracle & 85/90 & 85/90 & -- & -- & -- & -- & not deployable\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the reranker/reference pairing, 64 contexts passed under both proposals, 17
+under only the reranker, 7 under only the adaptive reference, and 2 under
+neither. The pass-rate difference was 11.1 percentage points with a paired
+bootstrap 95\% interval of 1.1 to 21.1 points; the exact conditional McNemar
+test gave $p=0.0639$. The comparison remains descriptive because the objectives
+and acceptance guarantees differ. Validation routing missed six of nine
+reranker failures, and full audit was slower than the explicit reference
+pipeline. The predefined go/no-go protocol therefore stopped the learned branch
+before a further constraint-aware topology expansion.
 
 \begingroup
 \small

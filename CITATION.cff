@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the repository and the accompanying paper."
-title: "Laplace Semi-MDP: Rate-Distortion Boundary Graph Abstraction"
+title: "Rate-Distortion Boundary Graphs for Auditable Semi-Markov Planning Compression"
 type: software
 authors:
   - name: "erzhu419"

@@ -77,3 +77,10 @@ Remaining submission work is editorial rather than another horizontal method
 extension: move the draft into the target conference template, select the main
 versus appendix tables, preserve the legacy-denominator labels, and obtain one
 final reviewer-style attack on the exact pushed artifact.
+
+The generic manuscript now makes that editorial hierarchy concrete: the
+one-shot operator has a quantitative main table and pipeline figure, learned
+proposal details are in the appendix, and `scripts/check_paper_consistency.py`
+gates citation keys, assets, labels, and central numeric claims against tracked
+CSV artifacts. The remaining venue-dependent step is template/page-limit
+conversion, not another method branch.
