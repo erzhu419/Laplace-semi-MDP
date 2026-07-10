@@ -1039,6 +1039,62 @@ def build_one_shot_group_prefix_rows(
     return out
 
 
+def build_boundary_student_rows(
+    proposal_rows: Sequence[Mapping[str, str]],
+    baseline_rows: Sequence[Mapping[str, str]],
+    selective_rows: Sequence[Mapping[str, str]],
+) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for source, rows in (("learned_student", proposal_rows), ("explicit_baseline", baseline_rows)):
+        for row in rows:
+            out.append(
+                {
+                    "source": source,
+                    "proposal": row.get("student_method", ""),
+                    "n_rows": row.get("n_rows", ""),
+                    "mean_boundary_jaccard": row.get("mean_boundary_jaccard", ""),
+                    "group_feasible_rate": row.get("student_feasible_rate", ""),
+                    "student_joint_constraint_rate": row.get(
+                        "student_joint_constraint_rate", ""
+                    ),
+                    "teacher_joint_constraint_rate": row.get(
+                        "teacher_joint_constraint_rate", ""
+                    ),
+                    "accepted_group_feasible_rate": row.get(
+                        "accepted_feasible_rate", ""
+                    ),
+                    "median_selection_speedup": row.get("median_selection_speedup_vs_teacher", ""),
+                    "median_accepted_pipeline_speedup": row.get(
+                        "median_accepted_speedup_vs_teacher_pipeline", ""
+                    ),
+                    "max_normalized_start_gap": row.get(
+                        "max_student_normalized_start_gap", ""
+                    ),
+                }
+            )
+    for row in selective_rows:
+        out.append(
+            {
+                "source": "empirical_selective_audit",
+                "proposal": row.get("metric", ""),
+                "n_rows": row.get("test_n_rows", ""),
+                "selective_accepted_joint_rate": row.get(
+                    "test_accepted_feasible_rate", ""
+                ),
+                "median_accepted_pipeline_speedup": row.get(
+                    "test_median_selective_speedup_vs_teacher", ""
+                ),
+                "max_normalized_start_gap": row.get(
+                    "test_max_accepted_normalized_start_gap", ""
+                ),
+                "audit_rate": row.get("test_audit_rate", ""),
+                "failure_recall": row.get("test_failure_recall", ""),
+                "undetected_failures": row.get("test_undetected_failures", ""),
+            }
+        )
+    return out
+
+
 def write_report(
     out_path: Path,
     main_rows: Sequence[Mapping[str, object]],
@@ -1065,6 +1121,7 @@ def write_report(
     incremental_green_rows: Sequence[Mapping[str, object]],
     theorem_bridge_rows: Sequence[Mapping[str, object]],
     adaptive_topk_tables: Mapping[str, Sequence[Mapping[str, object]]],
+    boundary_student_rows: Sequence[Mapping[str, object]],
     args: argparse.Namespace,
 ) -> None:
     main_columns = [
@@ -1485,6 +1542,23 @@ def write_report(
         "maps",
         "slips",
     ]
+    boundary_student_columns = [
+        "source",
+        "proposal",
+        "n_rows",
+        "mean_boundary_jaccard",
+        "group_feasible_rate",
+        "student_joint_constraint_rate",
+        "teacher_joint_constraint_rate",
+        "accepted_group_feasible_rate",
+        "selective_accepted_joint_rate",
+        "median_selection_speedup",
+        "median_accepted_pipeline_speedup",
+        "max_normalized_start_gap",
+        "audit_rate",
+        "failure_recall",
+        "undetected_failures",
+    ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
     best_total_strong = max(
@@ -1582,6 +1656,17 @@ def write_report(
         markdown_table(one_shot_group_prefix_rows, one_shot_group_prefix_columns)
         if one_shot_group_prefix_rows
         else "_No frozen one-shot group-prefix rows found._",
+        "",
+        "### Learned Boundary Student Ablation",
+        "",
+        "The transition-graph GNN is an uncertified ablation, not a second proposed method. Selection-only speed is reported next to production feasibility, the joint group/value constraint, and audited pipeline cost. Selective-audit rows are invalid as certified pipelines when held-out failures remain undetected.",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in boundary_student_columns} for row in boundary_student_rows],
+            boundary_student_columns,
+        )
+        if boundary_student_rows
+        else "_No learned boundary-student rows found._",
         "",
         "## Runtime By Boundary Selector",
         "",
@@ -1789,6 +1874,9 @@ def write_report(
         f"- large-scale adaptive: `{args.large_scale_csv}`",
         f"- one-shot operator suites: `{', '.join(str(path) for path in args.one_shot_csv)}`",
         f"- frozen one-shot group-prefix audit: `{args.one_shot_group_frontier_csv}`",
+        f"- learned boundary student: `{args.boundary_student_csv}`",
+        f"- explicit boundary-student baselines: `{args.boundary_student_baseline_csv}`",
+        f"- empirical selective audit: `{args.boundary_student_selective_csv}`",
         f"- strong full-state planners: `{args.planner_baseline_csv}`",
         f"- core benchmark: `{args.core_csv}`",
         f"- direct state-abstraction baselines: `{args.abstraction_csv}`",
@@ -1840,6 +1928,28 @@ def main() -> None:
             "one_shot_group_fd_frontier.csv"
         ),
     )
+    parser.add_argument(
+        "--boundary-student-csv",
+        type=Path,
+        default=Path(
+            "experiments/output/boundary_heatmap_downstream_graphonly_test/summary.csv"
+        ),
+    )
+    parser.add_argument(
+        "--boundary-student-baseline-csv",
+        type=Path,
+        default=Path(
+            "experiments/output/boundary_heatmap_downstream_graphonly_baselines/summary.csv"
+        ),
+    )
+    parser.add_argument(
+        "--boundary-student-selective-csv",
+        type=Path,
+        default=Path(
+            "experiments/output/boundary_heatmap_selective_audit_graphonly/"
+            "heldout_selective_audit.csv"
+        ),
+    )
     parser.add_argument("--planner-baseline-csv", type=Path, default=Path("experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv"))
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
     parser.add_argument("--abstraction-csv", type=Path, default=Path("experiments/output/abstraction_baseline_comparison/abstraction_baseline_aggregate.csv"))
@@ -1889,6 +1999,9 @@ def main() -> None:
     large_rows = read_csv_rows(args.large_scale_csv)
     one_shot_raw = read_csv_many(args.one_shot_csv)
     one_shot_group_prefix_raw = read_csv_rows(args.one_shot_group_frontier_csv)
+    boundary_student_raw = read_csv_rows(args.boundary_student_csv)
+    boundary_student_baseline_raw = read_csv_rows(args.boundary_student_baseline_csv)
+    boundary_student_selective_raw = read_csv_rows(args.boundary_student_selective_csv)
     planner_raw = read_csv_rows(args.planner_baseline_csv)
     core_rows = read_csv_rows(args.core_csv)
     abstraction_raw = read_csv_rows(args.abstraction_csv)
@@ -1922,6 +2035,11 @@ def main() -> None:
     main_rows = build_main_runtime_rows(large_rows, adaptive_rows, planner_raw, args.gamma)
     one_shot_rows = build_one_shot_summary_rows(one_shot_raw)
     one_shot_group_prefix_rows = build_one_shot_group_prefix_rows(one_shot_group_prefix_raw)
+    boundary_student_rows = build_boundary_student_rows(
+        boundary_student_raw,
+        boundary_student_baseline_raw,
+        boundary_student_selective_raw,
+    )
     selector_runtime_rows = build_selector_runtime_rows(main_rows)
     compact_rows = build_compact_baseline_rows(core_rows)
     abstraction_rows = build_abstraction_rows(abstraction_raw)
@@ -1950,6 +2068,9 @@ def main() -> None:
     write_csv_all_fields(args.out_dir / "one_shot_operator_summary.csv", one_shot_rows)
     write_csv_all_fields(
         args.out_dir / "one_shot_group_prefix_summary.csv", one_shot_group_prefix_rows
+    )
+    write_csv_all_fields(
+        args.out_dir / "boundary_student_ablation.csv", boundary_student_rows
     )
     write_csv_all_fields(args.out_dir / "runtime_by_boundary_selector.csv", selector_runtime_rows)
     write_csv_all_fields(args.out_dir / "strong_planner_audit.csv", planner_raw)
@@ -1983,6 +2104,7 @@ def main() -> None:
                 "runtime_table": main_rows,
                 "one_shot_operator_summary": one_shot_rows,
                 "one_shot_group_prefix_summary": one_shot_group_prefix_rows,
+                "boundary_student_ablation": boundary_student_rows,
                 "runtime_by_boundary_selector": selector_runtime_rows,
                 "strong_planner_audit": planner_raw,
                 "compact_baseline_aggregate": compact_rows,
@@ -2037,6 +2159,7 @@ def main() -> None:
         incremental_green_rows,
         theorem_bridge_rows,
         adaptive_topk_tables,
+        boundary_student_rows,
         args,
     )
 

@@ -1,0 +1,5 @@
+metric,failure_detection_auc,pass_median,failure_median,n_finite
+score_margin,0.5707142857142857,0.7666766345500946,0.6063693761825562,90
+ensemble_top_state_agreement,nan,nan,nan,0
+ensemble_max_node_logit_std,nan,nan,nan,0
+ensemble_selected_logit_std,nan,nan,nan,0

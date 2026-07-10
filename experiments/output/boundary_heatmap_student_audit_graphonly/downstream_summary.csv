@@ -1,0 +1,2 @@
+student_method,n_rows,student_feasible_rate,teacher_feasible_rate,fallback_rate,median_compression,median_selection_speedup,median_audited_speedup,max_normalized_start_gap
+gnn_seed_2,90,0.7777777777777778,0.7888888888888889,0.2222222222222222,33.8,769.8192740217598,0.4380007830001842,0.022249000484847407

@@ -103,6 +103,40 @@ def dfs_maze_rows(side: int, seed: int = 0) -> Tuple[str, ...]:
     return tuple("".join(row) for row in maze)
 
 
+def braided_maze_rows(
+    side: int,
+    seed: int = 0,
+    braid_fraction: float = 0.18,
+) -> Tuple[str, ...]:
+    """Add reproducible cycles to a DFS maze without changing its endpoints."""
+
+    rows = dfs_maze_rows(side, seed=seed)
+    maze = [list(row) for row in rows]
+    height = len(maze)
+    width = len(maze[0])
+
+    def is_open(row: int, column: int) -> bool:
+        return maze[row][column] != "#"
+
+    separators: List[Tuple[int, int]] = []
+    for row in range(1, height - 1):
+        for column in range(1, width - 1):
+            if maze[row][column] != "#":
+                continue
+            vertical = is_open(row - 1, column) and is_open(row + 1, column)
+            horizontal = is_open(row, column - 1) and is_open(row, column + 1)
+            if vertical != horizontal:
+                separators.append((row, column))
+
+    rng = np.random.default_rng(seed + max(height, width) * 1543 + 17)
+    rng.shuffle(separators)
+    fraction = min(1.0, max(0.0, float(braid_fraction)))
+    n_open = int(math.ceil(fraction * len(separators))) if separators else 0
+    for row, column in separators[:n_open]:
+        maze[row][column] = "."
+    return tuple("".join(row) for row in maze)
+
+
 def scaled_rows(family: str, size: int, seed: int = 0) -> Tuple[str, ...]:
     if family == "corridor":
         return corridor_rows(size)
@@ -112,6 +146,8 @@ def scaled_rows(family: str, size: int, seed: int = 0) -> Tuple[str, ...]:
         return four_rooms_rows(size)
     if family == "maze":
         return dfs_maze_rows(size, seed=seed)
+    if family == "braid_maze":
+        return braided_maze_rows(size, seed=seed)
     raise ValueError(f"Unknown scaled-map family: {family}")
 
 

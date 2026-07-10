@@ -1,0 +1,10 @@
+{
+  "adaptive_teacher_feasible_rate": 0.9083333333333333,
+  "median_candidates": 22.0,
+  "median_teacher_time_sec": 2.0894360440433957,
+  "n_adaptive_teacher_contexts": 360,
+  "n_candidate_rows": 8115,
+  "n_contexts": 360,
+  "n_input_files": 180,
+  "total_teacher_time_sec": 933.7170347654028
+}

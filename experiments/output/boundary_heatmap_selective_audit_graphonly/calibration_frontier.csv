@@ -1,0 +1,5 @@
+target_validation_failure_recall,metric,risk_threshold,n_calibration_failures,validation_n_rows,validation_n_student_failures,validation_audit_rate,validation_failure_recall,validation_undetected_failures,validation_accepted_feasible_rate,validation_fallback_rate,validation_median_selective_pipeline_time_sec,validation_median_selective_speedup_vs_teacher,validation_max_accepted_normalized_start_gap
+0.9,student_score_margin,-0.3623483180999756,10,90,10,0.35555555555555557,0.9,1,0.9444444444444444,0.1,0.0888933225069195,26.02281301938124,0.009605048492230204
+0.9,full_audit,nan,10,90,10,1.0,1.0,0,0.9555555555555556,0.1111111111111111,5.439513997582253,0.422984465911513,0.009605048492230204
+1.0,student_score_margin,-0.5826051235198975,10,90,10,0.4444444444444444,1.0,0,0.9555555555555556,0.1111111111111111,0.09384124301141128,24.783529510356896,0.009605048492230204
+1.0,full_audit,nan,10,90,10,1.0,1.0,0,0.9555555555555556,0.1111111111111111,5.439513997582253,0.422984465911513,0.009605048492230204

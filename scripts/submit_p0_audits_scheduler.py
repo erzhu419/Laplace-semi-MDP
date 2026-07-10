@@ -57,6 +57,12 @@ SUITE_ENTRYPOINTS = {
     "one_shot_random_reference": "experiments/run_one_shot_rd_operator.py",
     "one_shot_group_frontier": "experiments/run_one_shot_group_fd_frontier.py",
     "one_shot_xl": "experiments/run_one_shot_rd_operator.py",
+    "boundary_heatmap_teacher": "experiments/run_boundary_heatmap_teacher.py",
+    "boundary_heatmap_multifamily_teacher": "experiments/run_boundary_heatmap_teacher.py",
+    "boundary_heatmap_downstream": "experiments/run_boundary_heatmap_downstream.py",
+    "boundary_heatmap_multifamily_downstream": "experiments/run_boundary_heatmap_downstream.py",
+    "boundary_heatmap_multifamily_validation": "experiments/run_boundary_heatmap_downstream.py",
+    "boundary_heatmap_graphonly_baselines": "experiments/run_boundary_heatmap_downstream.py",
 }
 
 
@@ -194,6 +200,46 @@ def suite_specs(remote_python: Path) -> Dict[str, SuiteSpec]:
             "--shard-index {index} --num-shards {count} --continue-on-error "
             "--out-dir {out}/one_shot_rd_operator_xl_end_to_end"
         ).format(python=python, index="{index}", count="{count}", out="{out}"), 27, 2, 8192, "one_shot_xl"),
+        "boundary_heatmap_teacher": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_teacher.py "
+            "--sizes 11 13 15 17 19 --maze-seeds 0 1 2 3 4 5 6 7 8 9 10 11 "
+            "--slips 0 0.05 0.1 --shard-index {index} --num-shards {count} "
+            "--resume --continue-on-error --out-dir {out}/boundary_heatmap_teacher"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 18, 2, 4096, "boundary_heatmap_teacher"),
+        "boundary_heatmap_multifamily_teacher": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_teacher.py "
+            "--map-specs corridor:16,32,64,128 open_room:7,9,11,13 "
+            "four_rooms:7,9,11,13 maze:9,11,13,15 braid_maze:9,11,13,15 "
+            "--topology-seeds 0 1 2 3 4 5 --goal-variants 2 --slips 0 0.05 0.1 "
+            "--fixed-random-count 0 --full-teacher --shard-index {index} --num-shards {count} "
+            "--resume --continue-on-error --out-dir {out}/boundary_heatmap_teacher"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 180, 2, 4096, "boundary_heatmap_multifamily_teacher"),
+        "boundary_heatmap_downstream": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
+            "--shard-index {index} --num-shards {count} --resume --continue-on-error "
+            "--out-dir {out}/boundary_heatmap_downstream"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 60, 2, 4096, "boundary_heatmap_downstream"),
+        "boundary_heatmap_multifamily_downstream": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
+            "--predictions-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_test_predictions.csv "
+            "--teacher-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_test_teacher.csv "
+            "--fixed-random-count 0 --shard-index {index} --num-shards {count} --resume --continue-on-error "
+            "--out-dir {out}/boundary_heatmap_downstream"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 90, 2, 4096, "boundary_heatmap_multifamily_downstream"),
+        "boundary_heatmap_multifamily_validation": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
+            "--predictions-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_validation_predictions.csv "
+            "--teacher-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_validation_teacher.csv "
+            "--fixed-random-count 0 --shard-index {index} --num-shards {count} --resume --continue-on-error "
+            "--out-dir {out}/boundary_heatmap_downstream"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 90, 2, 4096, "boundary_heatmap_multifamily_validation"),
+        "boundary_heatmap_graphonly_baselines": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
+            "--predictions-csv experiments/models/boundary_heatmap_gnn_graphonly/test_baseline_predictions.csv "
+            "--teacher-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_test_teacher.csv "
+            "--fixed-random-count 0 --shard-index {index} --num-shards {count} "
+            "--resume --continue-on-error --out-dir {out}/boundary_heatmap_downstream"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 180, 2, 4096, "boundary_heatmap_graphonly_baselines"),
     }
 
 
@@ -305,7 +351,7 @@ def main() -> None:
     parser.add_argument(
         "--suites",
         nargs="+",
-        choices=["all", "planner", "planner_paired", "abstraction", "solver_oracle", "solver_oracle_four_rooms", "general_env", "general_env_taxi", "end_to_end", "end_to_end_converged", "budget_recovery", "budget_recovery_actual", "budget_recovery_actual_extended", "one_shot_random", "one_shot_random_reference", "one_shot_group_frontier", "one_shot_xl"],
+        choices=["all", "planner", "planner_paired", "abstraction", "solver_oracle", "solver_oracle_four_rooms", "general_env", "general_env_taxi", "end_to_end", "end_to_end_converged", "budget_recovery", "budget_recovery_actual", "budget_recovery_actual_extended", "one_shot_random", "one_shot_random_reference", "one_shot_group_frontier", "one_shot_xl", "boundary_heatmap_teacher", "boundary_heatmap_multifamily_teacher", "boundary_heatmap_downstream", "boundary_heatmap_multifamily_downstream", "boundary_heatmap_multifamily_validation", "boundary_heatmap_graphonly_baselines"],
         default=["all"],
     )
     parser.add_argument("--nodes", default=",".join(DEFAULT_NODES))

@@ -7318,6 +7318,69 @@
       "n_beam_expansions": 0
     }
   ],
+  "boundary_student_ablation": [
+    {
+      "source": "learned_student",
+      "proposal": "gnn_seed_2",
+      "n_rows": "90",
+      "mean_boundary_jaccard": "0.6508465608465608",
+      "group_feasible_rate": "0.7777777777777778",
+      "student_joint_constraint_rate": "0.7555555555555555",
+      "teacher_joint_constraint_rate": "0.7888888888888889",
+      "accepted_group_feasible_rate": "0.9444444444444444",
+      "median_selection_speedup": "769.8192740217598",
+      "median_accepted_pipeline_speedup": "0.4438337324121785",
+      "max_normalized_start_gap": "0.022249000484847407"
+    },
+    {
+      "source": "explicit_baseline",
+      "proposal": "baseline_nearest_start",
+      "n_rows": "90",
+      "mean_boundary_jaccard": "0.6788888888888889",
+      "group_feasible_rate": "0.6888888888888889",
+      "student_joint_constraint_rate": "0.6888888888888889",
+      "teacher_joint_constraint_rate": "0.7888888888888889",
+      "accepted_group_feasible_rate": "0.8333333333333334",
+      "median_selection_speedup": "877.8809547874098",
+      "median_accepted_pipeline_speedup": "0.4349989758681264",
+      "max_normalized_start_gap": "0.02224900781274634"
+    },
+    {
+      "source": "explicit_baseline",
+      "proposal": "baseline_topology",
+      "n_rows": "90",
+      "mean_boundary_jaccard": "0.5236507936507936",
+      "group_feasible_rate": "0.1111111111111111",
+      "student_joint_constraint_rate": "0.1111111111111111",
+      "teacher_joint_constraint_rate": "0.7888888888888889",
+      "accepted_group_feasible_rate": "0.7888888888888889",
+      "median_selection_speedup": "879.0496567025946",
+      "median_accepted_pipeline_speedup": "0.32348480523589856",
+      "max_normalized_start_gap": "0.02224900784850102"
+    },
+    {
+      "source": "empirical_selective_audit",
+      "proposal": "student_score_margin",
+      "n_rows": "90",
+      "selective_accepted_joint_rate": "0.8111111111111111",
+      "median_accepted_pipeline_speedup": "26.322966111717466",
+      "max_normalized_start_gap": "0.00941529346174613",
+      "audit_rate": "0.36666666666666664",
+      "failure_recall": "0.45454545454545453",
+      "undetected_failures": "12"
+    },
+    {
+      "source": "empirical_selective_audit",
+      "proposal": "student_score_margin",
+      "n_rows": "90",
+      "selective_accepted_joint_rate": "0.8222222222222222",
+      "median_accepted_pipeline_speedup": "25.68897047136489",
+      "max_normalized_start_gap": "0.00941529346174613",
+      "audit_rate": "0.4",
+      "failure_recall": "0.5",
+      "undetected_failures": "11"
+    }
+  ],
   "runtime_by_boundary_selector": [
     {
       "boundary_selector": "betweenness_sqrt",

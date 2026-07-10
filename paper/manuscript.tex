@@ -368,6 +368,41 @@ predictable, but learning a scalar horizon is not the useful single-graph
 acceleration: the production implementation retains certified adaptive
 truncation, while learned horizons are at most a batching/scheduling ablation.
 
+We next tested the stronger proposal of predicting the entire boundary in one
+learned forward pass. A native sparse GCN was distilled from frozen insertion
+heatmaps and adaptive group-constrained boundaries. Its 28 node features
+contained only transition, reward, topology, coordinate, endpoint-distance,
+slip, and discount information. The final teacher protocol removed two
+hash-selected random basis states because their dependence on the map name was
+not observable from the transition graph. The resulting suite contained 360
+contexts from corridors, open rooms, four rooms, DFS mazes, and braided mazes,
+with 180/90/90 train/validation/strict-scale-holdout rows.
+
+Five models were trained independently on CUDA, and validation selected one GCN
+rather than the five-model ensemble. A per-graph validation benchmark selected
+CPU inference (0.00068 seconds for forward/collation versus 0.00184 seconds on
+CUDA), because this small model cannot amortize device transfer. On the 90
+scale holdouts, median selection latency was 0.00541 seconds, or
+$769.8\times$ faster than iterative teacher selection. Boundary
+Jaccard was nevertheless 0.6508, compared with 0.6789 for selecting the nearest
+eligible state to the start. The GCN and nearest-start graphs were group
+feasible in 70/90 and 62/90 cases, respectively. After also requiring
+normalized start gap $\leq0.01$, they passed 68/90 and 62/90 cases, while the
+adaptive teacher passed 71/90. In a paired comparison, the GCN alone passed
+eight contexts and nearest-start alone passed two. Full group audit and
+fallback reduced the accepted GCN pipeline to $0.444\times$ the adaptive
+teacher pipeline. A score-margin threshold calibrated for 100\% validation
+joint-failure recall audited 40.0\% of test contexts but caught only 50.0\% of
+test failures, leaving eleven failed graphs unaudited.
+
+This teacher--student experiment is therefore an uncertified ablation rather
+than a second proposed method. The six-context net gain over nearest-start
+shows that the student learns some constraint-relevant structure, but fast
+boundary imitation neither certifies the induced option library nor transfers
+the teacher's group and value guarantees. The explicit Green operator remains
+our search-free proposal; the learned student does not replace its mathematical
+certificate or the production audit.
+
 The hard group audit is the main negative result. A frozen one-shot score did
 not satisfy all topology/value/stochastic groups on the three-map diagnostic,
 and adding more fixed local maxima did not monotonically repair feasibility

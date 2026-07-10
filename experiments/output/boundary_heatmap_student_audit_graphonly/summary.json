@@ -1,0 +1,130 @@
+{
+  "confidence": [
+    {
+      "failure_detection_auc": 0.5707142857142857,
+      "failure_median": 0.6063693761825562,
+      "metric": "score_margin",
+      "n_finite": 90,
+      "pass_median": 0.7666766345500946
+    },
+    {
+      "failure_detection_auc": NaN,
+      "failure_median": NaN,
+      "metric": "ensemble_top_state_agreement",
+      "n_finite": 0,
+      "pass_median": NaN
+    },
+    {
+      "failure_detection_auc": NaN,
+      "failure_median": NaN,
+      "metric": "ensemble_max_node_logit_std",
+      "n_finite": 0,
+      "pass_median": NaN
+    },
+    {
+      "failure_detection_auc": NaN,
+      "failure_median": NaN,
+      "metric": "ensemble_selected_logit_std",
+      "n_finite": 0,
+      "pass_median": NaN
+    }
+  ],
+  "downstream": [
+    {
+      "fallback_rate": 0.2222222222222222,
+      "max_normalized_start_gap": 0.022249000484847407,
+      "median_audited_speedup": 0.4380007830001842,
+      "median_compression": 33.8,
+      "median_selection_speedup": 769.8192740217598,
+      "n_rows": 90,
+      "student_feasible_rate": 0.7777777777777778,
+      "student_method": "gnn_seed_2",
+      "teacher_feasible_rate": 0.7888888888888889
+    }
+  ],
+  "families": [
+    {
+      "map_family": "braid_maze",
+      "max_normalized_start_gap": 0.0031555775822272305,
+      "mean_boundary_jaccard": 0.6404100529100529,
+      "median_compression": 36.0,
+      "n_rows": 36,
+      "student_feasible_rate": 0.8333333333333334,
+      "teacher_feasible_rate": 0.8333333333333334
+    },
+    {
+      "map_family": "corridor",
+      "max_normalized_start_gap": 1.3505737606575602e-08,
+      "mean_boundary_jaccard": 0.8166666666666668,
+      "median_compression": 42.666666666666664,
+      "n_rows": 6,
+      "student_feasible_rate": 0.6666666666666666,
+      "teacher_feasible_rate": 1.0
+    },
+    {
+      "map_family": "four_rooms",
+      "max_normalized_start_gap": 0.007457551810577286,
+      "mean_boundary_jaccard": 0.32261904761904764,
+      "median_compression": 29.6,
+      "n_rows": 6,
+      "student_feasible_rate": 1.0,
+      "teacher_feasible_rate": 0.3333333333333333
+    },
+    {
+      "map_family": "maze",
+      "max_normalized_start_gap": 1.4850774313791027e-08,
+      "mean_boundary_jaccard": 0.7361111111111112,
+      "median_compression": 32.333333333333336,
+      "n_rows": 36,
+      "student_feasible_rate": 0.6666666666666666,
+      "teacher_feasible_rate": 0.8611111111111112
+    },
+    {
+      "map_family": "open_room",
+      "max_normalized_start_gap": 0.022249000484847407,
+      "mean_boundary_jaccard": 0.36428571428571427,
+      "median_compression": 33.8,
+      "n_rows": 6,
+      "student_feasible_rate": 1.0,
+      "teacher_feasible_rate": 0.3333333333333333
+    }
+  ],
+  "identity": [
+    {
+      "count_accuracy": 0.7555555555555555,
+      "match_nearest_start_rate": 0.7444444444444445,
+      "mean_boundary_jaccard": 0.6508465608465609,
+      "n_rows": 90,
+      "split": "test",
+      "teacher_tie_rate": 0.5444444444444444,
+      "top_set_hit_rate": 0.5444444444444444
+    },
+    {
+      "count_accuracy": 0.9222222222222223,
+      "match_nearest_start_rate": 0.8222222222222222,
+      "mean_boundary_jaccard": 0.8801256613756613,
+      "n_rows": 180,
+      "split": "train",
+      "teacher_tie_rate": 0.8,
+      "top_set_hit_rate": 0.8166666666666667
+    },
+    {
+      "count_accuracy": 0.8777777777777778,
+      "match_nearest_start_rate": 0.7333333333333333,
+      "mean_boundary_jaccard": 0.8741534391534391,
+      "n_rows": 90,
+      "split": "validation",
+      "teacher_tie_rate": 0.6888888888888889,
+      "top_set_hit_rate": 0.8333333333333334
+    }
+  ],
+  "overview": {
+    "n_downstream_rows": 90,
+    "n_prediction_rows": 4680,
+    "n_selected_test_rows": 90,
+    "selected_method": "gnn_seed_2",
+    "topk_contexts": 0,
+    "topk_feasibility_loss_contexts": 0,
+    "topk_recovery_contexts": 0
+  }
+}

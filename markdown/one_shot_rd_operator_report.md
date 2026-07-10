@@ -112,6 +112,34 @@ cost. A YOLO-like extension should consequently predict the vertex heatmap
 itself (and optionally per-response horizons for batching), not merely replace
 adaptive stopping with a learned scalar.
 
+### Does a transition-graph student remove discovery?
+
+We tested that extension with a native sparse GCN trained against complete
+frozen insertion-score heatmaps and adaptive group-constrained boundaries. The
+initial DFS-maze pilot was degenerate: the ensemble and a nearest-start rule
+returned the same graph in all 180 contexts. A graph-only multifamily teacher
+then removed hidden hash-selected basis states and covered corridor, open room,
+four rooms, DFS maze, and braided maze at three slip levels.
+
+The learned selector was fast but did not replace certification. Validation
+selected one of five independently trained GCNs. An automatic validation
+benchmark chose CPU inference over CUDA, and test latency was measured per
+graph including sparse collation and tensor construction. On 90
+strict scale-holdout contexts, median selection time was `0.00541 s`, or
+`769.8x` faster than iterative teacher selection. Boundary Jaccard was `0.6508`
+for the GNN versus `0.6789` for nearest-start. Production group feasibility was
+`70/90` versus `62/90`; after also requiring normalized start gap at most
+`0.01`, the GNN passed `68/90`, nearest-start passed `62/90`, and the adaptive
+teacher passed `71/90`. Full group audit reduced the accepted GNN pipeline to
+`0.444x` of the adaptive teacher pipeline. A validation-calibrated selective
+audit still missed 11 of 22 held-out joint-constraint failures.
+
+Thus amortized heatmap prediction is retained as an uncertified ablation, not
+as the deployed operator. Its six-row net gain over nearest-start shows that it
+learns some constraint-relevant structure, but imitating an adaptive boundary
+is not a certificate of value or group feasibility. Detailed results are in
+`markdown/boundary_heatmap_teacher_student_report.md`.
+
 ## Failure Boundary
 
 The current hard group audit is not solved by the frozen one-shot transform.

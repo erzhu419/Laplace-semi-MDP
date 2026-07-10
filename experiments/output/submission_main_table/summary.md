@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-10T22:55:20
+Generated: 2026-07-11T00:51:44
 
 This report is the paper-facing aggregation layer. It keeps audit protocols separate, reports normalized gaps, and never treats the legacy Python VI denominator as the conservative runtime baseline when a matched strong planner measurement is available.
 
@@ -180,6 +180,18 @@ This diagnostic freezes one exact multi-probe candidate order, audits prefixes w
 | four_rooms_11 | 0.05 | 13 | 24 | True | 3,4,5,6,8,10 | 3 | True | 20.8 | 0 | 0 |
 | maze_13 | 0.05 | 13 | 24 | False |  |  | False | nan | 0 | 0 |
 | open_room_12 | 0.05 | 12 | 20 | True | 2 | 2 | True | 36 | 0 | 0 |
+
+### Learned Boundary Student Ablation
+
+The transition-graph GNN is an uncertified ablation, not a second proposed method. Selection-only speed is reported next to production feasibility, the joint group/value constraint, and audited pipeline cost. Selective-audit rows are invalid as certified pipelines when held-out failures remain undetected.
+
+| source | proposal | n_rows | mean_boundary_jaccard | group_feasible_rate | student_joint_constraint_rate | teacher_joint_constraint_rate | accepted_group_feasible_rate | selective_accepted_joint_rate | median_selection_speedup | median_accepted_pipeline_speedup | max_normalized_start_gap | audit_rate | failure_recall | undetected_failures |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| learned_student | gnn_seed_2 | 90 | 0.6508465608465608 | 0.7777777777777778 | 0.7555555555555555 | 0.7888888888888889 | 0.9444444444444444 |  | 769.8192740217598 | 0.4438337324121785 | 0.022249000484847407 |  |  |  |
+| explicit_baseline | baseline_nearest_start | 90 | 0.6788888888888889 | 0.6888888888888889 | 0.6888888888888889 | 0.7888888888888889 | 0.8333333333333334 |  | 877.8809547874098 | 0.4349989758681264 | 0.02224900781274634 |  |  |  |
+| explicit_baseline | baseline_topology | 90 | 0.5236507936507936 | 0.1111111111111111 | 0.1111111111111111 | 0.7888888888888889 | 0.7888888888888889 |  | 879.0496567025946 | 0.32348480523589856 | 0.02224900784850102 |  |  |  |
+| empirical_selective_audit | student_score_margin | 90 |  |  |  |  |  | 0.8111111111111111 |  | 26.322966111717466 | 0.00941529346174613 | 0.36666666666666664 | 0.45454545454545453 | 12 |
+| empirical_selective_audit | student_score_margin | 90 |  |  |  |  |  | 0.8222222222222222 |  | 25.68897047136489 | 0.00941529346174613 | 0.4 | 0.5 | 11 |
 
 ## Runtime By Boundary Selector
 
@@ -1138,6 +1150,9 @@ Edge-reward speedups in this legacy artifact use dense NumPy full-state VI. They
 - large-scale adaptive: `experiments/output/large_scale_compression_adaptive/large_scale_compression.csv`
 - one-shot operator suites: `experiments/output/one_shot_rd_operator/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_random/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_random_reference/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_xl_end_to_end/one_shot_rd_operator.csv`
 - frozen one-shot group-prefix audit: `experiments/output/one_shot_group_fd_frontier/one_shot_group_fd_frontier.csv`
+- learned boundary student: `experiments/output/boundary_heatmap_downstream_graphonly_test/summary.csv`
+- explicit boundary-student baselines: `experiments/output/boundary_heatmap_downstream_graphonly_baselines/summary.csv`
+- empirical selective audit: `experiments/output/boundary_heatmap_selective_audit_graphonly/heldout_selective_audit.csv`
 - strong full-state planners: `experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv`
 - core benchmark: `experiments/output/core_benchmark/core_benchmark.csv`
 - direct state-abstraction baselines: `experiments/output/abstraction_baseline_comparison/abstraction_baseline_aggregate.csv`

@@ -1,0 +1,24 @@
+[
+  {
+    "accepted_feasible_rate": 0.9444444444444444,
+    "accepted_joint_constraint_rate": 0.9222222222222223,
+    "fallback_rate": 0.2222222222222222,
+    "max_accepted_normalized_start_gap": 0.022249000484847407,
+    "max_student_group_total_violation": 225999465002889.66,
+    "max_student_normalized_start_gap": 0.022249000484847407,
+    "mean_boundary_jaccard": 0.6508465608465608,
+    "median_accepted_speedup_vs_teacher_pipeline": 0.4438337324121785,
+    "median_group_audit_time_sec": 7.753916818415746,
+    "median_selection_plus_audit_speedup_vs_teacher": 0.4380007830001842,
+    "median_selection_speedup_vs_teacher": 769.8192740217598,
+    "median_state_compression_ratio": 33.8,
+    "median_student_selection_time_sec": 0.005414814921095967,
+    "n_rows": 90,
+    "student_feasible_rate": 0.7777777777777778,
+    "student_joint_constraint_rate": 0.7555555555555555,
+    "student_method": "gnn_seed_2",
+    "teacher_feasible_rate": 0.7888888888888889,
+    "teacher_joint_constraint_rate": 0.7888888888888889,
+    "top_set_hit_rate": 0.5444444444444444
+  }
+]
