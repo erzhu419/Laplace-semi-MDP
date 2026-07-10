@@ -1,0 +1,19 @@
+{
+  "dropped_duplicate_proposals": 641,
+  "duplicate_boundary_contexts": 360,
+  "n_contexts": 360,
+  "n_proposals": 1159,
+  "proposal_kinds": [
+    "learned_count",
+    "top1",
+    "top2",
+    "top3",
+    "nearest_start"
+  ],
+  "selected_base_method": "gnn_seed_2",
+  "split_rows": {
+    "test": 293,
+    "train": 572,
+    "validation": 294
+  }
+}

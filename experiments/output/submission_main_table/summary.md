@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-11T00:51:44
+Generated: 2026-07-11T05:11:06
 
 This report is the paper-facing aggregation layer. It keeps audit protocols separate, reports normalized gaps, and never treats the legacy Python VI denominator as the conservative runtime baseline when a matched strong planner measurement is available.
 
@@ -183,15 +183,19 @@ This diagnostic freezes one exact multi-probe candidate order, audits prefixes w
 
 ### Learned Boundary Student Ablation
 
-The transition-graph GNN is an uncertified ablation, not a second proposed method. Selection-only speed is reported next to production feasibility, the joint group/value constraint, and audited pipeline cost. Selective-audit rows are invalid as certified pipelines when held-out failures remain undetected.
+The transition-graph GNN is an uncertified ablation, not a second proposed method. The bounded constraint-aware follow-up improves raw proposal quality but fails its routing gate: selective rows are invalid as safe pipelines when held-out failures remain undetected, while full audit is slower than the explicit backend.
 
-| source | proposal | n_rows | mean_boundary_jaccard | group_feasible_rate | student_joint_constraint_rate | teacher_joint_constraint_rate | accepted_group_feasible_rate | selective_accepted_joint_rate | median_selection_speedup | median_accepted_pipeline_speedup | max_normalized_start_gap | audit_rate | failure_recall | undetected_failures |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| learned_student | gnn_seed_2 | 90 | 0.6508465608465608 | 0.7777777777777778 | 0.7555555555555555 | 0.7888888888888889 | 0.9444444444444444 |  | 769.8192740217598 | 0.4438337324121785 | 0.022249000484847407 |  |  |  |
-| explicit_baseline | baseline_nearest_start | 90 | 0.6788888888888889 | 0.6888888888888889 | 0.6888888888888889 | 0.7888888888888889 | 0.8333333333333334 |  | 877.8809547874098 | 0.4349989758681264 | 0.02224900781274634 |  |  |  |
-| explicit_baseline | baseline_topology | 90 | 0.5236507936507936 | 0.1111111111111111 | 0.1111111111111111 | 0.7888888888888889 | 0.7888888888888889 |  | 879.0496567025946 | 0.32348480523589856 | 0.02224900784850102 |  |  |  |
-| empirical_selective_audit | student_score_margin | 90 |  |  |  |  |  | 0.8111111111111111 |  | 26.322966111717466 | 0.00941529346174613 | 0.36666666666666664 | 0.45454545454545453 | 12 |
-| empirical_selective_audit | student_score_margin | 90 |  |  |  |  |  | 0.8222222222222222 |  | 25.68897047136489 | 0.00941529346174613 | 0.4 | 0.5 | 11 |
+| source | proposal | target_validation_failure_recall | n_rows | mean_boundary_jaccard | group_feasible_rate | student_joint_constraint_rate | teacher_joint_constraint_rate | accepted_group_feasible_rate | selective_accepted_joint_rate | median_selection_speedup | median_accepted_pipeline_speedup | max_normalized_start_gap | audit_rate | failure_recall | undetected_failures | certification_status | gate_status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| learned_student | gnn_seed_2 |  | 90 | 0.6508465608465608 | 0.7777777777777778 | 0.7555555555555555 | 0.7888888888888889 | 0.9444444444444444 |  | 769.8192740217598 | 0.4438337324121785 | 0.022249000484847407 |  |  |  | uncertified proposal | ablation |
+| explicit_baseline | baseline_nearest_start |  | 90 | 0.6788888888888889 | 0.6888888888888889 | 0.6888888888888889 | 0.7888888888888889 | 0.8333333333333334 |  | 877.8809547874098 | 0.4349989758681264 | 0.02224900781274634 |  |  |  | uncertified proposal | ablation |
+| explicit_baseline | baseline_topology |  | 90 | 0.5236507936507936 | 0.1111111111111111 | 0.1111111111111111 | 0.7888888888888889 | 0.7888888888888889 |  | 879.0496567025946 | 0.32348480523589856 | 0.02224900784850102 |  |  |  | uncertified proposal | ablation |
+| constraint_aware_student | constraint_aware_gnn |  | 90 | 0.5683421516754853 | 0.9222222222222223 | 0.9 | 0.7888888888888889 | 1.0 |  | 656.0300626356689 | 0.4281247548202982 | 0.022249000484847407 |  |  |  | uncertified proposal | raw pass; routing NO-GO |
+| empirical_selective_audit | student_score_margin | 0.9 | 90 |  |  |  |  |  | 0.8111111111111111 |  | 26.322966111717466 | 0.00941529346174613 | 0.36666666666666664 | 0.45454545454545453 | 12 | empirical routing; not a certificate | ablation |
+| empirical_selective_audit | student_score_margin | 1.0 | 90 |  |  |  |  |  | 0.8222222222222222 |  | 25.68897047136489 | 0.00941529346174613 | 0.4 | 0.5 | 11 | empirical routing; not a certificate | ablation |
+| constraint_aware_selective_audit | constraint_max_group_probability | 0.9 | 90 |  |  |  |  |  | 0.9111111111111111 |  | 23.22757290385195 | 0.009415296610909554 | 0.14444444444444443 | 0.3333333333333333 | 6 | empirical routing; not a certificate | NO-GO |
+| constraint_aware_selective_audit | constraint_max_group_probability | 1.0 | 90 |  |  |  |  |  | 0.9111111111111111 |  | 23.22757290385195 | 0.009415296610909554 | 0.14444444444444443 | 0.3333333333333333 | 6 | empirical routing; not a certificate | NO-GO |
+| constraint_aware_full_audit | full_production_audit |  | 90 |  |  |  |  |  | 0.9777777777777777 |  | 0.4281247548202982 | 0.009415296610909554 | 1.0 | 1.0 | 0 | full empirical audit | NO-GO: end-to-end speedup <= 1 |
 
 ## Runtime By Boundary Selector
 
@@ -1153,6 +1157,9 @@ Edge-reward speedups in this legacy artifact use dense NumPy full-state VI. They
 - learned boundary student: `experiments/output/boundary_heatmap_downstream_graphonly_test/summary.csv`
 - explicit boundary-student baselines: `experiments/output/boundary_heatmap_downstream_graphonly_baselines/summary.csv`
 - empirical selective audit: `experiments/output/boundary_heatmap_selective_audit_graphonly/heldout_selective_audit.csv`
+- constraint-aware student: `experiments/output/boundary_constraint_student_test/summary.csv`
+- constraint-aware selective audit: `experiments/output/boundary_constraint_selective_audit/heldout_selective_audit.csv`
+- constraint-aware full audit: `experiments/output/boundary_constraint_selective_audit/heldout_full_audit.csv`
 - strong full-state planners: `experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv`
 - core benchmark: `experiments/output/core_benchmark/core_benchmark.csv`
 - direct state-abstraction baselines: `experiments/output/abstraction_baseline_comparison/abstraction_baseline_aggregate.csv`

@@ -352,7 +352,9 @@ class BoundaryHeatmapGNN(nn.Module):
             nn.Linear(hidden_dim, max_extra + 1),
         )
 
-    def forward(self, batch: TorchGraphBatch) -> Tuple[torch.Tensor, torch.Tensor]:
+    def encode(
+        self, batch: TorchGraphBatch
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         hidden = self.input_projection(batch.x)
         for layer in self.layers:
             hidden = layer(hidden, batch.adjacency)
@@ -368,9 +370,20 @@ class BoundaryHeatmapGNN(nn.Module):
             contexts.append(self.context_projection(graph_pool).expand(stop - start, -1))
         pooled_tensor = torch.stack(pooled, dim=0)
         node_context = torch.cat(contexts, dim=0)
+        return hidden, pooled_tensor, node_context
+
+    def decode(
+        self,
+        hidden: torch.Tensor,
+        pooled: torch.Tensor,
+        node_context: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         node_logits = self.node_head(torch.cat([hidden, node_context], dim=1)).squeeze(1)
-        count_logits = self.count_head(pooled_tensor)
+        count_logits = self.count_head(pooled)
         return node_logits, count_logits
+
+    def forward(self, batch: TorchGraphBatch) -> Tuple[torch.Tensor, torch.Tensor]:
+        return self.decode(*self.encode(batch))
 
     def config(self) -> Dict[str, object]:
         return {

@@ -89,6 +89,41 @@ resulting median 25.7x timing number is not a valid certified speedup because
 the routing rule did not preserve feasibility. Ensemble variance remains an
 ablation and is unavailable to the selected one-pass model.
 
+### Bounded constraint-aware follow-up
+
+Following the prespecified stopping rule, we ran one downstream-risk follow-up
+and did not iterate the neural branch further. The frozen GCN emits at most five
+cheap proposals per context: its learned count, fixed top-1/top-2/top-3
+prefixes, and nearest-start. Equal boundaries are merged before audit. This
+produced 1,159 unique candidate graphs over 360 contexts (572 train, 294
+validation, and 293 test candidates). No candidate insertion, beam expansion,
+or Green recomputation occurs at deployment.
+
+A multi-head MLP over the frozen graph embedding predicts topology, value, and
+stochastic violation margins, their failure probabilities, normalized value
+gap, and joint failure. Training uses an asymmetric loss that penalizes risk
+underestimation more strongly. Model/epoch selection uses a map-level holdout
+inside the training split (48 train maps and 12 held-out maps), with all slips
+for a topology kept together. The official 90-context validation split is used
+only to calibrate audit routing; the 90-context scale test is untouched.
+
+| proposal | joint pass | median selection | selection speedup | full-audit speedup |
+| --- | ---: | ---: | ---: | ---: |
+| boundary-only GCN | 68/90 | 0.00541 s | 769.8x | 0.444x |
+| constraint-aware reranker | 81/90 | 0.00635 s | 656.0x | 0.428x |
+| candidate oracle union | 85/90 | n/a | n/a | n/a |
+
+The reranker clears the raw proposal gate of 70/90 and confirms that the count
+head, rather than the frozen graph representation alone, caused part of the
+original error. It does not clear the safety gate. A threshold with 100%
+validation failure recall audited 14.4% of test contexts but caught only 3 of
+9 failures, leaving 6 unaudited. Its 23.23x selective timing is therefore
+unsafe. Auditing every graph catches all failures, but reduces median pipeline
+speedup to 0.428x. Per the preregistered rule, the neural branch is a NO-GO as a
+secondary method, and a further topology-holdout expansion was not launched.
+The adaptive teacher is not a global boundary oracle, so 81/90 versus its
+71/90 does not establish dominance or certification.
+
 ### Topology holdout
 
 A second split held out maze topology seeds while retaining deterministic-map
@@ -99,13 +134,15 @@ explicit rule.
 
 ## Interpretation
 
-The experiment separates three claims:
+The experiment separates four claims:
 
 1. A graph-conditioned forward pass learns some constraint-relevant structure
    and is hundreds of times faster than iterative selection.
 2. Boundary imitation quality is not itself a group-feasibility or value
    certificate.
-3. Current validation-calibrated confidence routing does not replace the
+3. Direct downstream-risk training improves proposal quality from 68/90 to
+   81/90 joint passes.
+4. Validation-calibrated confidence routing still does not replace the
    production audit.
 
 The current GNN is therefore an uncertified ablation. Its improvement over
@@ -124,11 +161,16 @@ remains the reference and fallback when hard group feasibility is required.
 - `experiments/run_boundary_heatmap_downstream.py`: production group and value audit.
 - `experiments/analyze_boundary_heatmap_student.py`: explicit-rule identity and failure analysis.
 - `experiments/calibrate_boundary_heatmap_selective_audit.py`: validation-only uncertainty calibration.
+- `experiments/boundary_constraint_student.py`: multi-head risk model, asymmetric loss, and deterministic reranking.
+- `experiments/run_boundary_constraint_candidates.py`: fixed cheap proposal family.
+- `experiments/run_constraint_aware_student.py`: train-only fitting and scale-holdout evaluation.
 - `experiments/output/boundary_heatmap_teacher_graphonly/`: compact graph-only teacher artifact.
 - `experiments/output/boundary_heatmap_gnn_graphonly/`: prediction and training summaries.
 - `experiments/output/boundary_heatmap_downstream_graphonly_test/`: strict scale-holdout audit.
 - `experiments/output/boundary_heatmap_downstream_graphonly_baselines/`: nearest-start and topology audits.
 - `experiments/output/boundary_heatmap_selective_audit_graphonly/`: selective-routing failure audit.
+- `experiments/output/boundary_constraint_student/`: selected downstream rows and raw proposal gate.
+- `experiments/output/boundary_constraint_selective_audit/`: independent calibration, full-audit timing, and final NO-GO record.
 
 The neural dependency is intentionally optional and pinned in
 `requirements-learning.txt`; the core operator and Lean artifact remain

@@ -1,0 +1,47 @@
+{
+  "raw_go_no_go": {
+    "observed_test_joint_pass_count": 81,
+    "raw_joint_pass_gate": true,
+    "remaining_gates": [
+      "validation-calibrated missed held-out failures <= 1",
+      "accepted pipeline speedup > 1",
+      "topology holdout does not collapse"
+    ],
+    "required_test_joint_pass_count": 70
+  },
+  "splits": [
+    {
+      "candidate_failure_auc": 1.0,
+      "joint_pass_count": 176,
+      "joint_pass_rate": 0.9777777777777777,
+      "median_selection_time_sec": 0.003298633499071002,
+      "n_candidates": 572,
+      "n_contexts": 180,
+      "oracle_union_pass_count": 176,
+      "oracle_union_pass_rate": 0.9777777777777777,
+      "split": "train"
+    },
+    {
+      "candidate_failure_auc": 0.8424590163934427,
+      "joint_pass_count": 85,
+      "joint_pass_rate": 0.9444444444444444,
+      "median_selection_time_sec": 0.004714212031103671,
+      "n_candidates": 294,
+      "n_contexts": 90,
+      "oracle_union_pass_count": 86,
+      "oracle_union_pass_rate": 0.9555555555555556,
+      "split": "validation"
+    },
+    {
+      "candidate_failure_auc": 0.7583850931677019,
+      "joint_pass_count": 81,
+      "joint_pass_rate": 0.9,
+      "median_selection_time_sec": 0.006351032468955964,
+      "n_candidates": 293,
+      "n_contexts": 90,
+      "oracle_union_pass_count": 85,
+      "oracle_union_pass_rate": 0.9444444444444444,
+      "split": "test"
+    }
+  ]
+}

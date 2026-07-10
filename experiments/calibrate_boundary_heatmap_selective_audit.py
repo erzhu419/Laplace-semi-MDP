@@ -20,6 +20,10 @@ RISK_METRICS: Tuple[RiskMetric, ...] = (
     ("ensemble_top_state_agreement", lambda value: -value),
     ("ensemble_max_node_logit_std", lambda value: value),
     ("ensemble_selected_logit_std", lambda value: value),
+    ("constraint_failure_probability", lambda value: value),
+    ("constraint_max_group_probability", lambda value: value),
+    ("constraint_predicted_gap", lambda value: value),
+    ("constraint_combined_risk", lambda value: value),
 )
 
 
@@ -152,6 +156,9 @@ def main() -> None:
     parser.add_argument("--test-csv", type=Path, required=True)
     parser.add_argument("--target-recalls", type=float, nargs="+", default=[0.9, 1.0])
     parser.add_argument("--max-normalized-gap", type=float, default=0.01)
+    parser.add_argument("--required-test-joint-pass-count", type=int, default=70)
+    parser.add_argument("--max-undetected-test-failures", type=int, default=1)
+    parser.add_argument("--min-accepted-pipeline-speedup", type=float, default=1.0)
     parser.add_argument(
         "--out-dir",
         type=Path,
@@ -248,11 +255,75 @@ def main() -> None:
             }
         )
 
+    full_audit_test = evaluate_rule(
+        test,
+        field="",
+        transform=lambda value: value,
+        threshold=float("-inf"),
+        max_normalized_gap=args.max_normalized_gap,
+        audit_all=True,
+    )
+    strict_row = max(
+        test_rows,
+        key=lambda row: finite_float(row.get("target_validation_failure_recall"), 0.0),
+    )
+    raw_joint_pass_count = int(
+        finite_float(strict_row.get("test_n_rows"), 0.0)
+        - finite_float(strict_row.get("test_n_student_failures"), 0.0)
+    )
+    raw_gate = raw_joint_pass_count >= args.required_test_joint_pass_count
+    routing_gate = int(
+        finite_float(strict_row.get("test_undetected_failures"), float("inf"))
+    ) <= args.max_undetected_test_failures
+    runtime_gate = finite_float(
+        strict_row.get("test_median_selective_speedup_vs_teacher"), 0.0
+    ) > args.min_accepted_pipeline_speedup
+    stopped_early = not (raw_gate and routing_gate and runtime_gate)
+    go_no_go = {
+        "status": "NO-GO" if stopped_early else "TOPOLOGY-HOLDOUT-PENDING",
+        "raw_test_joint_pass_count": raw_joint_pass_count,
+        "required_test_joint_pass_count": args.required_test_joint_pass_count,
+        "raw_joint_pass_gate": raw_gate,
+        "undetected_test_failures": int(
+            finite_float(strict_row.get("test_undetected_failures"), 0.0)
+        ),
+        "max_undetected_test_failures": args.max_undetected_test_failures,
+        "routing_safety_gate": routing_gate,
+        "median_selective_speedup": finite_float(
+            strict_row.get("test_median_selective_speedup_vs_teacher")
+        ),
+        "min_accepted_pipeline_speedup": args.min_accepted_pipeline_speedup,
+        "runtime_gate": runtime_gate,
+        "full_audit_median_speedup": finite_float(
+            full_audit_test.get("median_selective_speedup_vs_teacher")
+        ),
+        "topology_holdout_gate": (
+            "NOT-RUN: prespecified early stop after scale/routing gate"
+            if stopped_early
+            else "PENDING"
+        ),
+        "secondary_method_gate": False,
+        "paper_position": "uncertified ablation; explicit Green/RD operator remains primary",
+    }
+
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_csv_all_fields(args.out_dir / "calibration_frontier.csv", calibration_rows)
     write_csv_all_fields(args.out_dir / "heldout_selective_audit.csv", test_rows)
+    write_csv_all_fields(args.out_dir / "heldout_full_audit.csv", [full_audit_test])
+    (args.out_dir / "go_no_go.json").write_text(
+        json.dumps(go_no_go, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     (args.out_dir / "summary.json").write_text(
-        json.dumps({"calibration": calibration_rows, "test": test_rows}, indent=2, sort_keys=True)
+        json.dumps(
+            {
+                "calibration": calibration_rows,
+                "test": test_rows,
+                "full_audit_test": full_audit_test,
+                "go_no_go": go_no_go,
+            },
+            indent=2,
+            sort_keys=True,
+        )
         + "\n",
         encoding="utf-8",
     )
@@ -270,6 +341,12 @@ def main() -> None:
         "## Held-Out Routing",
         "",
         markdown_table(test_rows, list(test_rows[0]) if test_rows else []),
+        "",
+        "## Prespecified Go/No-Go",
+        "",
+        markdown_table([go_no_go], list(go_no_go)),
+        "",
+        "The topology-holdout expansion is not launched after an earlier prespecified gate fails.",
     ]
     (args.out_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(json.dumps(test_rows, sort_keys=True))

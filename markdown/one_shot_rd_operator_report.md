@@ -140,6 +140,17 @@ learns some constraint-relevant structure, but imitating an adaptive boundary
 is not a certificate of value or group feasibility. Detailed results are in
 `markdown/boundary_heatmap_teacher_student_report.md`.
 
+One bounded constraint-aware follow-up reranked a fixed five-proposal family
+using predicted group violations, value gap, and joint failure. It improved the
+strict test joint pass count from `68/90` to `81/90` at `0.00635 s` median
+selection time (`656.0x` versus iterative selection). The candidate union could
+pass `85/90`, so the representation contains useful alternatives. However, a
+100%-recall validation threshold caught only 3 of 9 test failures and left 6
+unaudited. The apparently fast selective path (`23.23x`) is unsafe; full audit
+has zero misses but only `0.428x` speedup. This triggered the
+prespecified NO-GO rule, stopped further neural expansion, and strengthened the
+role of the explicit operator as the certifiable search-free method.
+
 ## Failure Boundary
 
 The current hard group audit is not solved by the frozen one-shot transform.

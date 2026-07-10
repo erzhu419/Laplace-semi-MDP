@@ -7330,7 +7330,9 @@
       "accepted_group_feasible_rate": "0.9444444444444444",
       "median_selection_speedup": "769.8192740217598",
       "median_accepted_pipeline_speedup": "0.4438337324121785",
-      "max_normalized_start_gap": "0.022249000484847407"
+      "max_normalized_start_gap": "0.022249000484847407",
+      "certification_status": "uncertified proposal",
+      "gate_status": "ablation"
     },
     {
       "source": "explicit_baseline",
@@ -7343,7 +7345,9 @@
       "accepted_group_feasible_rate": "0.8333333333333334",
       "median_selection_speedup": "877.8809547874098",
       "median_accepted_pipeline_speedup": "0.4349989758681264",
-      "max_normalized_start_gap": "0.02224900781274634"
+      "max_normalized_start_gap": "0.02224900781274634",
+      "certification_status": "uncertified proposal",
+      "gate_status": "ablation"
     },
     {
       "source": "explicit_baseline",
@@ -7356,29 +7360,93 @@
       "accepted_group_feasible_rate": "0.7888888888888889",
       "median_selection_speedup": "879.0496567025946",
       "median_accepted_pipeline_speedup": "0.32348480523589856",
-      "max_normalized_start_gap": "0.02224900784850102"
+      "max_normalized_start_gap": "0.02224900784850102",
+      "certification_status": "uncertified proposal",
+      "gate_status": "ablation"
+    },
+    {
+      "source": "constraint_aware_student",
+      "proposal": "constraint_aware_gnn",
+      "n_rows": "90",
+      "mean_boundary_jaccard": "0.5683421516754853",
+      "group_feasible_rate": "0.9222222222222223",
+      "student_joint_constraint_rate": "0.9",
+      "teacher_joint_constraint_rate": "0.7888888888888889",
+      "accepted_group_feasible_rate": "1.0",
+      "median_selection_speedup": "656.0300626356689",
+      "median_accepted_pipeline_speedup": "0.4281247548202982",
+      "max_normalized_start_gap": "0.022249000484847407",
+      "certification_status": "uncertified proposal",
+      "gate_status": "raw pass; routing NO-GO"
     },
     {
       "source": "empirical_selective_audit",
       "proposal": "student_score_margin",
+      "target_validation_failure_recall": "0.9",
       "n_rows": "90",
       "selective_accepted_joint_rate": "0.8111111111111111",
       "median_accepted_pipeline_speedup": "26.322966111717466",
       "max_normalized_start_gap": "0.00941529346174613",
       "audit_rate": "0.36666666666666664",
       "failure_recall": "0.45454545454545453",
-      "undetected_failures": "12"
+      "undetected_failures": "12",
+      "certification_status": "empirical routing; not a certificate",
+      "gate_status": "ablation"
     },
     {
       "source": "empirical_selective_audit",
       "proposal": "student_score_margin",
+      "target_validation_failure_recall": "1.0",
       "n_rows": "90",
       "selective_accepted_joint_rate": "0.8222222222222222",
       "median_accepted_pipeline_speedup": "25.68897047136489",
       "max_normalized_start_gap": "0.00941529346174613",
       "audit_rate": "0.4",
       "failure_recall": "0.5",
-      "undetected_failures": "11"
+      "undetected_failures": "11",
+      "certification_status": "empirical routing; not a certificate",
+      "gate_status": "ablation"
+    },
+    {
+      "source": "constraint_aware_selective_audit",
+      "proposal": "constraint_max_group_probability",
+      "target_validation_failure_recall": "0.9",
+      "n_rows": "90",
+      "selective_accepted_joint_rate": "0.9111111111111111",
+      "median_accepted_pipeline_speedup": "23.22757290385195",
+      "max_normalized_start_gap": "0.009415296610909554",
+      "audit_rate": "0.14444444444444443",
+      "failure_recall": "0.3333333333333333",
+      "undetected_failures": "6",
+      "certification_status": "empirical routing; not a certificate",
+      "gate_status": "NO-GO"
+    },
+    {
+      "source": "constraint_aware_selective_audit",
+      "proposal": "constraint_max_group_probability",
+      "target_validation_failure_recall": "1.0",
+      "n_rows": "90",
+      "selective_accepted_joint_rate": "0.9111111111111111",
+      "median_accepted_pipeline_speedup": "23.22757290385195",
+      "max_normalized_start_gap": "0.009415296610909554",
+      "audit_rate": "0.14444444444444443",
+      "failure_recall": "0.3333333333333333",
+      "undetected_failures": "6",
+      "certification_status": "empirical routing; not a certificate",
+      "gate_status": "NO-GO"
+    },
+    {
+      "source": "constraint_aware_full_audit",
+      "proposal": "full_production_audit",
+      "n_rows": "90",
+      "selective_accepted_joint_rate": "0.9777777777777777",
+      "median_accepted_pipeline_speedup": "0.4281247548202982",
+      "max_normalized_start_gap": "0.009415296610909554",
+      "audit_rate": "1.0",
+      "failure_recall": "1.0",
+      "undetected_failures": "0",
+      "certification_status": "full empirical audit",
+      "gate_status": "NO-GO: end-to-end speedup <= 1"
     }
   ],
   "runtime_by_boundary_selector": [

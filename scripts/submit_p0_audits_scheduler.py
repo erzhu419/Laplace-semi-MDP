@@ -62,7 +62,11 @@ SUITE_ENTRYPOINTS = {
     "boundary_heatmap_downstream": "experiments/run_boundary_heatmap_downstream.py",
     "boundary_heatmap_multifamily_downstream": "experiments/run_boundary_heatmap_downstream.py",
     "boundary_heatmap_multifamily_validation": "experiments/run_boundary_heatmap_downstream.py",
+    "boundary_heatmap_multifamily_train": "experiments/run_boundary_heatmap_downstream.py",
     "boundary_heatmap_graphonly_baselines": "experiments/run_boundary_heatmap_downstream.py",
+    "boundary_constraint_train": "experiments/run_boundary_heatmap_downstream.py",
+    "boundary_constraint_validation": "experiments/run_boundary_heatmap_downstream.py",
+    "boundary_constraint_test": "experiments/run_boundary_heatmap_downstream.py",
 }
 
 
@@ -233,6 +237,13 @@ def suite_specs(remote_python: Path) -> Dict[str, SuiteSpec]:
             "--fixed-random-count 0 --shard-index {index} --num-shards {count} --resume --continue-on-error "
             "--out-dir {out}/boundary_heatmap_downstream"
         ).format(python=python, index="{index}", count="{count}", out="{out}"), 90, 2, 4096, "boundary_heatmap_multifamily_validation"),
+        "boundary_heatmap_multifamily_train": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
+            "--predictions-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_train_predictions.csv "
+            "--teacher-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_train_teacher.csv "
+            "--fixed-random-count 0 --shard-index {index} --num-shards {count} --resume --continue-on-error "
+            "--out-dir {out}/boundary_heatmap_downstream"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 180, 2, 4096, "boundary_heatmap_multifamily_train"),
         "boundary_heatmap_graphonly_baselines": ((
             "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
             "--predictions-csv experiments/models/boundary_heatmap_gnn_graphonly/test_baseline_predictions.csv "
@@ -240,6 +251,27 @@ def suite_specs(remote_python: Path) -> Dict[str, SuiteSpec]:
             "--fixed-random-count 0 --shard-index {index} --num-shards {count} "
             "--resume --continue-on-error --out-dir {out}/boundary_heatmap_downstream"
         ).format(python=python, index="{index}", count="{count}", out="{out}"), 180, 2, 4096, "boundary_heatmap_graphonly_baselines"),
+        "boundary_constraint_train": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
+            "--predictions-csv experiments/models/boundary_constraint_candidates/constraint_candidates_train.csv "
+            "--teacher-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_train_teacher.csv "
+            "--fixed-random-count 0 --shard-index {index} --num-shards {count} "
+            "--resume --continue-on-error --out-dir {out}/boundary_constraint_downstream"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 180, 2, 2048, "boundary_constraint_train"),
+        "boundary_constraint_validation": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
+            "--predictions-csv experiments/models/boundary_constraint_candidates/constraint_candidates_validation.csv "
+            "--teacher-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_validation_teacher.csv "
+            "--fixed-random-count 0 --shard-index {index} --num-shards {count} "
+            "--resume --continue-on-error --out-dir {out}/boundary_constraint_downstream"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 90, 2, 2048, "boundary_constraint_validation"),
+        "boundary_constraint_test": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_boundary_heatmap_downstream.py "
+            "--predictions-csv experiments/models/boundary_constraint_candidates/constraint_candidates_test.csv "
+            "--teacher-csv experiments/models/boundary_heatmap_gnn_graphonly/selected_test_teacher.csv "
+            "--fixed-random-count 0 --shard-index {index} --num-shards {count} "
+            "--resume --continue-on-error --out-dir {out}/boundary_constraint_downstream"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 90, 2, 2048, "boundary_constraint_test"),
     }
 
 
@@ -351,7 +383,7 @@ def main() -> None:
     parser.add_argument(
         "--suites",
         nargs="+",
-        choices=["all", "planner", "planner_paired", "abstraction", "solver_oracle", "solver_oracle_four_rooms", "general_env", "general_env_taxi", "end_to_end", "end_to_end_converged", "budget_recovery", "budget_recovery_actual", "budget_recovery_actual_extended", "one_shot_random", "one_shot_random_reference", "one_shot_group_frontier", "one_shot_xl", "boundary_heatmap_teacher", "boundary_heatmap_multifamily_teacher", "boundary_heatmap_downstream", "boundary_heatmap_multifamily_downstream", "boundary_heatmap_multifamily_validation", "boundary_heatmap_graphonly_baselines"],
+        choices=["all", "planner", "planner_paired", "abstraction", "solver_oracle", "solver_oracle_four_rooms", "general_env", "general_env_taxi", "end_to_end", "end_to_end_converged", "budget_recovery", "budget_recovery_actual", "budget_recovery_actual_extended", "one_shot_random", "one_shot_random_reference", "one_shot_group_frontier", "one_shot_xl", "boundary_heatmap_teacher", "boundary_heatmap_multifamily_teacher", "boundary_heatmap_downstream", "boundary_heatmap_multifamily_downstream", "boundary_heatmap_multifamily_validation", "boundary_heatmap_multifamily_train", "boundary_heatmap_graphonly_baselines", "boundary_constraint_train", "boundary_constraint_validation", "boundary_constraint_test"],
         default=["all"],
     )
     parser.add_argument("--nodes", default=",".join(DEFAULT_NODES))
@@ -442,6 +474,11 @@ def main() -> None:
                     "allow_no_resume": True,
                     "allow_no_ckpt": True,
                     "allow_remote_large_data": True,
+                    # Some audit suite labels contain "train" because they
+                    # consume the training split.  They only evaluate frozen
+                    # boundaries and intentionally run on CPU nodes.
+                    "allow_cpu_training": True,
+                    "cpu_training_justification": "Frozen downstream audit; no model training is performed.",
                     "allow_duplicate": True,
                     "stage_excludes": STAGE_EXCLUDES,
                 }

@@ -941,8 +941,8 @@ def main() -> None:
     )
     write_report(summary_rows, training_rows, protocol, args)
 
-    # The scheduler snapshot excludes experiments/output. Publish only the
-    # selected test predictions and metadata next to the compact model weights.
+    # The scheduler snapshot excludes experiments/output. Publish selected
+    # split predictions and metadata next to the compact model weights.
     deploy_rows = [
         row
         for row in prediction_rows
@@ -955,6 +955,14 @@ def main() -> None:
             row
             for row in prediction_rows
             if row["split"] == "validation" and row["method"] == selected_method
+        ],
+    )
+    write_csv_all_fields(
+        args.model_dir / "selected_train_predictions.csv",
+        [
+            row
+            for row in prediction_rows
+            if row["split"] == "train" and row["method"] == selected_method
         ],
     )
     write_csv_all_fields(
@@ -1011,6 +1019,10 @@ def main() -> None:
     write_csv_all_fields(
         args.model_dir / "selected_validation_teacher.csv",
         [dict(sample.teacher_row) for sample in samples if sample.split == "validation"],
+    )
+    write_csv_all_fields(
+        args.model_dir / "selected_train_teacher.csv",
+        [dict(sample.teacher_row) for sample in samples if sample.split == "train"],
     )
     (args.model_dir / "protocol.json").write_text(
         json.dumps(protocol, indent=2, default=json_default, sort_keys=True) + "\n",

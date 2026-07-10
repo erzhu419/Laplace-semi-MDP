@@ -1,0 +1,2 @@
+n_rows,n_student_failures,audit_rate,failure_recall,undetected_failures,accepted_feasible_rate,fallback_rate,median_selective_pipeline_time_sec,median_selective_speedup_vs_teacher,max_accepted_normalized_start_gap
+90,9,1.0,1.0,0,0.9777777777777777,0.1,8.503898015944287,0.4281247548202982,0.009415296610909554

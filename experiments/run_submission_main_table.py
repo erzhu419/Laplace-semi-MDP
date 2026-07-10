@@ -1043,9 +1043,16 @@ def build_boundary_student_rows(
     proposal_rows: Sequence[Mapping[str, str]],
     baseline_rows: Sequence[Mapping[str, str]],
     selective_rows: Sequence[Mapping[str, str]],
+    constraint_rows: Sequence[Mapping[str, str]],
+    constraint_selective_rows: Sequence[Mapping[str, str]],
+    constraint_full_audit_rows: Sequence[Mapping[str, str]],
 ) -> List[Dict[str, object]]:
     out: List[Dict[str, object]] = []
-    for source, rows in (("learned_student", proposal_rows), ("explicit_baseline", baseline_rows)):
+    for source, rows in (
+        ("learned_student", proposal_rows),
+        ("explicit_baseline", baseline_rows),
+        ("constraint_aware_student", constraint_rows),
+    ):
         for row in rows:
             out.append(
                 {
@@ -1070,26 +1077,64 @@ def build_boundary_student_rows(
                     "max_normalized_start_gap": row.get(
                         "max_student_normalized_start_gap", ""
                     ),
+                    "certification_status": "uncertified proposal",
+                    "gate_status": (
+                        "raw pass; routing NO-GO"
+                        if source == "constraint_aware_student"
+                        else "ablation"
+                    ),
                 }
             )
-    for row in selective_rows:
+    for source, rows in (
+        ("empirical_selective_audit", selective_rows),
+        ("constraint_aware_selective_audit", constraint_selective_rows),
+    ):
+        for row in rows:
+            undetected = finite_float(row.get("test_undetected_failures"), float("inf"))
+            out.append(
+                {
+                    "source": source,
+                    "proposal": row.get("metric", ""),
+                    "target_validation_failure_recall": row.get(
+                        "target_validation_failure_recall", ""
+                    ),
+                    "n_rows": row.get("test_n_rows", ""),
+                    "selective_accepted_joint_rate": row.get(
+                        "test_accepted_feasible_rate", ""
+                    ),
+                    "median_accepted_pipeline_speedup": row.get(
+                        "test_median_selective_speedup_vs_teacher", ""
+                    ),
+                    "max_normalized_start_gap": row.get(
+                        "test_max_accepted_normalized_start_gap", ""
+                    ),
+                    "audit_rate": row.get("test_audit_rate", ""),
+                    "failure_recall": row.get("test_failure_recall", ""),
+                    "undetected_failures": row.get("test_undetected_failures", ""),
+                    "certification_status": "empirical routing; not a certificate",
+                    "gate_status": (
+                        "NO-GO" if source == "constraint_aware_selective_audit" and undetected > 1 else "ablation"
+                    ),
+                }
+            )
+    for row in constraint_full_audit_rows:
         out.append(
             {
-                "source": "empirical_selective_audit",
-                "proposal": row.get("metric", ""),
-                "n_rows": row.get("test_n_rows", ""),
-                "selective_accepted_joint_rate": row.get(
-                    "test_accepted_feasible_rate", ""
-                ),
+                "source": "constraint_aware_full_audit",
+                "proposal": "full_production_audit",
+                "n_rows": row.get("n_rows", ""),
+                "selective_accepted_joint_rate": row.get("accepted_feasible_rate", ""),
                 "median_accepted_pipeline_speedup": row.get(
-                    "test_median_selective_speedup_vs_teacher", ""
+                    "median_selective_speedup_vs_teacher", ""
                 ),
                 "max_normalized_start_gap": row.get(
-                    "test_max_accepted_normalized_start_gap", ""
+                    "max_accepted_normalized_start_gap", ""
                 ),
-                "audit_rate": row.get("test_audit_rate", ""),
-                "failure_recall": row.get("test_failure_recall", ""),
-                "undetected_failures": row.get("test_undetected_failures", ""),
+                "audit_rate": row.get("audit_rate", ""),
+                "failure_recall": row.get("failure_recall", ""),
+                "undetected_failures": row.get("undetected_failures", ""),
+                "certification_status": "full empirical audit",
+                "gate_status": "NO-GO: end-to-end speedup <= 1",
             }
         )
     return out
@@ -1545,6 +1590,7 @@ def write_report(
     boundary_student_columns = [
         "source",
         "proposal",
+        "target_validation_failure_recall",
         "n_rows",
         "mean_boundary_jaccard",
         "group_feasible_rate",
@@ -1558,6 +1604,8 @@ def write_report(
         "audit_rate",
         "failure_recall",
         "undetected_failures",
+        "certification_status",
+        "gate_status",
     ]
     best_total_unique = max((finite_float(row.get("total_speedup_unique_top_fallback")) for row in main_rows), default=float("nan"))
     best_total_tie = max((finite_float(row.get("total_speedup_tie_aware")) for row in main_rows), default=float("nan"))
@@ -1659,7 +1707,7 @@ def write_report(
         "",
         "### Learned Boundary Student Ablation",
         "",
-        "The transition-graph GNN is an uncertified ablation, not a second proposed method. Selection-only speed is reported next to production feasibility, the joint group/value constraint, and audited pipeline cost. Selective-audit rows are invalid as certified pipelines when held-out failures remain undetected.",
+        "The transition-graph GNN is an uncertified ablation, not a second proposed method. The bounded constraint-aware follow-up improves raw proposal quality but fails its routing gate: selective rows are invalid as safe pipelines when held-out failures remain undetected, while full audit is slower than the explicit backend.",
         "",
         markdown_table(
             [{col: row.get(col, "") for col in boundary_student_columns} for row in boundary_student_rows],
@@ -1877,6 +1925,9 @@ def write_report(
         f"- learned boundary student: `{args.boundary_student_csv}`",
         f"- explicit boundary-student baselines: `{args.boundary_student_baseline_csv}`",
         f"- empirical selective audit: `{args.boundary_student_selective_csv}`",
+        f"- constraint-aware student: `{args.boundary_constraint_student_csv}`",
+        f"- constraint-aware selective audit: `{args.boundary_constraint_selective_csv}`",
+        f"- constraint-aware full audit: `{args.boundary_constraint_full_audit_csv}`",
         f"- strong full-state planners: `{args.planner_baseline_csv}`",
         f"- core benchmark: `{args.core_csv}`",
         f"- direct state-abstraction baselines: `{args.abstraction_csv}`",
@@ -1950,6 +2001,27 @@ def main() -> None:
             "heldout_selective_audit.csv"
         ),
     )
+    parser.add_argument(
+        "--boundary-constraint-student-csv",
+        type=Path,
+        default=Path("experiments/output/boundary_constraint_student_test/summary.csv"),
+    )
+    parser.add_argument(
+        "--boundary-constraint-selective-csv",
+        type=Path,
+        default=Path(
+            "experiments/output/boundary_constraint_selective_audit/"
+            "heldout_selective_audit.csv"
+        ),
+    )
+    parser.add_argument(
+        "--boundary-constraint-full-audit-csv",
+        type=Path,
+        default=Path(
+            "experiments/output/boundary_constraint_selective_audit/"
+            "heldout_full_audit.csv"
+        ),
+    )
     parser.add_argument("--planner-baseline-csv", type=Path, default=Path("experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv"))
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
     parser.add_argument("--abstraction-csv", type=Path, default=Path("experiments/output/abstraction_baseline_comparison/abstraction_baseline_aggregate.csv"))
@@ -2002,6 +2074,11 @@ def main() -> None:
     boundary_student_raw = read_csv_rows(args.boundary_student_csv)
     boundary_student_baseline_raw = read_csv_rows(args.boundary_student_baseline_csv)
     boundary_student_selective_raw = read_csv_rows(args.boundary_student_selective_csv)
+    boundary_constraint_student_raw = read_csv_rows(args.boundary_constraint_student_csv)
+    boundary_constraint_selective_raw = read_csv_rows(args.boundary_constraint_selective_csv)
+    boundary_constraint_full_audit_raw = read_csv_rows(
+        args.boundary_constraint_full_audit_csv
+    )
     planner_raw = read_csv_rows(args.planner_baseline_csv)
     core_rows = read_csv_rows(args.core_csv)
     abstraction_raw = read_csv_rows(args.abstraction_csv)
@@ -2039,6 +2116,9 @@ def main() -> None:
         boundary_student_raw,
         boundary_student_baseline_raw,
         boundary_student_selective_raw,
+        boundary_constraint_student_raw,
+        boundary_constraint_selective_raw,
+        boundary_constraint_full_audit_raw,
     )
     selector_runtime_rows = build_selector_runtime_rows(main_rows)
     compact_rows = build_compact_baseline_rows(core_rows)

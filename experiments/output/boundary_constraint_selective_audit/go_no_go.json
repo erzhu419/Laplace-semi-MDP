@@ -1,0 +1,16 @@
+{
+  "full_audit_median_speedup": 0.4281247548202982,
+  "max_undetected_test_failures": 1,
+  "median_selective_speedup": 23.22757290385195,
+  "min_accepted_pipeline_speedup": 1.0,
+  "paper_position": "uncertified ablation; explicit Green/RD operator remains primary",
+  "raw_joint_pass_gate": true,
+  "raw_test_joint_pass_count": 81,
+  "required_test_joint_pass_count": 70,
+  "routing_safety_gate": false,
+  "runtime_gate": true,
+  "secondary_method_gate": false,
+  "status": "NO-GO",
+  "topology_holdout_gate": "NOT-RUN: prespecified early stop after scale/routing gate",
+  "undetected_test_failures": 6
+}

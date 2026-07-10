@@ -395,13 +395,28 @@ teacher pipeline. A score-margin threshold calibrated for 100\% validation
 joint-failure recall audited 40.0\% of test contexts but caught only 50.0\% of
 test failures, leaving eleven failed graphs unaudited.
 
-This teacher--student experiment is therefore an uncertified ablation rather
-than a second proposed method. The six-context net gain over nearest-start
-shows that the student learns some constraint-relevant structure, but fast
-boundary imitation neither certifies the induced option library nor transfers
-the teacher's group and value guarantees. The explicit Green operator remains
-our search-free proposal; the learned student does not replace its mathematical
-certificate or the production audit.
+We then ran one prespecified constraint-aware follow-up. The frozen GCN emitted
+a deduplicated family containing its learned count, fixed top-1/top-2/top-3
+prefixes, and nearest-start, for 1,159 candidate graphs. A train-only multi-head
+risk model predicted the three group violations, normalized value gap, and
+joint failure with an asymmetric underestimation penalty. It reranked the fixed
+family without insertion, beam expansion, or Green recomputation. The strict
+test pass count improved from 68/90 to 81/90 (the candidate-union oracle was
+85/90), at 0.00635 seconds median selection time or $656.0\times$ versus the
+iterative teacher. This isolates the original count head as one source of
+error, but does not establish dominance over the nonoptimal adaptive teacher.
+
+The safety gate failed. A threshold with 100\% validation failure recall audited
+14.4\% of scale-test contexts but caught only 3 of 9 failures, leaving six
+unaudited. Its $23.23\times$ selective timing is therefore not a safe speedup.
+Full audit caught every failure but achieved only $0.428\times$ median
+pipeline speedup. Under the prespecified stopping rule, we did not launch a
+further topology-holdout expansion. The complete neural experiment is therefore
+an uncertified ablation rather than a second proposed method. It shows that a
+learned forward pass can improve proposal quality, but neither imitation nor
+direct risk prediction transfers the teacher's group and value guarantees. The
+explicit Green operator remains our search-free proposal; the learned student
+does not replace its mathematical certificate or the production audit.
 
 The hard group audit is the main negative result. A frozen one-shot score did
 not satisfy all topology/value/stochastic groups on the three-map diagnostic,
