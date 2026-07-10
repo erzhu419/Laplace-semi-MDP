@@ -1,6 +1,6 @@
 # Submission Main Table
 
-Generated: 2026-07-10T18:52:02
+Generated: 2026-07-10T22:55:20
 
 This report is the paper-facing aggregation layer. It keeps audit protocols separate, reports normalized gaps, and never treats the legacy Python VI denominator as the conservative runtime baseline when a matched strong planner measurement is available.
 
@@ -156,6 +156,30 @@ This report is the paper-facing aggregation layer. It keeps audit protocols sepa
 | open_room_32 | 0.1 | turn_articulation | certified_adaptive_green_rd | 1024 | 4.0 | 256 | 102.0 | 8.868e-07 | 2.297 | sparse_vectorized_vi | 0.008407 | 0.008135 | 0.008738 | 1.972 | 0.0007778 | 1.973 | 1.973 | 2953 | 10.81 | 1.164 | 1.164 | 0.004261 | 1 | 1 | 259 | 0.1408 | 0.004225 | discounted_unit_reward_bound |  |  |  |  |  |  |  |  |  |
 | four_rooms_31 | 0.05 | endpoints | certified_adaptive_green_rd | 904 | 2.0 | 452 | 87.0 | 8.822e-07 | 1.667 | sparse_vectorized_vi | 0.00694 | 0.006555 | 0.007172 | 1.416 | 0.0001746 | 1.416 | 1.416 | 9548 | 39.75 | 1.177 | 1.177 | 0.0049 | 1 | 1 | 210 | 0.09094 | 0.002728 | discounted_unit_reward_bound |  |  |  |  |  |  |  |  |  |
 | maze_21 | 0.1 | coverage_sqrt | certified_adaptive_green_rd | 199 | 15.0 | 13.27 | 58.0 | 9.903e-07 | 0.4793 | sparse_vectorized_vi | 0.00677 | 0.006576 | 0.007153 | 15.61 | 0.01994 | 15.63 | 15.63 | 24.03 | 0.3395 | 0.03067 | 0.03067 | 0.0004333 | 34 | 34 |  | 1.228e-06 | 3.684e-08 | discounted_unit_reward_bound |  |  |  |  |  |  |  |  |  |
+
+## One-Shot Operator Versus Search
+
+The one-shot rows measure one frozen sparse Green response and one threshold pass; iterative/exact search appears only in the paired speedup columns. Final-kernel time is reported separately, so extraction speed is not confused with graph-model construction.
+
+| source | method | n_rows | median_n_boundary | median_state_compression | median_selection_time_sec | median_final_kernel_time_sec | median_selection_speedup_vs_iterative | median_total_speedup_vs_iterative | median_selection_speedup_vs_exact_search | median_total_speedup_vs_exact_search | median_total_speedup_vs_sparse_vi | max_normalized_value_gap | median_D_occ | median_boundary_jaccard_vs_iterative |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| one_shot_rd_operator | one_shot_rd_t0p10 | 12 | 3.5 | 21 | 0.01143 | 0.02981 | 35.21 | 7.681 | 153.2 | 23.26 | 0.01721 | 0.009628 | 1.4470983993044236e-16 | 0.6667 |
+| one_shot_rd_operator | one_shot_rd_t0p15 | 12 | 3.5 | 21 | 0.01095 | 0.02944 | 40.06 | 7.772 | 157.2 | 22.86 | 0.01715 | 0.009628 | 1.4470983993044236e-16 | 0.6667 |
+| one_shot_rd_operator | one_shot_rd_t0p20 | 12 | 3.5 | 21 | 0.01086 | 0.03006 | 51.27 | 8.073 | 157.3 | 22.95 | 0.01707 | 0.009628 | 1.4470983993044236e-16 | 0.6667 |
+| one_shot_rd_operator_random | one_shot_rd_t0p15 | 108 | 18 | 6.296 | 0.0247 | 0.8779 | nan | nan | nan | nan | 0.003538 | 1.457e-07 | 9.869e-07 | nan |
+| one_shot_rd_operator_random | one_shot_rd_t0p75 | 108 | 10 | 9.7 | 0.02493 | 0.6243 | nan | nan | nan | nan | 0.005842 | 1.059e-07 | 7 | nan |
+| one_shot_rd_operator_random_reference | one_shot_rd_t0p15 | 20 | 13 | 4.85 | 0.02333 | 0.5449 | 369.5 | 12.94 | nan | nan | 0.005735 | 1.195e-07 | 4.866e-08 | 0.9199 |
+| one_shot_rd_operator_xl_end_to_end | one_shot_rd_t0p15 | 27 | 3 | 192 | 0.07967 | 2.049 | 947.1 | 15.13 | nan | nan | 0.003863 | 0.009098 | 2.3645527521133335e-53 | nan |
+
+### Frozen Group-FD Prefix Audit
+
+This diagnostic freezes one exact multi-probe candidate order, audits prefixes without rescoring, and exposes nonmonotone feasibility caused by the changing boundary/option library.
+
+| map | slip | n_tested_prefixes | max_tested_k | any_feasible | feasible_prefixes | first_feasible_k | infeasible_after_first_feasible | best_feasible_state_compression | n_candidate_insertion_evaluations | n_beam_expansions |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| four_rooms_11 | 0.05 | 13 | 24 | True | 3,4,5,6,8,10 | 3 | True | 20.8 | 0 | 0 |
+| maze_13 | 0.05 | 13 | 24 | False |  |  | False | nan | 0 | 0 |
+| open_room_12 | 0.05 | 12 | 20 | True | 2 | 2 | True | 36 | 0 | 0 |
 
 ## Runtime By Boundary Selector
 
@@ -1087,6 +1111,7 @@ Edge-reward speedups in this legacy artifact use dense NumPy full-state VI. They
 | paper_claim | proof_status | experiment_status | manuscript_location | remaining_gap |
 | --- | --- | --- | --- | --- |
 | The frozen split score is an exact finite difference of a fixed local RD objective. | proved_symbol_present | rows=9, margin_condition=1, stable_when_checked=1 | Method theorem, not adaptive solver guarantee | State frozen candidate universe/options/weights explicitly. |
+| A no-recompute Green response gives a fast explicit boundary proposal whose threshold and local maxima are stable outside certified score-error margins. | proved_symbol_present | rows=299, median_selection=0.02365s, median_speedup_vs_iterative=137.8, max_normalized_value_gap=0.009628 | One-shot implementation and operator-vs-search result | This certifies response/selection stability, not global RD optimality; failed group audits use the separately reported adaptive fallback. |
 | First-hit Green kernels define legal compressed edge models on finite absorbing interiors. | proved_symbol_present | rows=80, graph_rows=70, max_start_gap=0.04973 | Graph-SMDP construction | Use exact Green as reference operator; adaptive/truncated variants are certified implementations. |
 | Truncated/adaptive Green scores are certified by Neumann tail bounds. | proved_symbol_present | rows=20, final=20, tie_aware_final=20 | Implementation theorem and appendix certificate | Report when tie/top-set exact fallback is used rather than hiding it as speed. |
 | Bits distortion admits a controlled finite-difference/Taylor approximation. | proved_symbol_present | rows=9, margin_condition=1, stable_when_checked=1 | Operator approximation and ablation | Keep finite-difference score as the main theorem; gradient score is an approximation. |
@@ -1111,6 +1136,8 @@ Edge-reward speedups in this legacy artifact use dense NumPy full-state VI. They
 ## Source Artifacts
 
 - large-scale adaptive: `experiments/output/large_scale_compression_adaptive/large_scale_compression.csv`
+- one-shot operator suites: `experiments/output/one_shot_rd_operator/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_random/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_random_reference/one_shot_rd_operator.csv, experiments/output/one_shot_rd_operator_xl_end_to_end/one_shot_rd_operator.csv`
+- frozen one-shot group-prefix audit: `experiments/output/one_shot_group_fd_frontier/one_shot_group_fd_frontier.csv`
 - strong full-state planners: `experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv`
 - core benchmark: `experiments/output/core_benchmark/core_benchmark.csv`
 - direct state-abstraction baselines: `experiments/output/abstraction_baseline_comparison/abstraction_baseline_aggregate.csv`

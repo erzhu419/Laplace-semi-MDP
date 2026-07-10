@@ -30,6 +30,17 @@ jobs:
             --out-dir /tmp/abstraction-smoke
       - name: Certificate and oracle smoke tests
         run: |
+          python experiments/run_one_shot_rd_operator.py \
+            --map-specs corridor:8 maze:7 --slips 0.05 --thresholds 0.15 \
+            --baselines --operator-only --out-dir /tmp/one-shot-smoke
+          python experiments/run_learned_green_horizon.py \
+            --train-map-specs open_room:7 maze:7 \
+            --calibration-map-specs open_room:8 maze:9 \
+            --test-map-specs corridor:16 open_room:9 maze:11 \
+            --train-maze-seeds 0 --calibration-maze-seeds 1 \
+            --test-maze-seeds 2 --slips 0.05 \
+            --max-horizon 128 --fixed-horizon 64 \
+            --out-dir /tmp/learned-horizon-smoke
           python experiments/run_end_to_end_gap_decomposition.py \
             --map-specs corridor:8 --slips 0.05 --methods endpoints \
             --truncation-steps 8 --planning-iterations 4 --no-resume \

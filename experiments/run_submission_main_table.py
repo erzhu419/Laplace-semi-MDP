@@ -932,9 +932,118 @@ def build_theorem_bridge_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[st
     return out
 
 
+def build_one_shot_summary_rows(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    filtered = [
+        row
+        for row in rows
+        if str(row.get("method", "")).startswith("one_shot_rd_") and not row.get("error")
+    ]
+    for (source, method), group in sorted(group_rows(filtered, ["source", "method"]).items()):
+        out.append(
+            {
+                "source": source,
+                "method": method,
+                "n_rows": len(group),
+                "median_n_boundary": median(finite_float(row.get("n_boundary")) for row in group),
+                "median_state_compression": median(
+                    finite_float(row.get("state_compression_ratio")) for row in group
+                ),
+                "median_selection_time_sec": median(
+                    finite_float(row.get("selection_time_sec")) for row in group
+                ),
+                "median_final_kernel_time_sec": median(
+                    finite_float(row.get("final_kernel_time_sec")) for row in group
+                ),
+                "median_selection_speedup_vs_iterative": median(
+                    finite_float(row.get("selection_speedup_vs_iterative")) for row in group
+                ),
+                "median_total_speedup_vs_iterative": median(
+                    finite_float(row.get("total_speedup_vs_iterative")) for row in group
+                ),
+                "median_selection_speedup_vs_exact_search": median(
+                    finite_float(row.get("selection_speedup_vs_exact_search")) for row in group
+                ),
+                "median_total_speedup_vs_exact_search": median(
+                    finite_float(row.get("total_speedup_vs_exact_search")) for row in group
+                ),
+                "median_total_speedup_vs_sparse_vi": median(
+                    finite_float(row.get("total_speedup_vs_sparse_vi")) for row in group
+                ),
+                "max_normalized_value_gap": max(
+                    (finite_float(row.get("normalized_value_gap_max")) for row in group),
+                    default=float("nan"),
+                ),
+                "median_D_occ": median(finite_float(row.get("D_occ")) for row in group),
+                "median_boundary_jaccard_vs_iterative": median(
+                    finite_float(row.get("boundary_jaccard_vs_iterative")) for row in group
+                ),
+            }
+        )
+    return out
+
+
+def build_one_shot_group_prefix_rows(
+    rows: Sequence[Mapping[str, str]],
+) -> List[Dict[str, object]]:
+    out: List[Dict[str, object]] = []
+    for (map_name, slip), group in sorted(group_rows(rows, ["map", "slip"]).items()):
+        ordered = sorted(group, key=lambda row: int(finite_float(row.get("top_m"), 0.0)))
+        feasible = [
+            int(finite_float(row.get("top_m"), 0.0))
+            for row in ordered
+            if parse_bool(row.get("group_all_feasible")) is True
+        ]
+        first_feasible = min(feasible) if feasible else None
+        infeasible_after = bool(
+            first_feasible is not None
+            and any(
+                int(finite_float(row.get("top_m"), 0.0)) > first_feasible
+                and parse_bool(row.get("group_all_feasible")) is False
+                for row in ordered
+            )
+        )
+        feasible_rows = [
+            row for row in ordered if parse_bool(row.get("group_all_feasible")) is True
+        ]
+        out.append(
+            {
+                "map": map_name,
+                "slip": slip,
+                "n_tested_prefixes": len(ordered),
+                "max_tested_k": max(
+                    (int(finite_float(row.get("top_m"), 0.0)) for row in ordered),
+                    default=0,
+                ),
+                "any_feasible": bool(feasible),
+                "feasible_prefixes": ",".join(str(value) for value in feasible),
+                "first_feasible_k": first_feasible if first_feasible is not None else "",
+                "infeasible_after_first_feasible": infeasible_after,
+                "best_feasible_state_compression": max(
+                    (finite_float(row.get("state_compression_ratio")) for row in feasible_rows),
+                    default=float("nan"),
+                ),
+                "n_candidate_insertion_evaluations": max(
+                    (
+                        int(finite_float(row.get("n_candidate_insertion_evaluations"), 0.0))
+                        for row in ordered
+                    ),
+                    default=0,
+                ),
+                "n_beam_expansions": max(
+                    (int(finite_float(row.get("n_beam_expansions"), 0.0)) for row in ordered),
+                    default=0,
+                ),
+            }
+        )
+    return out
+
+
 def write_report(
     out_path: Path,
     main_rows: Sequence[Mapping[str, object]],
+    one_shot_rows: Sequence[Mapping[str, object]],
+    one_shot_group_prefix_rows: Sequence[Mapping[str, object]],
     selector_runtime_rows: Sequence[Mapping[str, object]],
     planner_rows: Sequence[Mapping[str, object]],
     compact_rows: Sequence[Mapping[str, object]],
@@ -997,6 +1106,36 @@ def write_report(
         "fallback_used",
         "ambiguous_set_size",
         "tie_aware_final_certified",
+    ]
+    one_shot_columns = [
+        "source",
+        "method",
+        "n_rows",
+        "median_n_boundary",
+        "median_state_compression",
+        "median_selection_time_sec",
+        "median_final_kernel_time_sec",
+        "median_selection_speedup_vs_iterative",
+        "median_total_speedup_vs_iterative",
+        "median_selection_speedup_vs_exact_search",
+        "median_total_speedup_vs_exact_search",
+        "median_total_speedup_vs_sparse_vi",
+        "max_normalized_value_gap",
+        "median_D_occ",
+        "median_boundary_jaccard_vs_iterative",
+    ]
+    one_shot_group_prefix_columns = [
+        "map",
+        "slip",
+        "n_tested_prefixes",
+        "max_tested_k",
+        "any_feasible",
+        "feasible_prefixes",
+        "first_feasible_k",
+        "infeasible_after_first_feasible",
+        "best_feasible_state_compression",
+        "n_candidate_insertion_evaluations",
+        "n_beam_expansions",
     ]
     selector_runtime_columns = [
         "boundary_selector",
@@ -1425,6 +1564,25 @@ def write_report(
         "",
         markdown_table(main_display, main_columns) if main_display else "_No main runtime rows found._",
         "",
+        "## One-Shot Operator Versus Search",
+        "",
+        "The one-shot rows measure one frozen sparse Green response and one threshold pass; iterative/exact search appears only in the paired speedup columns. Final-kernel time is reported separately, so extraction speed is not confused with graph-model construction.",
+        "",
+        markdown_table(
+            [{col: row.get(col, "") for col in one_shot_columns} for row in one_shot_rows],
+            one_shot_columns,
+        )
+        if one_shot_rows
+        else "_No one-shot operator rows found._",
+        "",
+        "### Frozen Group-FD Prefix Audit",
+        "",
+        "This diagnostic freezes one exact multi-probe candidate order, audits prefixes without rescoring, and exposes nonmonotone feasibility caused by the changing boundary/option library.",
+        "",
+        markdown_table(one_shot_group_prefix_rows, one_shot_group_prefix_columns)
+        if one_shot_group_prefix_rows
+        else "_No frozen one-shot group-prefix rows found._",
+        "",
         "## Runtime By Boundary Selector",
         "",
         "This aggregation prevents the fastest endpoint or topology selector from being reported as a typical RD-selector gain.",
@@ -1629,6 +1787,8 @@ def write_report(
         "## Source Artifacts",
         "",
         f"- large-scale adaptive: `{args.large_scale_csv}`",
+        f"- one-shot operator suites: `{', '.join(str(path) for path in args.one_shot_csv)}`",
+        f"- frozen one-shot group-prefix audit: `{args.one_shot_group_frontier_csv}`",
         f"- strong full-state planners: `{args.planner_baseline_csv}`",
         f"- core benchmark: `{args.core_csv}`",
         f"- direct state-abstraction baselines: `{args.abstraction_csv}`",
@@ -1661,6 +1821,25 @@ def write_report(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build the paper-facing main table from existing experiment artifacts.")
     parser.add_argument("--large-scale-csv", type=Path, default=Path("experiments/output/large_scale_compression_adaptive/large_scale_compression.csv"))
+    parser.add_argument(
+        "--one-shot-csv",
+        type=Path,
+        nargs="*",
+        default=[
+            Path("experiments/output/one_shot_rd_operator/one_shot_rd_operator.csv"),
+            Path("experiments/output/one_shot_rd_operator_random/one_shot_rd_operator.csv"),
+            Path("experiments/output/one_shot_rd_operator_random_reference/one_shot_rd_operator.csv"),
+            Path("experiments/output/one_shot_rd_operator_xl_end_to_end/one_shot_rd_operator.csv"),
+        ],
+    )
+    parser.add_argument(
+        "--one-shot-group-frontier-csv",
+        type=Path,
+        default=Path(
+            "experiments/output/one_shot_group_fd_frontier/"
+            "one_shot_group_fd_frontier.csv"
+        ),
+    )
     parser.add_argument("--planner-baseline-csv", type=Path, default=Path("experiments/output/planner_baseline_comparison/strongest_planner_by_case.csv"))
     parser.add_argument("--core-csv", type=Path, default=Path("experiments/output/core_benchmark/core_benchmark.csv"))
     parser.add_argument("--abstraction-csv", type=Path, default=Path("experiments/output/abstraction_baseline_comparison/abstraction_baseline_aggregate.csv"))
@@ -1708,6 +1887,8 @@ def main() -> None:
     args = parser.parse_args()
 
     large_rows = read_csv_rows(args.large_scale_csv)
+    one_shot_raw = read_csv_many(args.one_shot_csv)
+    one_shot_group_prefix_raw = read_csv_rows(args.one_shot_group_frontier_csv)
     planner_raw = read_csv_rows(args.planner_baseline_csv)
     core_rows = read_csv_rows(args.core_csv)
     abstraction_raw = read_csv_rows(args.abstraction_csv)
@@ -1739,6 +1920,8 @@ def main() -> None:
     }
 
     main_rows = build_main_runtime_rows(large_rows, adaptive_rows, planner_raw, args.gamma)
+    one_shot_rows = build_one_shot_summary_rows(one_shot_raw)
+    one_shot_group_prefix_rows = build_one_shot_group_prefix_rows(one_shot_group_prefix_raw)
     selector_runtime_rows = build_selector_runtime_rows(main_rows)
     compact_rows = build_compact_baseline_rows(core_rows)
     abstraction_rows = build_abstraction_rows(abstraction_raw)
@@ -1764,6 +1947,10 @@ def main() -> None:
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_csv_all_fields(args.out_dir / "submission_runtime_table.csv", main_rows)
+    write_csv_all_fields(args.out_dir / "one_shot_operator_summary.csv", one_shot_rows)
+    write_csv_all_fields(
+        args.out_dir / "one_shot_group_prefix_summary.csv", one_shot_group_prefix_rows
+    )
     write_csv_all_fields(args.out_dir / "runtime_by_boundary_selector.csv", selector_runtime_rows)
     write_csv_all_fields(args.out_dir / "strong_planner_audit.csv", planner_raw)
     write_csv_all_fields(args.out_dir / "compact_baseline_aggregate.csv", compact_rows)
@@ -1794,6 +1981,8 @@ def main() -> None:
         json.dumps(
             {
                 "runtime_table": main_rows,
+                "one_shot_operator_summary": one_shot_rows,
+                "one_shot_group_prefix_summary": one_shot_group_prefix_rows,
                 "runtime_by_boundary_selector": selector_runtime_rows,
                 "strong_planner_audit": planner_raw,
                 "compact_baseline_aggregate": compact_rows,
@@ -1825,6 +2014,8 @@ def main() -> None:
     write_report(
         args.out_dir / "summary.md",
         main_rows,
+        one_shot_rows,
+        one_shot_group_prefix_rows,
         selector_runtime_rows,
         planner_raw,
         compact_rows,

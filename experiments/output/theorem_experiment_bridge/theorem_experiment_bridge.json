@@ -10,6 +10,16 @@
     "remaining_gap": "State frozen candidate universe/options/weights explicitly."
   },
   {
+    "paper_claim": "A no-recompute Green response gives a fast explicit boundary proposal whose threshold and local maxima are stable outside certified score-error margins.",
+    "math_object": "B_1shot=B0 union Top_m(LocalMax_tau,q(Phi_K))",
+    "proof_symbols": "linearScore_error_le; above_threshold_stable; below_threshold_stable; local_maximum_stable",
+    "proof_status": "proved_symbol_present",
+    "experiment_artifact": "experiments/output/one_shot_rd_operator/one_shot_rd_operator.csv; experiments/output/one_shot_rd_operator_random/one_shot_rd_operator.csv; experiments/output/one_shot_rd_operator_random_reference/one_shot_rd_operator.csv; experiments/output/one_shot_rd_operator_xl_end_to_end/one_shot_rd_operator.csv",
+    "experiment_status": "rows=299, median_selection=0.02365s, median_speedup_vs_iterative=137.8, max_normalized_value_gap=0.009628",
+    "manuscript_location": "One-shot implementation and operator-vs-search result",
+    "remaining_gap": "This certifies response/selection stability, not global RD optimality; failed group audits use the separately reported adaptive fallback."
+  },
+  {
     "paper_claim": "First-hit Green kernels define legal compressed edge models on finite absorbing interiors.",
     "math_object": "K=e_b^T (I-P_II)^(-1) P_IC",
     "proof_symbols": "green_formula_solves_linear_system; green_formula_entry_nonnegative; green_entry_le_rowBound",

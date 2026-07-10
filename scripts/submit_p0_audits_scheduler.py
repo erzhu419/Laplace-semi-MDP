@@ -53,6 +53,10 @@ SUITE_ENTRYPOINTS = {
     "budget_recovery": "experiments/run_random_maze_budget_recovery.py",
     "budget_recovery_actual": "experiments/run_random_maze_budget_recovery.py",
     "budget_recovery_actual_extended": "experiments/run_random_maze_budget_recovery.py",
+    "one_shot_random": "experiments/run_one_shot_rd_operator.py",
+    "one_shot_random_reference": "experiments/run_one_shot_rd_operator.py",
+    "one_shot_group_frontier": "experiments/run_one_shot_group_fd_frontier.py",
+    "one_shot_xl": "experiments/run_one_shot_rd_operator.py",
 }
 
 
@@ -156,6 +160,40 @@ def suite_specs(remote_python: Path) -> Dict[str, SuiteSpec]:
             "--shard-index {index} --num-shards {count} --continue-on-error "
             "--out-dir {out}/random_maze_budget_recovery"
         ).format(python=python, index="{index}", count="{count}", out="{out}"), 3, 2, 2048, "budget_recovery_actual_extended"),
+        "one_shot_random": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_one_shot_rd_operator.py "
+            "--map-specs --random-maze-sizes 11 15 19 "
+            "--maze-seeds 0 1 2 3 4 5 6 7 8 9 10 11 --slips 0 0.05 0.1 "
+            "--thresholds 0.15 0.75 --baselines --operator-truncation-steps 256 "
+            "--final-first-hit-steps 512 --planner-repeats 1 "
+            "--shard-index {index} --num-shards {count} --continue-on-error "
+            "--out-dir {out}/one_shot_rd_operator_random"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 108, 2, 4096, "one_shot_random"),
+        "one_shot_random_reference": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_one_shot_rd_operator.py "
+            "--map-specs --random-maze-sizes 11 15 --maze-seeds 0 1 2 3 4 "
+            "--slips 0.05 0.1 --thresholds 0.15 --baselines graph_rd_surrogate_joint "
+            "--operator-truncation-steps 256 --final-first-hit-steps 512 "
+            "--local-horizon 1e9 --planner-repeats 1 "
+            "--shard-index {index} --num-shards {count} --continue-on-error "
+            "--out-dir {out}/one_shot_rd_operator_random_reference"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 20, 2, 4096, "one_shot_random_reference"),
+        "one_shot_group_frontier": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_one_shot_group_fd_frontier.py "
+            "--map-specs open_room:12 four_rooms:11 maze:13 --slips 0.05 "
+            "--top-m-values 0 1 2 3 4 5 6 8 10 12 16 20 24 "
+            "--shard-index {index} --num-shards {count} "
+            "--out-dir {out}/one_shot_group_fd_frontier"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 3, 2, 4096, "one_shot_group_frontier"),
+        "one_shot_xl": ((
+            "LAPLACE_NUM_THREADS=1 {python} experiments/run_one_shot_rd_operator.py "
+            "--map-specs corridor:256 corridor:512 corridor:1024 open_room:24 open_room:32 "
+            "four_rooms:21 four_rooms:31 maze:21 maze:31 --slips 0 0.05 0.1 "
+            "--thresholds 0.15 --baselines --operator-truncation-steps 256 "
+            "--final-first-hit-steps 2048 --local-horizon 1e9 --planner-repeats 1 "
+            "--shard-index {index} --num-shards {count} --continue-on-error "
+            "--out-dir {out}/one_shot_rd_operator_xl_end_to_end"
+        ).format(python=python, index="{index}", count="{count}", out="{out}"), 27, 2, 8192, "one_shot_xl"),
     }
 
 
@@ -267,7 +305,7 @@ def main() -> None:
     parser.add_argument(
         "--suites",
         nargs="+",
-        choices=["all", "planner", "planner_paired", "abstraction", "solver_oracle", "solver_oracle_four_rooms", "general_env", "general_env_taxi", "end_to_end", "end_to_end_converged", "budget_recovery", "budget_recovery_actual", "budget_recovery_actual_extended"],
+        choices=["all", "planner", "planner_paired", "abstraction", "solver_oracle", "solver_oracle_four_rooms", "general_env", "general_env_taxi", "end_to_end", "end_to_end_converged", "budget_recovery", "budget_recovery_actual", "budget_recovery_actual_extended", "one_shot_random", "one_shot_random_reference", "one_shot_group_frontier", "one_shot_xl"],
         default=["all"],
     )
     parser.add_argument("--nodes", default=",".join(DEFAULT_NODES))

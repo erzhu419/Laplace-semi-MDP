@@ -27,10 +27,12 @@ introduce the RD Boundary Green Operator, a rate-distortion finite-difference
 operator that scores which states must remain vertices using first-hit Green
 kernels. For a fixed boundary, option family, and edge-weight model, the
 operator is the exact finite difference of a local compression objective. A
-group-constrained selector keeps topological, value, and stochastic distortion
-budgets separate, while certified adaptive Green approximations and adaptive
-feasible top-$k$ refinement reduce discovery cost without changing the claimed
-feasible envelope. Lean 4 proofs cover the frozen score identity, Green-kernel
+one-shot implementation freezes the mandatory boundary and probe policies,
+computes one truncated sparse Green response, thresholds a multichannel score,
+and constructs the final graph kernels once; it performs no candidate
+insertion or beam search. A group-constrained iterative fallback keeps
+topological, value, and stochastic distortion budgets separate when the
+one-shot graph fails an audit. Lean 4 proofs cover the frozen score identity, Green-kernel
 legality and truncation bounds, graph-SMDP contraction, score certificates, and
 an end-to-end decomposition from primitive optimal value to approximate graph
 planning. Experiments on finite known-model navigation tasks evaluate
@@ -80,9 +82,10 @@ optimize the frozen objective.
 
 Our contributions are: (i) a Bellman-aware boundary-graph compression objective
 based on exact first-hit option reductions; (ii) the frozen RD Boundary Green
-Operator and certified truncated implementations; (iii) group-constrained and
-adaptive feasible top-$k$ discovery with an explicit score-optimality boundary;
-(iv) an end-to-end value-gap decomposition that separates option restriction,
+Operator and a no-recompute, truncated sparse one-shot implementation; (iii) a
+clear separation between that explicit operator, combinatorial reference
+search, and a group-constrained adaptive fallback with an explicit
+score-optimality boundary; (iv) an end-to-end value-gap decomposition that separates option restriction,
 boundary restriction, kernel approximation, and planning residual; and (v) a
 benchmark that compares option discovery, direct state abstraction, Schur/Kron
 oracles, and strong full-state planners under matched constraints.
@@ -175,6 +178,45 @@ vertex and edge interface. The frozen qualification is essential. Once an
 outer solver rebuilds options, occupancies, or weights, it is optimizing a
 sequence of related local objectives rather than one fixed set function.
 
+\subsection{No-recompute one-shot implementation}
+The finite-difference score above is a reference objective, but evaluating it
+after every possible insertion is itself a combinatorial search. Our fast path
+instead applies a fixed Green-derived transform once. Starting from mandatory
+boundary $\B_0$ and a fixed anchor set $C$ (the task endpoints by default), let
+$P^{(c)}$ be the sparse transition matrix of the fixed policy targeting anchor
+$c$. The truncated response bank is
+\begin{equation}
+H_K(:,c)=\sum_{t=0}^{K}(\gamma P^{(c)}_{II})^tP^{(c)}_{Ic},
+\end{equation}
+and a discounted forward pass from each active source gives an exposure field
+$u_K$. Both are sparse message-passing computations; they are not recomputed
+for candidate insertions.
+
+For every candidate state, one random-walk Laplacian application forms Green,
+control-policy, and transition-entropy curvature channels. These are combined
+with exposure and a fixed topology channel. After robust per-channel
+normalization, the operator keeps eligible local maxima supported by at least
+$q$ channels above threshold $\tau$, requires a topology or stochastic gate,
+and retains at most $m$ states in a deterministic exposure-first order:
+\begin{equation}
+\B_{\mathrm{1shot}}=\B_0\cup
+\operatorname{Top}_m\!\left(\operatorname{LocalMax}_{\tau,q}
+(u_K,\mathcal L_{rw}H_K,\mathcal L_{rw}\pi,
+\phi_{topo},\mathcal L_{rw}\mathsf H(P))\right).
+\end{equation}
+Only after this single selection is the exact or certified approximate graph
+kernel built for the final $\B_{\mathrm{1shot}}$. Its discovery complexity is
+$O(|C|K\,\mathrm{nnz}(P))$ plus sparse channel application, rather than one or
+more Green solves per candidate and search step.
+
+This transform is deliberately analogous to a fixed convolutional or graph
+filter: it is motivated and calibrated by the exact RD finite difference, but
+we do not claim that thresholding it globally minimizes the RD set objective.
+Instead, Green-tail intervals certify channel error, score margins certify
+threshold and local-maximum stability, and the returned graph is checked by
+the same value and audit metrics as every other selector. Failed group audits
+invoke the iterative fallback rather than being silently declared preserved.
+
 \subsection{Group constraints and adaptive discovery}
 A scalar risk can compensate a topology failure with a low value-gradient risk,
 or vice versa. We therefore preserve separate topology, value, and stochastic
@@ -201,6 +243,12 @@ top-set exact fallback is reported explicitly. Weighted Collatz certificates
 provide a stronger sufficient convergence test when a raw row-sum condition is
 too conservative; they are appendix certificates rather than the main runtime
 decision rule.
+
+We also test whether a graph-conditioned model can predict $K$ before message
+passing. This prediction is only a scheduling proposal: the same frontier
+certificate remains authoritative, and a failed proposal continues or falls
+back. Consequently, learning changes runtime but not the certified acceptance
+condition.
 
 \section{Value Preservation Accounting}
 Let $V^*$ be the primitive optimal value, $V^{\Oset}$ the value after restricting
@@ -263,6 +311,78 @@ Legacy Python VI timing is retained only for historical reproduction; claims
 use the fastest numerically valid matched full-state planner.
 
 \section{Results}
+\subsection{Does the explicit one-shot operator replace search?}
+The earlier RD Green surrogate row used iterative candidate insertion and
+recomputed the boundary context after each split. Its single-task total-time
+number therefore measured a search algorithm, not the fixed operator proposed
+in the introduction. We implemented the no-recompute path separately and
+instrumented it to report zero candidate-insertion evaluations, zero beam
+expansions, one Green response per fixed anchor, and exactly one final graph
+kernel build.
+
+On 12 classic map--slip cases, the fixed threshold $\tau=0.15$ selected a
+boundary in a median 0.01095 seconds. This was $40.1\times$ faster than the
+iterative surrogate selector and $157\times$ faster than exact RD search on
+the same cases. After charging one final graph-kernel build, paired median
+speedups remained $7.77\times$ and $22.9\times$, respectively. The one-shot
+boundary was modestly denser (median boundary-size ratio 1.25 relative to the
+iterative selector). Its global maximum normalized value gap was unchanged at
+0.00963, while median occupancy-weighted hidden distortion decreased from
+0.380 to numerical zero. Boundary Jaccard agreement was 1 on corridor and most
+maze cases, but only 0.5--0.667 on four-room and open-room cases; similar value
+does not imply identical abstraction.
+
+The held-out DFS-maze suite contains 108 size--seed--slip contexts for each of
+two fixed thresholds. At $\tau=0.15$, median state compression was $6.30\times$,
+maximum normalized value gap was $1.46\times10^{-7}$, and median occupancy
+distortion was below $10^{-6}$. Raising the fixed threshold to 0.75 increased
+compression to $9.70\times$ and left task value accurate, but raised median
+occupancy distortion to 7.0. This is the intended rate--distortion behavior and
+also shows why task value alone is an insufficient selection criterion.
+On a paired 20-context subset (sizes 11 and 15, five seeds, and two slip
+levels), one-shot and iterative-surrogate boundaries had median Jaccard 0.920.
+One-shot extraction was $369.5\times$ faster and the complete graph pipeline
+was $12.94\times$ faster, while maximum normalized value gaps were
+$1.20\times10^{-7}$ and $1.08\times10^{-7}$, respectively.
+
+On the 27-case XL map--slip suite, one-shot extraction took a median 0.0797
+seconds and produced median $192\times$ state compression; maximum normalized
+start and boundary-value gaps were 0.00784 and 0.00910. Relative to the legacy
+iterative RD rows paired by map and slip, extraction was $947\times$ faster and
+the full one-shot graph pipeline was $15.1\times$ faster. These cross-run ratios
+diagnose algorithmic cost rather than constitute a repeated systems benchmark.
+Against the matched sparse full-state planner, single-task total speedup was
+still only $0.00386\times$: the median final-kernel build was 2.05 seconds,
+whereas the explicit operator itself took 0.0797 seconds. Thus the original
+operator idea works as a replacement for combinatorial boundary search, but it
+does not by itself remove exact edge-kernel construction cost.
+
+A trainable-horizon pilot used 105 training, 15 calibration, and 60 larger or
+held-out graph--slip contexts. A ridge proposal with split-conformal upper
+correction passed the certificate on its first attempt in 56/60 cases and after
+fallback in 60/60; the minimum boundary Jaccard against adaptive truncation was
+one. However, after charging graph-feature extraction and retries, its median
+speedup was only $0.906\times$ relative to a fixed 256-step prefix and
+$0.747\times$ relative to the existing adaptive frontier stop. Thus $K$ is
+predictable, but learning a scalar horizon is not the useful single-graph
+acceleration: the production implementation retains certified adaptive
+truncation, while learned horizons are at most a batching/scheduling ablation.
+
+The hard group audit is the main negative result. A frozen one-shot score did
+not satisfy all topology/value/stochastic groups on the three-map diagnostic,
+and adding more fixed local maxima did not monotonically repair feasibility
+because the option library changes with the boundary. The stricter frozen
+group finite-difference prefix confirms the mechanism:
+open-room was feasible only at tested prefix $k=2$ and infeasible again at
+$k=3$; four-rooms was feasible at tested prefixes $k=3,4,5,6,8,10$ but not
+$k=12$; and maze had no feasible prefix through $k=24$. Thus even an exact
+frozen candidate order neither guarantees feasibility nor induces a monotone
+feasibility path under an adaptive option library.
+We therefore use
+one-shot as the primary proposal and task-value path, then expose audit failure
+and invoke group-constrained refinement when required. We do not fold fallback
+time into the one-shot operator measurement or claim universal MDP equivalence.
+
 \subsection{Compression and constrained planning}
 The XL suite contains 135 large-scale compression rows, 360 random-maze rows,
 and 648 option-frontier rows. In five paired repetitions of each of 27
@@ -275,8 +395,10 @@ normalized start gap was $0.00589$. Across cases, the bootstrap 95\% interval
 was $[21.1,71.4]\times$ for graph planning. Nevertheless, its median
 single-task total speedup was only $0.00116\times$ (95\% interval
 $[0.000591,0.00159]\times$): discovery and kernel construction cost much more
-than one sparse full-state solve. This is a planning-compression result, not a
-single-task wall-time win.
+than one sparse full-state solve. This row is the iterative surrogate-search
+pipeline, not the one-shot operator above. It remains as the constrained
+reference/fallback result and is not used to characterize one-shot extraction
+cost. This is a planning-compression result, not a single-task wall-time win.
 
 \begin{table}[H]
 \centering
@@ -413,17 +535,19 @@ real-valued layer. It checks the frozen finite-difference identity, legality and
 nonnegativity of finite first-hit kernels, finite Neumann-tail and weighted
 certificates, bits-distortion curvature bounds, graph-SMDP contraction,
 residual-to-value bounds, interval and top-set decisions, group feasibility,
-adaptive feasible top-$k$, reward relabeling, goal-event error, and the four-term
+adaptive feasible top-$k$, one-shot linear-channel error and threshold/local-
+maximum stability, reward relabeling, goal-event error, and the four-term
 primitive-to-graph gap. Formalization does not turn the adaptive discovery
-heuristic into a global optimizer; it fixes the meaning of the operator and its
-certificates.
+or one-shot threshold heuristic into a global optimizer; it fixes the meaning
+of the operators and their certificates.
 
 \section{Limitations}
 The current method assumes a finite known transition model or an explicitly
 constructed empirical finite MDP. The proofs apply to that finite model, not
 directly to an underlying continuous simulator. Boundary discovery can cost
-more than one full-state solve, and its benefit is clearest for repeated
-planning or reward relabeling. Group constraints are only as complete as their
+more than one full-state solve when iterative search is used. The one-shot path
+removes that search but can return a denser graph or fail a group audit; its
+threshold is a model-selection parameter, not an RD-optimality theorem. Group constraints are only as complete as their
 probe families. Taxi demonstrates that a spatial boundary graph may erase
 factored task variables; resolving that case requires a compositional state
 representation, not merely more spatial landmarks. Finally, adaptive feasible

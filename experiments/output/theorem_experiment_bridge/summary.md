@@ -1,14 +1,15 @@
 # Theorem-to-Experiment Bridge
 
-Generated: 2026-07-10T18:52:01
+Generated: 2026-07-10T22:37:14
 
 This report turns each theoretical claim into a proof artifact, an experiment artifact, and an explicit manuscript placement. It is meant to prevent theorem claims from drifting beyond what the code and Lean layer actually support.
 
-- proof-plus-experiment covered claims: `11/13`
+- proof-plus-experiment covered claims: `12/14`
 
 | paper_claim | math_object | proof_status | experiment_status | manuscript_location | remaining_gap |
 | --- | --- | --- | --- | --- | --- |
 | The frozen split score is an exact finite difference of a fixed local RD objective. | S_FD(x|B)=L_theta(B)-L_theta(B union {x}) | proved_symbol_present | rows=9, margin_condition=1, stable_when_checked=1 | Method theorem, not adaptive solver guarantee | State frozen candidate universe/options/weights explicitly. |
+| A no-recompute Green response gives a fast explicit boundary proposal whose threshold and local maxima are stable outside certified score-error margins. | B_1shot=B0 union Top_m(LocalMax_tau,q(Phi_K)) | proved_symbol_present | rows=299, median_selection=0.02365s, median_speedup_vs_iterative=137.8, max_normalized_value_gap=0.009628 | One-shot implementation and operator-vs-search result | This certifies response/selection stability, not global RD optimality; failed group audits use the separately reported adaptive fallback. |
 | First-hit Green kernels define legal compressed edge models on finite absorbing interiors. | K=e_b^T (I-P_II)^(-1) P_IC | proved_symbol_present | rows=80, graph_rows=70, max_start_gap=0.04973 | Graph-SMDP construction | Use exact Green as reference operator; adaptive/truncated variants are certified implementations. |
 | Truncated/adaptive Green scores are certified by Neumann tail bounds. | sum_{t<=K} P_II^t P_IC with tail <= epsilon | proved_symbol_present | rows=20, final=20, tie_aware_final=20 | Implementation theorem and appendix certificate | Report when tie/top-set exact fallback is used rather than hiding it as speed. |
 | Bits distortion admits a controlled finite-difference/Taylor approximation. | phi(h)=-log2(1-h+eps) | proved_symbol_present | rows=9, margin_condition=1, stable_when_checked=1 | Operator approximation and ablation | Keep finite-difference score as the main theorem; gradient score is an approximation. |

@@ -119,6 +119,23 @@ def metric_status(name: str, rows: Sequence[Mapping[str, str]]) -> str:
         speedups = [value for value in speedups if value == value]
         median_speedup = sorted(speedups)[len(speedups) // 2] if speedups else float("nan")
         return f"rows={len(rows)}, feasible_match={matches}, max_regret={max_regret:.4g}, median_speedup={median_speedup:.4g}"
+    if name == "one_shot":
+        one_shot = [row for row in rows if str(row.get("method", "")).startswith("one_shot_rd_")]
+        selection = [finite_float(row.get("selection_time_sec")) for row in one_shot]
+        selection = [value for value in selection if math.isfinite(value)]
+        speedups = [finite_float(row.get("selection_speedup_vs_iterative")) for row in one_shot]
+        speedups = [value for value in speedups if math.isfinite(value)]
+        max_gap = max(
+            (finite_float(row.get("normalized_value_gap_max"), 0.0) for row in one_shot),
+            default=float("nan"),
+        )
+        return (
+            f"rows={len(one_shot)}, median_selection={statistics.median(selection):.4g}s, "
+            f"median_speedup_vs_iterative={statistics.median(speedups):.4g}, "
+            f"max_normalized_value_gap={max_gap:.4g}"
+            if selection and speedups
+            else f"rows={len(one_shot)}, max_normalized_value_gap={max_gap:.4g}"
+        )
     return f"rows={len(rows)}"
 
 
@@ -132,6 +149,11 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
     budget_recovery_rows = read_csv_rows(args.budget_recovery_csv)
     edge_reward_rows = read_csv_rows(args.edge_reward_csv)
     adaptive_topk_rows = read_csv_rows(args.adaptive_topk_paired_csv)
+    one_shot_rows = [
+        row
+        for path in args.one_shot_csv
+        for row in read_csv_rows(path)
+    ]
     return [
         {
             "paper_claim": "The frozen split score is an exact finite difference of a fixed local RD objective.",
@@ -142,6 +164,24 @@ def bridge_rows(args: argparse.Namespace) -> List[Dict[str, object]]:
             "experiment_status": metric_status("operator_checks", operator_rows),
             "manuscript_location": "Method theorem, not adaptive solver guarantee",
             "remaining_gap": "State frozen candidate universe/options/weights explicitly.",
+        },
+        {
+            "paper_claim": "A no-recompute Green response gives a fast explicit boundary proposal whose threshold and local maxima are stable outside certified score-error margins.",
+            "math_object": "B_1shot=B0 union Top_m(LocalMax_tau,q(Phi_K))",
+            "proof_symbols": "linearScore_error_le; above_threshold_stable; below_threshold_stable; local_maximum_stable",
+            "proof_status": symbol_status(
+                args.proof_root,
+                [
+                    "linearScore_error_le",
+                    "above_threshold_stable",
+                    "below_threshold_stable",
+                    "local_maximum_stable",
+                ],
+            ),
+            "experiment_artifact": "; ".join(str(path) for path in args.one_shot_csv),
+            "experiment_status": metric_status("one_shot", one_shot_rows),
+            "manuscript_location": "One-shot implementation and operator-vs-search result",
+            "remaining_gap": "This certifies response/selection stability, not global RD optimality; failed group audits use the separately reported adaptive fallback.",
         },
         {
             "paper_claim": "First-hit Green kernels define legal compressed edge models on finite absorbing interiors.",
@@ -365,6 +405,17 @@ def main() -> None:
         "--operator-checks-csv",
         type=Path,
         default=Path("experiments/output/rd_operator_theorem_checks_actual_small/summary.csv"),
+    )
+    parser.add_argument(
+        "--one-shot-csv",
+        type=Path,
+        nargs="*",
+        default=[
+            Path("experiments/output/one_shot_rd_operator/one_shot_rd_operator.csv"),
+            Path("experiments/output/one_shot_rd_operator_random/one_shot_rd_operator.csv"),
+            Path("experiments/output/one_shot_rd_operator_random_reference/one_shot_rd_operator.csv"),
+            Path("experiments/output/one_shot_rd_operator_xl_end_to_end/one_shot_rd_operator.csv"),
+        ],
     )
     parser.add_argument(
         "--adaptive-cert-csv",

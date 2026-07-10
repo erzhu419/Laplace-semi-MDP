@@ -34,6 +34,7 @@ from run_graph_baseline_comparison import (
     eigenoption_terminal_boundary_states,
     learned_boundary,
 )
+from one_shot_rd_operator import apply_one_shot_rd_operator
 
 
 DEFAULT_METHODS = (
@@ -42,6 +43,7 @@ DEFAULT_METHODS = (
     "betweenness_12",
     "random_landmarks_12",
     "coverage_12",
+    "graph_rd_one_shot",
     "graph_rd_joint",
     "turn_articulation",
 )
@@ -104,6 +106,8 @@ def method_family(method: str) -> str:
         return "option_algorithm:topological_coverage"
     if method.startswith("graph_rd_surrogate"):
         return "ours:rd_surrogate_graph"
+    if method == "graph_rd_one_shot":
+        return "ours:rd_one_shot_graph"
     if method.startswith("graph_rd_"):
         return "ours:rd_graph"
     if method in {"turn_articulation", "decision", "junction"}:
@@ -146,6 +150,24 @@ def construct_boundary(
         return random_landmark_boundary_states(grid, target_count=parse_count_suffix(method), rng=rng), constructor
     if method.startswith("coverage_"):
         return coverage_boundary_states(grid, target_count=parse_count_suffix(method)), constructor
+    if method == "graph_rd_one_shot":
+        result = apply_one_shot_rd_operator(
+            grid=grid,
+            slip=slip,
+            gamma=gamma,
+            mandatory_boundary=endpoint_boundary_states(grid),
+            truncation_steps=256,
+            tail_tol=1e-6,
+            max_splits=max_splits,
+            channel_threshold=0.15,
+            min_channel_support=2,
+            mandatory_exclusion_radius=1,
+            candidate_universe="turn_articulation",
+        )
+        constructor.update(result.diagnostics)
+        constructor.update(result.timings)
+        constructor["constructor_stop_reason"] = "one_shot_threshold"
+        return list(result.boundary), constructor
     if method == "graph_rd_joint":
         boundary, constructor_final = learned_boundary(
             "learned_rd_joint_occ2_audit2",

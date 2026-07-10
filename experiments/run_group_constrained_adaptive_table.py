@@ -15,11 +15,14 @@ from compression_experiment_utils import build_compressed_model_measured, parse_
 from run_first_boundary_targeted import markdown_table
 from run_graph_baseline_comparison import LEARNED_RECIPES
 from run_option_algorithm_comparison import json_default, write_csv_all_fields
+from one_shot_rd_operator import apply_one_shot_rd_operator
 from run_rd_group_constrained import (
     ProbeDeltaCache,
     evaluate_boundary_on_groups,
     fixed_basis,
     parse_group_specs,
+    probe_delta_table,
+    score_candidates,
     select_group_constrained_boundary,
 )
 
@@ -206,6 +209,112 @@ def run_method(
         constructor = {"constructor_method": "endpoints"}
         selection_time = 0.0
         group_eval = dict(context_info["endpoint_eval"])  # type: ignore[arg-type]
+    elif method == "one_shot_rd":
+        operator = apply_one_shot_rd_operator(
+            grid=GridWorld(rows),
+            slip=slip,
+            gamma=args.gamma,
+            mandatory_boundary=endpoint_boundary,
+            active_pairs=[
+                (int(source), int(target))
+                for source in endpoint_boundary
+                for target in endpoint_boundary
+                if int(source) != int(target)
+            ],
+            candidate_states=basis,
+            probe_anchors=basis,
+            probe_count=getattr(args, "one_shot_probe_count", None),
+            truncation_steps=getattr(args, "one_shot_steps", 256),
+            tail_tol=getattr(args, "one_shot_tail_tol", 1e-6),
+            max_splits=args.max_splits,
+            channel_threshold=getattr(args, "one_shot_threshold", 0.15),
+            min_channel_support=getattr(args, "one_shot_min_channel_support", 2),
+            mandatory_exclusion_radius=getattr(args, "one_shot_exclusion_radius", 1),
+            gate_channels=(),
+            candidate_universe=getattr(args, "one_shot_candidate_universe", "turn_articulation"),
+        )
+        boundary = list(operator.boundary)
+        selection_time = float(operator.timings["total_operator_time_sec"])
+        constructor = {
+            "constructor_method": "one_shot_rd",
+            "constructor_stop_reason": "one_shot_threshold",
+            "delta_backend": "one_shot_sparse_green",
+            "one_shot_diagnostics": operator.diagnostics,
+            **operator.timings,
+        }
+        group_eval = evaluate_group_boundary(
+            map_label=map_label,
+            rows=rows,
+            slip=slip,
+            boundary=boundary,
+            lens_groups=lens_groups,
+            recipe=recipe,
+            basis=basis,
+            budgets=budgets,
+            args=args,
+        )
+    elif method == "one_shot_group_fd":
+        all_probes = sorted({probe for probes in lens_groups.values() for probe in probes})
+        probe_cache = ProbeDeltaCache(enabled=False)
+        started = time.perf_counter()
+        before_by_probe, deltas_by_state, probe_rows = probe_delta_table(
+            map_name=map_label,
+            step=0,
+            rows=rows,
+            recipe=recipe,
+            basis=basis,
+            boundary=endpoint_boundary,
+            probes=all_probes,
+            gamma=args.gamma,
+            slip=slip,
+            lambda_struct=args.lambda_struct,
+            edge_weight=args.edge_weight,
+            probe_top_fraction=args.probe_top_fraction,
+            max_candidates=0,
+            probe_cache=probe_cache,
+            delta_backend="operator",
+        )
+        scored, predicted_risks, predicted_violations = score_candidates(
+            map_name=map_label,
+            step=0,
+            basis=basis,
+            boundary=endpoint_boundary,
+            lens_groups=lens_groups,
+            budgets=budgets,
+            before_by_probe=before_by_probe,
+            deltas_by_state=deltas_by_state,
+            group_risk_kind=args.group_risk_kind,
+            cvar_alpha=args.cvar_alpha,
+            score_mode=args.score_mode,
+            rate_tie_break=args.rate_tie_break,
+        )
+        selected = [int(row["candidate_state"]) for row in scored[: args.max_splits]]
+        boundary = sorted(set(endpoint_boundary).union(selected))
+        selection_time = time.perf_counter() - started
+        constructor = {
+            "constructor_method": "one_shot_group_fd",
+            "constructor_stop_reason": "one_shot_frozen_top_m",
+            "delta_backend": "one_shot_frozen_group_fd",
+            "predicted_group_risks": predicted_risks,
+            "predicted_group_violations": predicted_violations,
+            "n_frozen_candidates": len(scored),
+            "n_green_response_passes": len(all_probes),
+            "n_candidate_insertion_evaluations": 0,
+            "n_beam_expansions": 0,
+            "probe_rows": probe_rows,
+            "selection_profile": probe_cache.summary(),
+        }
+        group_eval = evaluate_group_boundary(
+            map_label=map_label,
+            rows=rows,
+            slip=slip,
+            boundary=boundary,
+            lens_groups=lens_groups,
+            recipe=recipe,
+            basis=basis,
+            budgets=budgets,
+            args=args,
+        )
     elif method in {"group_constrained", "group_constrained_operator", "group_constrained_incremental"}:
         if method == "group_constrained_incremental":
             delta_backend = "insertion_score"
@@ -311,6 +420,18 @@ def run_method(
         "group_test_bits_mean": float(group_eval["test_bits_mean"]),
         "group_test_bits_cvar": float(group_eval["test_bits_cvar"]),
         "selection_time_sec": float(model["construction_time_sec"]),
+        "one_shot_candidate_universe_time_sec": float(
+            finite_float(constructor.get("candidate_universe_time_sec"), 0.0)
+        ),
+        "one_shot_probe_build_time_sec": float(
+            finite_float(constructor.get("probe_build_time_sec"), 0.0)
+        ),
+        "one_shot_green_time_sec": float(
+            finite_float(constructor.get("green_message_passing_time_sec"), 0.0)
+        ),
+        "one_shot_apply_time_sec": float(
+            finite_float(constructor.get("operator_apply_time_sec"), 0.0)
+        ),
         "delta_backend": constructor.get("delta_backend", ""),
         "kernel_time_sec": float(model["kernel_time_sec"]),
         "upfront_time_sec": selection_kernel_time,
@@ -513,6 +634,8 @@ def main() -> None:
             "group_constrained",
             "group_constrained_operator",
             "group_constrained_incremental",
+            "one_shot_rd",
+            "one_shot_group_fd",
         ],
         default=["endpoints", "group_constrained", "group_constrained_incremental"],
     )
@@ -553,6 +676,17 @@ def main() -> None:
         default="occupancy_or_uniform",
     )
     parser.add_argument("--max-splits", type=int, default=5)
+    parser.add_argument("--one-shot-threshold", type=float, default=0.15)
+    parser.add_argument("--one-shot-steps", type=int, default=256)
+    parser.add_argument("--one-shot-tail-tol", type=float, default=1e-6)
+    parser.add_argument("--one-shot-probe-count", type=int, default=None)
+    parser.add_argument("--one-shot-min-channel-support", type=int, default=2)
+    parser.add_argument("--one-shot-exclusion-radius", type=int, default=1)
+    parser.add_argument(
+        "--one-shot-candidate-universe",
+        choices=["all", "turn_articulation"],
+        default="turn_articulation",
+    )
     parser.add_argument("--beam-width", type=int, default=2)
     parser.add_argument("--beam-expand", type=int, default=4)
     parser.add_argument("--disable-probe-cache", action="store_true")

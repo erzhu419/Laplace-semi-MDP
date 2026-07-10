@@ -1,0 +1,4 @@
+map,slip,n_tested_prefixes,max_tested_k,any_feasible,feasible_prefixes,first_feasible_k,infeasible_after_first_feasible,best_feasible_state_compression,n_candidate_insertion_evaluations,n_beam_expansions
+four_rooms_11,0.05,13,24,True,"3,4,5,6,8,10",3,True,20.8,0,0
+maze_13,0.05,13,24,False,,,False,nan,0,0
+open_room_12,0.05,12,20,True,2,2,True,36.0,0,0

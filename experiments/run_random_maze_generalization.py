@@ -213,6 +213,8 @@ def main() -> None:
             "group_constrained",
             "group_constrained_operator",
             "group_constrained_incremental",
+            "one_shot_rd",
+            "one_shot_group_fd",
         ],
         default=["endpoints", "group_constrained_operator", "group_constrained_incremental"],
     )
@@ -253,6 +255,17 @@ def main() -> None:
         default="occupancy_or_uniform",
     )
     parser.add_argument("--max-splits", type=int, default=5)
+    parser.add_argument("--one-shot-threshold", type=float, default=0.15)
+    parser.add_argument("--one-shot-steps", type=int, default=256)
+    parser.add_argument("--one-shot-tail-tol", type=float, default=1e-6)
+    parser.add_argument("--one-shot-probe-count", type=int, default=None)
+    parser.add_argument("--one-shot-min-channel-support", type=int, default=2)
+    parser.add_argument("--one-shot-exclusion-radius", type=int, default=1)
+    parser.add_argument(
+        "--one-shot-candidate-universe",
+        choices=["all", "turn_articulation"],
+        default="turn_articulation",
+    )
     parser.add_argument("--beam-width", type=int, default=2)
     parser.add_argument("--beam-expand", type=int, default=4)
     parser.add_argument("--disable-probe-cache", action="store_true")

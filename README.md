@@ -6,11 +6,11 @@ This repository is an experimental artifact for a rate-distortion graph abstract
 
 The current paper-facing path is:
 
-1. **Reference operator:** exact first-hit Green kernels define the frozen RD split score.
-2. **Runtime implementation:** certified adaptive Green intervals are used first; uniqueness failures are separated into epsilon-optimal/tie-set certificates versus true curvature fallback.
-3. **Discovery backend:** adaptive feasible top-k refinement scans the proposal order until a hard/group-feasible split is certified. It is the main feasible-discovery backend; fixed top-k is the ablation envelope, and RD score optimality is claimed only under interval dominance.
-4. **Planner:** the selected boundary states become graph vertices, first-boundary options become graph-SMDP actions, and value iteration/planning runs on that compressed graph.
-5. **Appendix certificates:** weighted spectral and conditioned rational Collatz certificates justify convergence/safety as sufficient certificates, but they are not the main runtime decision rule.
+1. **Reference objective:** exact first-hit Green kernels define the frozen RD insertion score. Exact and iterative search are teachers/oracles, not the intended runtime path.
+2. **One-shot operator:** from mandatory boundary `B0`, build one truncated sparse Green response, apply the multichannel score once to every state, threshold/local-max once, and build final graph kernels once. There is no candidate insertion, beam search, or score recomputation.
+3. **Audit and fallback:** the returned graph is evaluated under value and grouped topology/value/stochastic constraints. A failed audit may invoke certified adaptive/group-constrained refinement; that fallback is reported separately and is not charged to one-shot operator timing.
+4. **Planner:** retained states become graph vertices, first-boundary options become graph-SMDP actions, and planning runs on the compressed graph.
+5. **Certificates:** Green-tail bounds induce one-shot channel intervals; score margins certify stable threshold/local-max decisions. Bellman contraction and the four-term end-to-end theorem certify the returned graph, but do not claim that heuristic thresholding globally optimizes the RD set objective.
 
 The most useful entry-point table is generated at:
 
@@ -76,6 +76,24 @@ Run the finite-MDP general-environment smoke benchmark:
 
 ```bash
 python3 experiments/run_general_env_benchmark.py
+```
+
+Run the no-recompute operator benchmark. The first command evaluates the final
+graph once; the second isolates operator extraction from final-kernel cost:
+
+```bash
+python3 experiments/run_one_shot_rd_operator.py \
+  --map-specs corridor:32 open_room:10 four_rooms:11 maze:13 \
+  --slips 0 0.05 0.1 --thresholds 0.15 \
+  --baselines endpoints graph_rd_surrogate_joint graph_rd_joint
+
+python3 experiments/run_one_shot_rd_operator.py \
+  --map-specs corridor:256 open_room:32 four_rooms:31 maze:31 \
+  --slips 0 0.05 0.1 --thresholds 0.15 --operator-only
+
+# Test whether K can be predicted from one graph-level observation. The
+# frontier certificate remains authoritative after the prediction.
+python3 experiments/run_learned_green_horizon.py
 ```
 
 This benchmark currently covers Gymnasium ToyText (`Taxi-v4`,
@@ -163,6 +181,9 @@ python3 experiments/aggregate_p0_audit_shards.py \
   --run-root experiments/output/scheduler_p0_audits/reviewer_p0_<date>
 ```
 
+The same wrapper exposes `one_shot_random` and `one_shot_xl` suites. Their
+sharded CSVs are merged with `experiments/aggregate_one_shot_rd_operator.py`.
+
 The P0 submitter creates one immutable, node-specific source snapshot before
 dispatch. Each shard writes `_SUCCESS.json` only after a zero-exit run, and the
 aggregator refuses incomplete or mixed-fingerprint runs. This prevents stale
@@ -170,6 +191,9 @@ launch-stage caches or nominal scheduler `done` states from entering paper table
 
 ## Current Artifact Status
 
+- The explicit no-recompute backend is now implemented separately from search. On the 12-case classic table, threshold `0.15` uses two endpoint probes, zero candidate-insertion evaluations, and one final kernel build. Its median selection speedup is about `40.1x` versus iterative surrogate search and `157x` versus exact RD search; including the single final-kernel build, the paired median speedups are about `7.77x` and `22.9x`. On a paired 20-context held-out random-maze subset, boundary Jaccard is `0.920`, selection is `369.5x` faster, and the complete graph pipeline is `12.94x` faster than iterative surrogate search. The global classic maximum normalized value gap remains `0.00963`, although the one-shot graph is typically slightly denser.
+- The one-shot path is not presented as a universal group-feasibility solver. The cheap one-shot transform fails all three hard group rows. A stricter frozen finite-difference order reaches feasibility only at `k=2` for open room and at tested prefixes `k=3..10` for four rooms, then loses it as the prefix grows; maze has no feasible prefix through `k=24`. This confirms that adaptive option-library drift cannot be certified by a frozen local transform alone, so group-constrained refinement remains an explicit fallback.
+- A trainable-`K` pilot fits a graph-conditioned ridge proposal on 105 contexts, calibrates on 15, and tests on 60 larger/held-out contexts. It reaches a `93.3%` first-pass certificate rate and `100%` after fallback, with exact boundary agreement on this suite. It is nevertheless slower than both fixed-`K` (`0.906x`) and the current adaptive frontier stopping (`0.747x`) once graph-feature extraction and retries are charged. Thus learned `K` is retained as a batching/scheduling ablation, not claimed as the single-graph acceleration mechanism.
 - Certified adaptive Green plus tie-aware epsilon/top-set certificates reaches final certified decisions on the current certification suite.
 - Adaptive feasible top-k diagnostics now support using it as the main discovery backend: paired adaptive/fixed top-4 rows match feasibility on the current suite (`36/36`), certified feasible rate stays at `0.7222`, median selection time drops from about `47.18s` to `23.58s`, and the Lean proof layer states the feasible-envelope/work-bound guarantee plus the score-optimality caveat.
 - The XL scheduler run `paper_xl_20260706_0659` has been published into the tracked paper-facing outputs: large-scale compression 135 rows, random maze 360 rows, option frontier 648 rows, amortized multitask 192 rows, and fixed-`B` edge reward 384 rows.

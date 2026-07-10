@@ -10,6 +10,7 @@ Run:
 lean proof/RDOperator.lean
 lean proof/AdaptiveTopK.lean
 cd proof && lake env lean RDOperatorReal.lean
+cd proof && lake env lean OneShotRDOperator.lean
 ```
 
 What is formalized now:
@@ -82,6 +83,11 @@ What is formalized now:
   as fixed top-`K`, refines at most `K` candidates, and requires an interval
   dominance certificate before it can claim score-optimal rather than merely
   feasible stopping.
+- one-shot frozen selector layer:
+  `OneShotRDOperator.lean` proves that entrywise Green-response error controls
+  each frozen linear channel, and that threshold decisions and strict local
+  maxima are stable outside their certified error margins. These certificates
+  do not claim global RD optimality for the heuristic threshold.
 - bits-curvature layer:
   the derivative of `bitsPhiDeriv` is `bitsPhiSecond`, a positive margin
   `delta <= 1 - h + eps` bounds `|bitsPhiSecond|`, and Mathlib Taylor gives the
